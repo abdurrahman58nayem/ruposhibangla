@@ -137,6 +137,11 @@ export type Species = {
   lastVerifiedAt?: string
   /** একাধিক উৎসে পার্থক্য থাকলে */
   conflictingInfo?: string
+  /**
+   * "থিন স্টাব" প্রতিস্থাপনের আগের সংস্করণ —
+   * বিস্তারিত বিবরণ বসলে আগের এক-লাইনের লেখা এখানে সংরক্ষিত থাকে (তথ্য হারায় না)।
+   */
+  stubArchive?: Record<string, string>
   /** বিপন্ন প্রজাতি — অবস্থান গোপন রাখতে হবে */
   sensitive?: boolean
   featured?: boolean

@@ -5,6 +5,8 @@ import { DETAILS_GACHHBON } from './gachhbon'
 import { DETAILS_GACHHBON2 } from './gachhbon2'
 import { DETAILS_UDABHID } from './udbhidful'
 import { DETAILS_UDABHID2 } from './udbhidful2'
+import { DETAILS_MACHH } from './machh'
+import { DETAILS_MACHH2 } from './machh2'
 import type { DetailsMap } from './types'
 
 export type { SpeciesDetail, DetailsMap } from './types'
@@ -17,6 +19,8 @@ export const SPECIES_DETAILS: DetailsMap = {
   ...DETAILS_GACHHBON2,
   ...DETAILS_UDABHID,
   ...DETAILS_UDABHID2,
+  ...DETAILS_MACHH,
+  ...DETAILS_MACHH2,
 }
 
 export const DETAILS_COUNT = Object.keys(SPECIES_DETAILS).length
@@ -88,12 +92,32 @@ function mergeMedia(existing: Species['media'], incoming: Species['media']) {
 }
 
 /**
+ * সিড-ফাইলে অনেক রেকর্ডে আগে থেকেই এক-লাইনের সারাংশ ছিল
+ * (যেমন “চ্যাপ্টা রূপালি দেহ, লেজ দ্বিখণ্ডিত”), যা পরে লেখা পূর্ণ বিবরণকে বসতে দেয়নি।
+ * তাই “থিন স্টাব”-এর বদলে বিস্তারিত বিবরণ বসানোর নিয়ম:
+ *   · বিস্তারিত লেখা অন্তত MIN_UPGRADE_CHARS অক্ষরের হতে হবে, এবং
+ *   · বিদ্যমান লেখার চেয়ে অন্তত UPGRADE_RATIO গুণ বড় হতে হবে।
+ * দুটোই মিললে আগের লেখা `stubArchive`-এ সংরক্ষিত হয় — কোনো তথ্য হারায় না,
+ * প্রশাসক চাইলে আগের সংস্করণ দেখতে পারবেন।
+ */
+const MIN_UPGRADE_CHARS = 120
+const UPGRADE_RATIO = 2.5
+
+function isUpgrade(cur: unknown, incoming: unknown) {
+  if (typeof cur !== 'string' || typeof incoming !== 'string') return false
+  const oldLen = cur.trim().length
+  if (!oldLen) return true
+  return incoming.trim().length >= MIN_UPGRADE_CHARS && incoming.trim().length >= oldLen * UPGRADE_RATIO
+}
+
+/**
  * রেকর্ডে বিস্তারিত তথ্য বসানো —
- *  · আগের তথ্য কখনো মুছে যায় না (শুধু ফাঁকা ঘর পূরণ হয়)
- *  · কমপক্ষে একটি নতুন তথ্য গেলে dataStatus 'partial' → 'review'
+ *  · আগের তথ্য কখনো মুছে যায় না (ফাঁকা ঘর পূরণ হয়, স্টাব প্রতিস্থাপিত হলে সংরক্ষিত থাকে)
+ *  · কমপক্ষে একটি নতুন তথ্য গেলে dataStatus 'partial'/'verified' → 'review'
  */
 export function withDetails(list: Species[]): Species[] {
   let filled = 0
+  let upgraded = 0
 
   const out = applyCorrections(list).map((s) => {
     const d = SPECIES_DETAILS[s.slug]
@@ -107,7 +131,12 @@ export function withDetails(list: Species[]): Species[] {
       if (v === undefined || v === null || v === '') continue
       const cur = (s as any)[key]
       const empty = cur === undefined || cur === null || (typeof cur === 'string' && !cur.trim())
-      if (!empty) continue
+      if (!empty) {
+        if (!isUpgrade(cur, v)) continue
+        // আগের এক-লাইনের সারাংশ সংরক্ষণ — তথ্য হারানো যাবে না
+        next.stubArchive = { ...(next.stubArchive || {}), [key]: String(cur) }
+        upgraded++
+      }
       ;(next as any)[key] = v
       changed = true
     }
@@ -120,14 +149,20 @@ export function withDetails(list: Species[]): Species[] {
 
     if (changed) {
       filled++
-      if (!next.dataStatus || next.dataStatus === 'partial') next.dataStatus = 'review'
+      // নতুন (অযাচিত) তথ্য বসলেই রেকর্ড 'review'-এ যায় —
+      // 'verified' অবস্থায় থাকা মানে বিশেষজ্ঞ-যাচিত, তাই তা কমিয়ে 'review' করা হয়।
+      if (!next.dataStatus || next.dataStatus === 'partial' || next.dataStatus === 'verified') {
+        next.dataStatus = 'review'
+      }
     }
     return next
   })
 
   if (typeof process !== 'undefined' && process.env?.RB_DETAILS_LOG === '1') {
     // eslint-disable-next-line no-console
-    console.log(`[details] ${filled} টি রেকর্ডে নতুন তথ্য যোগ হয়েছে (মোট বিবরণ: ${DETAILS_COUNT})`)
+    console.log(
+      `[details] ${filled} টি রেকর্ডে নতুন তথ্য যোগ হয়েছে (স্টাব প্রতিস্থাপিত ঘর: ${upgraded}, মোট বিবরণ: ${DETAILS_COUNT})`,
+    )
   }
 
   return out
