@@ -167,6 +167,17 @@ M = [
     # ---------- পাখি (prani) ----------
     ("dandkak", "corvus-macrorhynchos-jungle-crow-site-co-1.jpg", "prani", "দাঁড়কাক", "https://commons.wikimedia.org/wiki/Category:Corvus_macrorhynchos", "উইকিমিডিয়া কমন্স", "medium"),
     ("finge", "dicrurus-macrocercus-black-drongo-site-c-1.jpg", "prani", "ফিঙে", "https://commons.wikimedia.org/wiki/File:Black_Drongo_(Dicrurus_macrocercus)_(20185740488).jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("chatok", "clamator-jacobinus-pied-cuckoo-site-comm-1.jpg", "prani", "চাতক", "https://commons.wikimedia.org/wiki/Category:Clamator_jacobinus", "উইকিমিডিয়া কমন্স", "high"),
+    ("ghughu", "spilopelia-chinensis-spotted-dove-site-c-1.jpg", "prani", "তিলা ঘুঘু", "https://commons.wikimedia.org/wiki/File:Spotted_dove_(Spilopelia_chinensis)-.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("go-bok", "bubulcus-ibis-cattle-egret-site-commons--1.jpg", "prani", "গো-বক", "https://commons.wikimedia.org/wiki/Category:Bubulcus_ibis", "উইকিমিডিয়া কমন্স", "high"),
+    ("holud-bulbul", "oriolus-oriolus-eurasian-golden-oriole-s-1.jpg", "prani", "হলুদ বুলবুল", "https://commons.wikimedia.org/wiki/Category:Oriolus_oriolus", "উইকিমিডিয়া কমন্স", "high"),
+    ("kalo-chil", "milvus-migrans-black-kite-site-commons-w-1.jpg", "prani", "কালো চিল", "https://commons.wikimedia.org/wiki/Milvus_migrans", "উইকিমিডিয়া কমন্স", "high"),
+    ("kani-bok", "ardeola-grayii-indian-pond-heron-site-co-1.jpg", "prani", "কানি বক", "https://commons.wikimedia.org/wiki/Category:Ardeola_grayii", "উইকিমিডিয়া কমন্স", "high"),
+    ("kaththokra", "dinopium-benghalense-black-rumped-flameb-1.jpg", "prani", "কাঠঠোকরা", "https://commons.wikimedia.org/wiki/Category:Dinopium_benghalense", "উইকিমিডিয়া কমন্স", "high"),
+    ("patihash", "dendrocygna-javanica-lesser-whistling-du-1.jpg", "prani", "সরালি হাঁস", "https://commons.wikimedia.org/wiki/Category:Dendrocygna_javanica", "উইকিমিডিয়া কমন্স", "high"),
+    ("shalik", "acridotheres-fuscus-jungle-myna-site-com-1.jpg", "prani", "শালিক", "https://commons.wikimedia.org/wiki/Category:Acridotheres_fuscus", "উইকিমিডিয়া কমন্স", "high"),
+    ("pankouri", "microcarbo-niger-cormorant-site-commons--1.jpg", "prani", "পানকৌড়ি", "https://commons.wikimedia.org/wiki/Category:Microcarbo_niger", "উইকিমিডিয়া কমন্স", "high"),
+    ("sarpunti", "systomus-sarana-barb-fish-photo-india-wi-1.png", "prani", "সরপুঁটি", "https://en.wikipedia.org/wiki/Olive_barb", "উইকিমিডিয়া কমন্স", "high"),
 ]
 
 
