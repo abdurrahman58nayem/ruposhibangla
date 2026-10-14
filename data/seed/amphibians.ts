@@ -26,7 +26,9 @@ export const AMPHIBIANS: Species[] = [
     conservationActions: 'কীটনাশক কমানো, জলাশয় সংরক্ষণ, সচেতনতা (এটি বিষাক্ত নয়, তবে হাত দিয়ে চোখ স্পর্শ করবেন না)।',
     colorTags: ['#8a7f5c', '#514a34', '#e6e0cd'],
     image: '',
-    dataStatus: 'partial',
+    dataStatus: 'identity_uncertain',
+    conflictingInfo:
+      'এই রেকর্ডে আগে “Minervarya cyanophlyctis” লেখা ছিল, যা বৈধ বৈজ্ঞানিক নাম নয়। বর্ণনা স্কিটারিং ফ্রগ (Euphlyctis cyanophlyctis)-এর মতো, তবে লোকনাম “সোনা ব্যাঙ” বাংলাদেশে অন্য প্রজাতির ক্ষেত্রেও ব্যবহৃত হয় — তাই প্রজাতি-শনাক্তকরণ বিশেষজ্ঞের মাধ্যমে যাচাই করা বাকি।',
     sources: [IUCN, HERPS_BD],
     poetViews: [
       { poet: 'রবীন্দ্রনাথ ঠাকুর', note: 'বাংলা কবিতায় ব্যাঙের ডাক বর্ষার বার্তাবাহক — “ঝিরঝির ঝিরঝির” শব্দে ভেজা সন্ধ্যা ফিরে আসে।', needsReview: true },
@@ -34,7 +36,7 @@ export const AMPHIBIANS: Species[] = [
   },
   {
     slug: 'sonabang', type: 'prani', group: 'ubhochor', category: 'উভচর',
-    nameBn: 'সোনা ব্যাঙ', nameEn: 'Golden Frog / Indian Skittering Frog', scientificName: 'Minervarya cyanophlyctis',
+    nameBn: 'সোনা ব্যাঙ', nameEn: 'Golden Frog / Skittering Frog', scientificName: 'Minervarya sp. (অনিশ্চিত)',
     synonyms: ['Euphlyctis cyanophlyctis'],
     otherNames: ['ঝিঁঝিঁ ব্যাঙ', 'পানকৌড়ি ব্যাঙ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Amphibia', order: 'Anura', family: 'Dicroglossidae', genus: 'Minervarya', species: 'Minervarya cyanophlyctis' },
