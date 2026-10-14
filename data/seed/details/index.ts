@@ -1,6 +1,8 @@
 import type { Species } from '@/lib/types'
 import { DETAILS_PAKHI } from './pakhi'
 import { DETAILS_PAKHI2 } from './pakhi2'
+import { DETAILS_GACHHBON } from './gachhbon'
+import { DETAILS_GACHHBON2 } from './gachhbon2'
 import type { DetailsMap } from './types'
 
 export type { SpeciesDetail, DetailsMap } from './types'
@@ -9,6 +11,8 @@ export type { SpeciesDetail, DetailsMap } from './types'
 export const SPECIES_DETAILS: DetailsMap = {
   ...DETAILS_PAKHI,
   ...DETAILS_PAKHI2,
+  ...DETAILS_GACHHBON,
+  ...DETAILS_GACHHBON2,
 }
 
 export const DETAILS_COUNT = Object.keys(SPECIES_DETAILS).length
