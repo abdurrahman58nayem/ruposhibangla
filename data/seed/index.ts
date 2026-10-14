@@ -12,6 +12,7 @@ import { MICROBES } from './microbes'
 import { PLACES } from './places'
 import { LITERATURE } from './literature'
 import { EXTRA_SPECIES } from './extra-species'
+import { SEED_IMAGE_BY_SLUG } from './media-images'
 
 /**
  * পুরোনো/উত্তরাধিকারসূত্রে পাওয়া রেকর্ডে `group` না থাকলে বিভাগ থেকে অনুমান করা হয়।
@@ -46,11 +47,96 @@ function normalize(s: SpeciesSeed): Species {
   }
 }
 
-export const SPECIES: Species[] = [
+/**
+ * একই প্রজাতির একাধিক রেকর্ড (ডুপ্লিকেট) এলে সেগুলো এক করে দেয় —
+ * প্রথম রেকর্ডটি মূল ধরা হয়, বাকিগুলোর তথ্য দিয়ে ফাঁকা ঘর পূরণ করা হয় এবং
+ * বাদ পড়া স্লাগ `synonyms`-এ রাখা হয়। কোনো তথ্য ফেলা হয় না।
+ */
+const SCI_RE = /^[A-Z][a-z]+ [a-z][A-Za-z-]+( [A-Za-z.]+)?$/
+
+function mergeKey(s: Species, kind: 'sci' | 'name'): string | null {
+  if (kind === 'sci') {
+    const v = (s.scientificName || '').trim()
+    if (!v || v === '—' || !SCI_RE.test(v)) return null
+    return 'sci:' + v.toLowerCase()
+  }
+  return `name:${s.type}:${(s.nameBn || '').trim()}`
+}
+
+function fillFrom(target: Species, src: Species) {
+  const t = target as unknown as Record<string, unknown>
+  const f = src as unknown as Record<string, unknown>
+  for (const k of Object.keys(f)) {
+    if (k === 'slug' || k === 'synonyms') continue
+    const v = f[k]
+    const cur = t[k]
+    const empty = (x: unknown) => x === undefined || x === null || x === '' || (Array.isArray(x) && x.length === 0)
+    if (empty(v)) continue
+    if (empty(cur)) {
+      t[k] = v
+    } else if (k === 'sources' && Array.isArray(cur) && Array.isArray(v)) {
+      const seen = new Set((cur as { title: string }[]).map((x) => x.title))
+      t[k] = [...(cur as unknown[]), ...(v as { title: string }[]).filter((x) => !seen.has(x.title))]
+    } else if (k === 'otherNames' && Array.isArray(cur) && Array.isArray(v)) {
+      t[k] = [...new Set([...(cur as string[]), ...(v as string[])])]
+    } else if (typeof v === 'string' && typeof cur === 'string' && v.length > cur.length * 1.6) {
+      // একাধিক বড় লেখা থাকলে বেশি বিস্তারিতটি রাখা হয়
+      t[k] = v
+    }
+  }
+  if (src.slug !== target.slug) {
+    target.synonyms = [...new Set([...(target.synonyms || []), src.slug])]
+  }
+}
+
+function dedupe(list: Species[]): Species[] {
+  const byKey = new Map<string, Species>()
+  const out: Species[] = []
+  for (const s of list) {
+    const keys = [mergeKey(s, 'sci'), mergeKey(s, 'name')].filter(Boolean) as string[]
+    let target: Species | undefined
+    for (const k of keys) {
+      const got = byKey.get(k)
+      if (got) {
+        target = got
+        break
+      }
+    }
+    if (!target) {
+      const copy: Species = { ...s }
+      out.push(copy)
+      for (const k of keys) byKey.set(k, copy)
+    } else {
+      fillFrom(target, s)
+      for (const k of keys) if (!byKey.has(k)) byKey.set(k, target)
+    }
+  }
+  return out
+}
+
+const ALL_SPECIES_SEED: Species[] = [
   ...BIRDS, ...ANIMALS, ...PLANTS, ...FISH, ...REPTILES, ...AMPHIBIANS,
   ...INSECTS, ...INVERTEBRATES, ...FUNGI_ALGAE, ...MICROBES, ...PLACES, ...LITERATURE,
   ...EXTRA_SPECIES,
 ].map(normalize)
+
+/** §12 — স্ক্রিপ্টে সংগৃহীত ছবি (data/seed/media-images.ts) যুক্ত করা */
+function withSeedImages(list: Species[]): Species[] {
+  return list.map((s) => {
+    const file = SEED_IMAGE_BY_SLUG[s.slug]
+    if (!file || s.image) return s
+    return { ...s, image: file }
+  })
+}
+
+export const SPECIES: Species[] = withSeedImages(dedupe(ALL_SPECIES_SEED))
+
+/** কতগুলো রেকর্ড ডুপ্লিকেট হিসেবে এক করা হয়েছে (স্বচ্ছতার জন্য) */
+export const SPECIES_STATS = {
+  raw: ALL_SPECIES_SEED.length,
+  unique: SPECIES.length,
+  merged: ALL_SPECIES_SEED.length - SPECIES.length,
+}
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   siteName: 'রূপসী বাংলা',
