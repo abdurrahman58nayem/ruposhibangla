@@ -1,0 +1,32 @@
+{
+  "name": "রূপসী বাংলা — বাংলাদেশের প্রকৃতি, প্রাণী ও উদ্ভিদ অভিধান",
+  "short_name": "রূপসী বাংলা",
+  "description": "বাংলাদেশের পাখি, প্রাণী, উদ্ভিদ, গ্রামবাংলা ও জীববৈচিত্র্যের সব তথ্য এক জায়গায় — ছবি, ভিডিও, কবির চোখে প্রকৃতি ও নিজস্ব এআই সহচর সহ।",
+  "lang": "bn-BD",
+  "dir": "ltr",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7faf7",
+  "theme_color": "#1e4a35",
+  "categories": ["education", "nature", "reference"],
+  "icons": [
+    {
+      "src": "/brand/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/favicon-64.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/logo-mark.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+name: Migrate (Neon)
+
+# Neon Postgres-এ টেবিল তৈরি/হালনাগাদ।
+#
+# প্রয়োজন: Repository secret → DATABASE_URL (Neon-এর connection string)
+#   Settings → Secrets and variables → Actions → New repository secret
+#
+# চালানোর উপায়:
+#   1) এই ফাইল বা db/schema.sql বদলালে main-এ পুশ করলে আপনি-থেকেই চলবে।
+#   2) Actions → "Migrate (Neon)" → Run workflow (চাইলে "Reseed" টিক দিন)।
+
+on:
+  workflow_dispatch:
+    inputs:
+      reseed:
+        description: 'টেবিল তৈরির পর সিড ডেটা বসানো হবে?'
+        type: boolean
+        default: false
+      site_url:
+        description: 'Reseed করতে হলে লাইভ সাইটের URL'
+        type: string
+        required: false
+        default: ''
+  push:
+    branches: [main]
+    paths:
+      - 'db/schema.sql'
+      - 'scripts/migrate.mjs'
+      - '.github/workflows/migrate.yml'
+
+concurrency:
+  group: migrate-neon
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SITE_URL: ${{ inputs.site_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: DATABASE_URL আছে কিনা যাচাই
+        id: chk
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::DATABASE_URL সিক্রেট সেট করা নেই — মাইগ্রেশন স্কিপ করা হলো। Settings → Secrets → Actions এ DATABASE_URL যোগ করুন।"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Neon-এ টেবিল তৈরি
+        if: steps.chk.outputs.skip != 'true'
+        run: node scripts/migrate.mjs
+
+      - name: সিড ডেটা বসানো (ঐচ্ছিক)
+        if: steps.chk.outputs.skip != 'true' && (inputs.reseed || github.event_name == 'workflow_dispatch')
+        continue-on-error: true
+        run: |
+          if [ "${{ inputs.reseed }}" != "true" ] || [ -z "$SITE_URL" ]; then
+            echo "Reseed চাওয়া হয়নি বা SITE_URL দেওয়া হয়নি — স্কিপ।"
+            exit 0
+          fi
+          node scripts/migrate.mjs --reseed
+
+      - name: সারাংশ
+        if: always()
+        run: |
+          if [ "${{ steps.chk.outputs.skip }}" = "true" ]; then
+            echo "### ⚠️ মাইগ্রেশন স্কিপ হয়েছে" >> "$GITHUB_STEP_SUMMARY"
+            echo "DATABASE_URL সিক্রেট নেই। Settings → Secrets and variables → Actions → New repository secret এ \`DATABASE_URL\` যোগ করুন।" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ✅ মাইগ্রেশন শেষ" >> "$GITHUB_STEP_SUMMARY"
+            echo "\`db/schema.sql\` অনুযায়ী টেবিল তৈরি/হালনাগাদ করা হয়েছে।" >> "$GITHUB_STEP_SUMMARY"
+          fi

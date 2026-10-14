@@ -1,0 +1,319 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --forest: #1e4a35;
+  --forest-deep: #082015;
+  --gold: #d7944f;
+  --cream: #fdf8f0;
+
+  /* বাংলাদেশের প্রকৃতি ও ঐতিহ্য — মূল রঙের ছক */
+  --rb-forest: #1e4a35;
+  --rb-paddy: #e0a62c;
+  --rb-nadi: #2e7fb8;
+  --rb-mati: #cc5f42;
+  --rb-shapla: #d1517a;
+  --rb-kantha: #b04a4a;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* ফন্ট রেন্ডারিং — বাংলা অক্ষর স্পষ্ট ও মসৃণ দেখাবে */
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family:
+    'Hind Siliguri',
+    'Noto Sans Bengali',
+    'Inter',
+    SolaimanLipi,
+    Kalpurush,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: #f7faf7;
+  color: #14261d;
+  /* বাংলা লিপিতে মাত্রা-যুক্ত অক্ষর — একটু বেশি লাইন-হাইট পড়তে সহজ */
+  line-height: 1.85;
+  /* বেস সাইজ বাড়ানো — যেকোনো বয়সের দর্শক সহজে পড়তে পারবে */
+  font-size: 16.5px;
+  letter-spacing: 0;
+  font-variant-ligatures: common-ligatures;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  overflow-x: hidden;
+}
+
+/* শিরোনাম — প্রিমিয়াম বাংলা সেরিফ */
+h1,
+h2,
+h3,
+.font-display {
+  font-family: 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+/* ছোট লেখাও যেন ঝাপসা না হয় */
+small,
+.text-xs {
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+/* ফোকাস — কীবোর্ড ব্যবহারকারীর জন্য স্পষ্ট রিং */
+:focus-visible {
+  outline: 2px solid #2b754f;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* কম দৃষ্টিশক্তির দর্শকের জন্য — সিস্টেম সেটিং মানা */
+@media (prefers-contrast: more) {
+  body {
+    color: #06170e;
+  }
+}
+
+@layer components {
+  .container-pb {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+
+  .card {
+    @apply rounded-2xl border border-black/5 bg-white shadow-card;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition
+      active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-forest-700 text-white hover:bg-forest-800;
+  }
+
+  .btn-gold {
+    @apply btn bg-earth-400 text-white hover:bg-earth-500;
+  }
+
+  .btn-soft {
+    @apply btn bg-forest-50 text-forest-800 hover:bg-forest-100;
+  }
+
+  .btn-outline {
+    @apply btn border border-forest-200 bg-white text-forest-800 hover:bg-forest-50;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-forest-100 bg-white
+      px-3.5 py-1.5 text-[13px] font-medium text-forest-800 transition hover:border-forest-300 hover:bg-forest-50;
+  }
+
+  .chip-active {
+    @apply border-forest-700 bg-forest-700 text-white hover:bg-forest-800 hover:text-white;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-sm outline-none
+      transition placeholder:text-black/35 focus:border-forest-400 focus:ring-2 focus:ring-forest-100;
+  }
+
+  .label {
+    @apply mb-1.5 block text-xs font-semibold text-forest-900;
+  }
+
+  .section-title {
+    @apply text-[1.2rem] font-bold leading-snug text-forest-900 sm:text-[1.4rem];
+    font-family: 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
+  }
+
+  .prose-bn {
+    @apply text-[16.5px] leading-[1.95] text-black/85;
+  }
+
+  .prose-bn p {
+    @apply mb-4;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden bg-black/5;
+  }
+
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/60 to-transparent;
+    content: '';
+  }
+}
+
+/* Bottom navigation safe area (mobile) */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4.25rem);
+}
+
+@media (min-width: 768px) {
+  .pb-safe {
+    padding-bottom: 2rem;
+  }
+}
+
+/* Hide scrollbars on horizontal chip rows */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Feed masonry-ish grid */
+.feed-grid {
+  column-gap: 1rem;
+}
+@media (min-width: 640px) {
+  .feed-grid {
+    column-count: 2;
+  }
+}
+@media (min-width: 1024px) {
+  .feed-grid {
+    column-count: 3;
+  }
+}
+.feed-item {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+}
+
+/* Glass header */
+.glass {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+}
+
+.hero-pattern {
+  background-color: var(--forest-deep);
+  background-image: radial-gradient(at 20% 20%, rgba(61, 145, 99, 0.35) 0px, transparent 55%),
+    radial-gradient(at 85% 15%, rgba(215, 148, 79, 0.25) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(8, 32, 21, 0.9) 0px, transparent 60%);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+input[type='file']::file-selector-button {
+  @apply mr-3 rounded-full border-0 bg-forest-50 px-3 py-1.5 text-xs font-semibold text-forest-800;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cfe3d7;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ============================================================
+   ডার্ক থিম — সেটিংস থেকে Light / Dark / System বেছে নেওয়া যায়
+   ============================================================ */
+.dark {
+  --forest: #8fd6ab;
+  --forest-deep: #04140d;
+  --gold: #e3b67c;
+  --cream: #0e1a13;
+}
+
+.dark body {
+  background-color: #08130d;
+  color: #dcebe2;
+}
+
+.dark .glass {
+  background: rgba(8, 20, 14, 0.88);
+}
+
+/* প্রধান পৃষ্ঠতল */
+.dark .card,
+.dark .chip,
+.dark .btn-outline,
+.dark .field,
+.dark select,
+.dark input,
+.dark textarea {
+  background-color: #102017 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #dcebe2 !important;
+}
+
+.dark .bg-white {
+  background-color: #102017 !important;
+}
+
+.dark .bg-forest-50,
+.dark .bg-forest-100 {
+  background-color: #0f1f16 !important;
+}
+
+.dark .text-forest-900,
+.dark .text-forest-800 {
+  color: #bfe6cd !important;
+}
+
+.dark .text-black\/80,
+.dark .text-black\/70,
+.dark .text-black\/60,
+.dark .text-black\/55,
+.dark .text-black\/50,
+.dark .text-black\/45,
+.dark .text-black\/40 {
+  color: rgba(220, 235, 226, 0.72) !important;
+}
+
+.dark .border-black\/5,
+.dark .border-black\/10 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .divide-black\/5 > * + * {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .prose-bn {
+  color: rgba(220, 235, 226, 0.85) !important;
+}
+
+.dark .skeleton {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+.dark .skeleton::after {
+  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #23402f;
+}
+
+/* অ্যানিমেশন কমানোর পছন্দ */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

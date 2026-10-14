@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+.env
+.env.local
+.env*.local
+.data
+public/uploads/*
+!public/uploads/.gitkeep
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+
+# image_search-এ ডাউনলোড হওয়া অস্থায়ী ছবি (রিসাইজ করার পর public/seed-এ যায়)
+image-search/
