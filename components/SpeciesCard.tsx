@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import SmartImage from './SmartImage'
 import { IUCN } from '@/lib/utils'
+import { speciesPath, categoryLabel } from '@/lib/categories'
 import type { Species } from '@/lib/types'
 
 export default function SpeciesCard({ s, compact = false }: { s: Species; compact?: boolean }) {
   const status = IUCN[s.conservation] || IUCN.NE
-  const href = s.type === 'prani' ? `/prani/${s.slug}` : `/udbhid/${s.slug}`
+  const href = speciesPath(s)
 
   return (
     <Link href={href} className="card group block overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg">
@@ -14,7 +15,7 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
           src={s.image}
           alt={s.nameBn}
           fallbackLabel={s.nameBn}
-          fallbackKind={s.type === 'udbhid' ? 'udbhid' : 'prani'}
+          fallbackKind={s.type === 'udbhid' ? 'udbhid' : s.type === 'sthan' ? 'sthan' : s.type === 'sahitto' ? 'sahitto' : 'prani'}
           width={600}
           height={400}
           sizes="(max-width: 640px) 50vw, 300px"
@@ -22,7 +23,7 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
           imgClassName="transition duration-500 group-hover:scale-105"
         />
         <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
-          {s.category}
+          {s.category || categoryLabel(s.group)}
         </span>
         {['CR', 'EN', 'VU'].includes(s.conservation) && (
           <span className="absolute left-2 top-2 rounded-full bg-red-600/90 px-2 py-0.5 text-[10px] font-semibold text-white">

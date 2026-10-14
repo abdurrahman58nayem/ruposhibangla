@@ -1,6 +1,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import type { Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats } from '@/lib/types'
+import type {
+  Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
+  AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
+} from '@/lib/types'
+import { CATEGORIES } from '@/lib/categories'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
 
@@ -14,6 +18,20 @@ type DB = {
   news: News[]
   jeno: Jeno[]
   settings: SiteSettings
+  aiQuestions: AiQuestion[]
+  notifications: Notification[]
+  saves: SavedItem[]
+  reports: Report[]
+  observations: Observation[]
+  auditLogs: AuditLog[]
+  blocks: { blockerKey: string; userId: string; createdAt: string }[]
+}
+
+/** “প্রাণীজগৎ” একটি ছাতা-ক্যাটাগরি — সব প্রাণীকেই বোঝায় */
+function groupMatches(s: Species, group?: string): boolean {
+  if (!group || group === 'all') return true
+  if (group === 'pranijogot') return s.type === 'prani'
+  return s.group === group
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data')
@@ -32,6 +50,13 @@ function emptyDb(): DB {
     news: [],
     jeno: [],
     settings: { ...DEFAULT_SETTINGS },
+    aiQuestions: [],
+    notifications: [],
+    saves: [],
+    reports: [],
+    observations: [],
+    auditLogs: [],
+    blocks: [],
   }
 }
 
@@ -75,7 +100,39 @@ function seedDb(): DB {
     news: SEED_NEWS.map((n) => ({ ...n })),
     jeno: [],
     settings: { ...DEFAULT_SETTINGS },
+    aiQuestions: [],
+    notifications: [],
+    saves: [],
+    reports: [],
+    observations: [],
+    auditLogs: [],
+    blocks: [],
   }
+}
+
+/** পোস্টে লেখকের নাম/@username/নীল-টিক জুড়ে দেয় */
+function speciesHref(type?: string, slug?: string): string | undefined {
+  if (!slug) return undefined
+  if (type === 'udbhid') return `/udbhid/${slug}`
+  if (type === 'sthan') return `/sthan/${slug}`
+  if (type === 'sahitto') return `/sahitto/${slug}`
+  return `/prani/${slug}`
+}
+
+function attachAuthors(db: DB, rows: Post[]): Post[] {
+  const byId = new Map(db.users.map((u) => [u.id, u]))
+  const speciesById = new Map(db.species.map((sp) => [sp.slug, sp]))
+  return rows.map((p) => {
+    const u = p.authorId ? byId.get(p.authorId) : undefined
+    const sp = speciesById.get(p.speciesSlug || '')
+    return {
+      ...p,
+      author: u
+        ? { name: u.name, username: u.username, verified: !!u.verified, avatar: u.avatar || '' }
+        : { name: p.authorName, verified: false, avatar: '' },
+      speciesHref: speciesHref(sp?.type, p.speciesSlug || undefined),
+    }
+  })
 }
 
 function read(): DB {
@@ -83,8 +140,7 @@ function read(): DB {
   let db: DB
   try {
     if (fs.existsSync(DATA_FILE)) {
-      db = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) as DB
-      db.settings = { ...DEFAULT_SETTINGS, ...(db.settings || {}) }
+      db = migrate(JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) as DB)
     } else {
       db = seedDb()
       write(db)
@@ -92,7 +148,28 @@ function read(): DB {
   } catch {
     db = seedDb()
   }
-  globalAny.__pb_db = db
+  globalAny.__pb_db = migrate(db)
+  return globalAny.__pb_db
+}
+
+/** পুরোনো .data/db.json-এ নতুন কালেকশন না থাকলে যোগ করে নেয় */
+function migrate(db: DB): DB {
+  db.species ||= []
+  db.posts ||= []
+  db.comments ||= []
+  db.likes ||= []
+  db.users ||= []
+  db.follows ||= []
+  db.news ||= []
+  db.jeno ||= []
+  db.aiQuestions ||= []
+  db.notifications ||= []
+  db.saves ||= []
+  db.reports ||= []
+  db.observations ||= []
+  db.auditLogs ||= []
+  db.blocks ||= []
+  db.settings = { ...DEFAULT_SETTINGS, ...(db.settings || {}) }
   return db
 }
 
@@ -109,7 +186,11 @@ function write(db: DB) {
 function matchesSpecies(s: Species, q: string): boolean {
   const needle = q.trim().toLowerCase()
   if (!needle) return true
-  const hay = [s.nameBn, s.nameEn, s.scientificName, s.category, s.summary, (s.otherNames || []).join(' '), s.habitat]
+  const hay = [
+    s.nameBn, s.nameEn, s.scientificName, s.category, s.summary, s.habitat,
+    (s.otherNames || []).join(' '), (s.synonyms || []).join(' '), s.group || '',
+    (s.poetViews || []).map((p) => `${p.poet} ${p.work || ''} ${p.note}`).join(' '),
+  ]
     .join(' ')
     .toLowerCase()
   return needle.split(/\s+/).every((t) => hay.includes(t))
@@ -131,7 +212,9 @@ export const jsonRepo: Repo = {
     const db = read()
     let rows = db.species.filter((s) => {
       if (q.type && q.type !== 'all' && s.type !== q.type) return false
+      if (!groupMatches(s, q.group)) return false
       if (q.category && q.category !== 'all' && s.category !== q.category) return false
+      if (q.dataStatus && q.dataStatus !== 'all' && (s.dataStatus || 'partial') !== q.dataStatus) return false
       if (q.featured && !s.featured) return false
       if (q.q && !matchesSpecies(s, q.q)) return false
       return true
@@ -149,7 +232,10 @@ export const jsonRepo: Repo = {
     const db = read()
     return db.species.filter((s) => {
       if (q.type && q.type !== 'all' && s.type !== q.type) return false
+      if (!groupMatches(s, q.group)) return false
       if (q.category && q.category !== 'all' && s.category !== q.category) return false
+      if (q.dataStatus && q.dataStatus !== 'all' && (s.dataStatus || 'partial') !== q.dataStatus) return false
+      if (q.featured && !s.featured) return false
       if (q.q && !matchesSpecies(s, q.q)) return false
       return true
     }).length
@@ -201,6 +287,8 @@ export const jsonRepo: Repo = {
       if (q.kind && q.kind !== 'all' && p.kind !== q.kind) return false
       if (q.speciesSlug && p.speciesSlug !== q.speciesSlug) return false
       if (q.authorId && p.authorId !== q.authorId) return false
+      if (q.authorKey && p.authorKey !== q.authorKey) return false
+      if (q.group && q.group !== 'all' && p.group !== q.group) return false
       if (q.q) {
         const hay = [p.title, p.body, p.authorName, (p.tags || []).join(' '), p.location].join(' ').toLowerCase()
         if (!q.q.toLowerCase().split(/\s+/).every((t) => hay.includes(t))) return false
@@ -214,13 +302,15 @@ export const jsonRepo: Repo = {
       const idx = rows.findIndex((p) => p.id === q.cursor)
       start = idx >= 0 ? idx + 1 : 0
     }
-    const items = rows.slice(start, start + limit)
+    const items = attachAuthors(db, rows.slice(start, start + limit))
     const nextCursor = start + limit < rows.length ? items[items.length - 1]?.id ?? null : null
     return { items, nextCursor }
   },
 
   async getPost(id) {
-    return read().posts.find((p) => p.id === id) || null
+    const db = read()
+    const p = db.posts.find((x) => x.id === id)
+    return p ? attachAuthors(db, [p])[0] : null
   },
 
   async createPost(p) {
@@ -279,6 +369,15 @@ export const jsonRepo: Repo = {
     db.comments.push(c)
     const post = db.posts.find((p) => p.id === c.postId)
     if (post) post.comments += 1
+    write(db)
+    return c
+  },
+
+  async updateComment(id, patch) {
+    const db = read()
+    const c = db.comments.find((x) => x.id === id)
+    if (!c) return null
+    Object.assign(c, patch)
     write(db)
     return c
   },
@@ -411,6 +510,169 @@ export const jsonRepo: Repo = {
     write(db)
   },
 
+  // ---------- coverage ----------
+  async coverage(): Promise<CoverageRow[]> {
+    const db = read()
+    const rows = CATEGORIES.map((c) => {
+      const rows = db.species.filter((s) => (c.id === 'pranijogot' ? s.type === 'prani' : s.group === c.id))
+      return {
+        group: c.id,
+        label: c.label,
+        total: rows.length,
+        verified: rows.filter((s) => (s.dataStatus || 'partial') === 'verified').length,
+        partial: rows.filter((s) => (s.dataStatus || 'partial') !== 'verified').length,
+        missingNameBn: rows.filter((s) => !s.nameBn || !s.nameBn.trim()).length,
+        missingImage: rows.filter((s) => !s.image).length,
+        missingSource: rows.filter((s) => !s.sources || s.sources.length === 0).length,
+        lastUpdated: rows.map((s) => s.updatedAt || '').sort().pop() || undefined,
+      }
+    })
+    return rows
+  },
+
+  // ---------- save ----------
+  async toggleSave(item) {
+    const db = read()
+    const i = db.saves.findIndex((x) => x.userKey === item.userKey && x.targetType === item.targetType && x.targetId === item.targetId)
+    if (i >= 0) {
+      db.saves.splice(i, 1)
+      write(db)
+      return false
+    }
+    db.saves.push(item)
+    write(db)
+    return true
+  },
+  async listSaves(userKey) {
+    return read().saves.filter((s) => s.userKey === userKey).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+  },
+
+  // ---------- report ----------
+  async createReport(r) {
+    const db = read()
+    db.reports.push(r)
+    write(db)
+    return r
+  },
+  async listReports() {
+    return [...read().reports].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+  },
+  async updateReport(id, patch) {
+    const db = read()
+    const i = db.reports.findIndex((r) => r.id === id)
+    if (i < 0) return null
+    db.reports[i] = { ...db.reports[i], ...patch }
+    write(db)
+    return db.reports[i]
+  },
+
+  // ---------- observation ----------
+  async createObservation(o) {
+    const db = read()
+    db.observations.push(o)
+    write(db)
+    return o
+  },
+  async listObservations(opts = {}) {
+    let rows = [...read().observations]
+    if (opts.status && opts.status !== 'all') rows = rows.filter((o) => o.status === opts.status)
+    if (opts.userKey) rows = rows.filter((o) => o.authorKey === opts.userKey)
+    if (opts.speciesSlug) rows = rows.filter((o) => o.speciesSlug === opts.speciesSlug)
+    rows.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+    return opts.limit ? rows.slice(0, opts.limit) : rows
+  },
+  async updateObservation(id, patch) {
+    const db = read()
+    const i = db.observations.findIndex((o) => o.id === id)
+    if (i < 0) return null
+    db.observations[i] = { ...db.observations[i], ...patch }
+    write(db)
+    return db.observations[i]
+  },
+
+  // ---------- notification ----------
+  async addNotification(n) {
+    const db = read()
+    db.notifications.push(n)
+    write(db)
+    return n
+  },
+  async listNotifications(userKey) {
+    return read().notifications.filter((n) => n.userKey === userKey).sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)).slice(0, 50)
+  },
+  async markNotificationsRead(userKey) {
+    const db = read()
+    db.notifications.forEach((n) => {
+      if (n.userKey === userKey) n.read = true
+    })
+    write(db)
+  },
+
+  // ---------- AI questions ----------
+  async createAiQuestion(q) {
+    const db = read()
+    db.aiQuestions.push(q)
+    write(db)
+    return q
+  },
+  async listAiQuestions(opts = {}) {
+    let rows = [...read().aiQuestions]
+    if (opts.status && opts.status !== 'all') rows = rows.filter((q) => q.status === opts.status)
+    return rows.sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))
+  },
+  async getAiQuestionByCode(code) {
+    return read().aiQuestions.find((q) => q.trackCode === code) || null
+  },
+  async updateAiQuestion(id, patch) {
+    const db = read()
+    const i = db.aiQuestions.findIndex((q) => q.id === id)
+    if (i < 0) return null
+    db.aiQuestions[i] = { ...db.aiQuestions[i], ...patch }
+    write(db)
+    if (patch.answer && db.aiQuestions[i].userKey) {
+      db.notifications.push({
+        id: `ntf-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        userKey: db.aiQuestions[i].userKey,
+        type: 'ai_answer',
+        title: 'আপনার প্রশ্নের উত্তর পাওয়া গেছে',
+        body: String(patch.answer).slice(0, 120),
+        url: `/ai/q/${db.aiQuestions[i].trackCode}`,
+        read: false,
+        createdAt: new Date().toISOString(),
+      })
+    }
+    write(db)
+    return db.aiQuestions[i]
+  },
+
+  // ---------- audit ----------
+  async addAudit(log) {
+    const db = read()
+    db.auditLogs.push(log)
+    if (db.auditLogs.length > 500) db.auditLogs = db.auditLogs.slice(-500)
+    write(db)
+  },
+  async listAudit(limit = 100) {
+    return [...read().auditLogs].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt)).slice(0, limit)
+  },
+
+  // ---------- block ----------
+  async toggleBlock(blockerKey, userId) {
+    const db = read()
+    const i = db.blocks.findIndex((b) => b.blockerKey === blockerKey && b.userId === userId)
+    if (i >= 0) {
+      db.blocks.splice(i, 1)
+      write(db)
+      return false
+    }
+    db.blocks.push({ blockerKey, userId, createdAt: new Date().toISOString() })
+    write(db)
+    return true
+  },
+  async blockedIds(blockerKey) {
+    return read().blocks.filter((b) => b.blockerKey === blockerKey).map((b) => b.userId)
+  },
+
   // ---------- stats / search ----------
   async stats(): Promise<Stats> {
     const db = read()
@@ -419,12 +681,20 @@ export const jsonRepo: Repo = {
       birds: db.species.filter((s) => s.category === 'পাখি').length,
       animals: db.species.filter((s) => s.type === 'prani' && s.category !== 'পাখি').length,
       plants: db.species.filter((s) => s.type === 'udbhid').length,
+      places: db.species.filter((s) => s.type === 'sthan').length,
+      literature: db.species.filter((s) => s.type === 'sahitto').length,
+      verifiedSpecies: db.species.filter((s) => (s.dataStatus || 'partial') === 'verified').length,
+      partialSpecies: db.species.filter((s) => (s.dataStatus || 'partial') !== 'verified').length,
       posts: db.posts.filter((p) => p.status === 'approved').length,
       photos: db.posts.filter((p) => p.kind === 'photo' && p.status === 'approved').length,
       videos: db.posts.filter((p) => p.kind === 'video' && p.status === 'approved').length,
       users: db.users.length,
       partners: db.users.filter((u) => u.verified).length,
+      reels: db.posts.filter((p) => p.kind === 'reel' && p.status === 'approved').length,
       pending: db.posts.filter((p) => p.status === 'pending').length,
+      aiPending: (db.aiQuestions || []).filter((q) => q.status !== 'answered' && q.status !== 'resolved').length,
+      reports: (db.reports || []).filter((r) => r.status === 'new').length,
+      observations: (db.observations || []).length,
     }
   },
 

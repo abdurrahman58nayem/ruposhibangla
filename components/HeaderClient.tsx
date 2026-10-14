@@ -3,17 +3,18 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
-import { useState } from 'react'
-import { Menu, Search, X, Leaf, User, LayoutDashboard } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Menu, Search, X, Leaf, User, LayoutDashboard, Bell, Languages } from 'lucide-react'
 import type { SiteSettings, UserRole } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { useApp } from '@/components/Providers'
 
 const NAV = [
+  { href: '/gyan', label: 'জ্ঞানভান্ডার' },
   { href: '/prani', label: 'প্রাণী' },
   { href: '/udbhid', label: 'উদ্ভিদ' },
   { href: '/grambangla', label: 'গ্রামবাংলা' },
-  { href: '/kobirchokhe', label: 'কবির চোখে' },
-  { href: '/ai', label: 'এআই সহচর' },
+  { href: '/sahitto', label: 'কবির চোখে' },
   { href: '/khobor', label: 'খবর' },
 ]
 
@@ -30,6 +31,28 @@ export default function HeaderClient({
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
+  const [unread, setUnread] = useState(0)
+  const { lang, setLang } = useApp()
+
+  // অপঠিত নোটিফিকেশনের সংখ্যা (লগইন করা বা অতিথি — দুজনেরই)
+  useEffect(() => {
+    let alive = true
+    const load = async () => {
+      try {
+        const res = await fetch('/api/notifications', { cache: 'no-store' })
+        const data = await res.json()
+        if (alive && Array.isArray(data.items)) {
+          setUnread(data.items.filter((n: any) => !n.read).length)
+        }
+      } catch {}
+    }
+    load()
+    const id = setInterval(load, 60000)
+    return () => {
+      alive = false
+      clearInterval(id)
+    }
+  }, [pathname])
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,6 +116,28 @@ export default function HeaderClient({
         <Link href="/share" className="btn-primary hidden px-3 py-2 text-xs sm:inline-flex sm:text-sm">
           শেয়ার করুন
         </Link>
+
+        <Link
+          href="/notifications"
+          aria-label="নোটিফিকেশন"
+          className="relative hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 sm:block"
+        >
+          <Bell size={20} />
+          {unread > 0 && (
+            <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+              {unread > 9 ? '9+' : unread}
+            </span>
+          )}
+        </Link>
+
+        <button
+          onClick={() => setLang(lang === 'bn' ? 'en' : 'bn')}
+          aria-label="ভাষা পরিবর্তন"
+          title={lang === 'bn' ? 'English' : 'বাংলা'}
+          className="hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 sm:block"
+        >
+          <Languages size={20} />
+        </button>
 
         {user ? (
           <Link
@@ -160,6 +205,18 @@ export default function HeaderClient({
               ))}
               <Link href="/share" onClick={() => setOpen(false)} className="rounded-xl bg-forest-700 px-3 py-2.5 text-[15px] font-medium text-white">
                 ছবি/ভিডিও শেয়ার করুন
+              </Link>
+              <Link href="/notifications" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
+                নোটিফিকেশন
+              </Link>
+              <Link href="/saved" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
+                সংরক্ষিত
+              </Link>
+              <Link href="/reels" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
+                রিলস
+              </Link>
+              <Link href="/settings" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
+                সেটিংস
               </Link>
               <Link href="/jeno" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
                 জেনো — তথ্য জানান

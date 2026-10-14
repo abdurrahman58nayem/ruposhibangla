@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getRepo } from '@/lib/repo'
 import SpeciesRowActions from '@/components/admin/SpeciesRowActions'
+import ImportExport from '@/components/admin/ImportExport'
 import { Plus, Pencil } from 'lucide-react'
 import { IUCN } from '@/lib/utils'
 
@@ -27,12 +28,16 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
         </Link>
       </div>
 
+      <ImportExport />
+
       <form className="mb-4 flex flex-wrap gap-2">
         <input name="q" defaultValue={sp.q || ''} placeholder="নাম/বৈজ্ঞানিক নাম দিয়ে খুঁজুন" className="field max-w-xs" />
         <select name="type" defaultValue={sp.type || ''} className="field w-auto">
           <option value="">সব ধরন</option>
           <option value="prani">প্রাণী</option>
           <option value="udbhid">উদ্ভিদ</option>
+          <option value="sthan">নদী-বন-পাহাড়</option>
+          <option value="sahitto">প্রকৃতি ও সাহিত্য</option>
         </select>
         <button className="btn-outline">খুঁজুন</button>
       </form>

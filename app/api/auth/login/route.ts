@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getRepo } from '@/lib/repo'
 import { verifyPassword, createSessionToken, SESSION_COOKIE } from '@/lib/auth'
+import { guard as rateGuard, tooManyRequests, RULES } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
+  const _rl = rateGuard(req, RULES.auth, 'login')
+  if (!_rl.ok) return tooManyRequests(_rl)
+
   const body = (await req.json().catch(() => null)) as { username?: string; password?: string } | null
   const username = String(body?.username || '').trim()
   const password = String(body?.password || '')

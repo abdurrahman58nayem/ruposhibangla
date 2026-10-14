@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Send, ImagePlus, Sparkles, Loader2, X, Info } from 'lucide-react'
+import { Send, SendHorizontal, ImagePlus, Sparkles, Loader2, X, Info } from 'lucide-react'
 import type { SiteSettings } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +15,10 @@ type Msg = {
   sources?: { title: string; href: string; type: string }[]
   matches?: { slug: string; name: string; scientificName: string; image: string; href: string; score: number }[]
   mode?: 'llm' | 'local'
+  /** এআই নিশ্চিত নয় — বিশেষজ্ঞের কাছে পাঠানোর প্রস্তাব */
+  lowConfidence?: boolean
+  question?: string
+  escalated?: string
 }
 
 const SUGGESTIONS = [
@@ -139,6 +143,8 @@ export default function AiChat({ settings }: { settings: SiteSettings }) {
           sources: data.sources,
           matches: data.imageMatches,
           mode: data.mode,
+          lowConfidence: !!data.lowConfidence,
+          question: message || (image ? 'এই ছবির প্রাণী বা উদ্ভিদটি চিনতে পারছি না' : ''),
         },
       ])
       clearImage()
@@ -147,6 +153,27 @@ export default function AiChat({ settings }: { settings: SiteSettings }) {
     } finally {
       setBusy(false)
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+    }
+  }
+
+  async function escalate(msgId: string, question: string, image?: string) {
+    try {
+      const res = await fetch('/api/ai/questions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          question: question || 'প্রশ্ন পাঠানো হয়েছে',
+          imageUrl: image || '',
+          aiAnalysis: 'এআই এই প্রশ্নের নির্ভরযোগ্য উত্তর খুঁজে পায়নি — বিশেষজ্ঞ পর্যালোচনা প্রয়োজন।',
+          missingInfo: 'তথ্যভাণ্ডারে যথেষ্ট প্রসঙ্গ পাওয়া যায়নি',
+        }),
+      })
+      const data = await res.json()
+      if (data?.trackCode) {
+        setMessages((m) => m.map((x) => (x.id === msgId ? { ...x, escalated: data.trackCode } : x)))
+      }
+    } catch {
+      /* ignore */
     }
   }
 
@@ -205,6 +232,31 @@ export default function AiChat({ settings }: { settings: SiteSettings }) {
 
               {m.mode === 'local' && m.role === 'ai' && (
                 <p className="mt-2 text-[10px] text-black/40">— সাইটের নিজস্ব তথ্যভাণ্ডার থেকে (অফলাইন মোড)</p>
+              )}
+
+              {/* এআই অনিশ্চিত — বিশেষজ্ঞের কাছে পাঠানোর পথ */}
+              {m.role === 'ai' && m.lowConfidence && (
+                <div className="mt-3 rounded-xl border border-earth-200 bg-earth-50/70 p-3">
+                  <p className="text-[11px] leading-relaxed text-earth-900">
+                    এই প্রশ্নের নির্ভরযোগ্য উত্তর দিতে আরও যাচাই প্রয়োজন। চাইলে প্রশ্নটি রূপসী বাংলার
+                    বিশেষজ্ঞ/অ্যাডমিন টিমের কাছে পাঠান।
+                  </p>
+                  {m.escalated ? (
+                    <Link
+                      href={`/ai/q/${m.escalated}`}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-forest-700 px-3 py-1.5 text-[11px] font-semibold text-white"
+                    >
+                      <SendHorizontal size={12} /> উত্তর ট্র্যাক করুন
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => escalate(m.id, m.question || '', m.image)}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-earth-500 px-3 py-1.5 text-[11px] font-semibold text-white"
+                    >
+                      <SendHorizontal size={12} /> বিশেষজ্ঞের কাছে পাঠান
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>

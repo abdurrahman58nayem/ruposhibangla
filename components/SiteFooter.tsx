@@ -76,6 +76,9 @@ export default async function SiteFooter() {
             <li>
               <Link className="hover:text-white" href="/terms">ব্যবহারের শর্তাবলি</Link>
             </li>
+            <li>
+              <Link className="hover:text-white" href="/credits">মিডিয়া ক্রেডিট ও লাইসেন্স</Link>
+            </li>
           </ul>
           <p className="mt-4 text-xs text-white/40">
             © {year} {settings.siteName}। বাংলাদেশের প্রকৃতির জন্য তৈরি।

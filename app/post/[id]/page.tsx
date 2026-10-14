@@ -33,7 +33,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const [comments, liked, related, author] = await Promise.all([
     repo.listComments(id),
     repo.hasLiked(id, likeKey),
-    repo.listPosts({ status: 'approved', category: post.category, limit: 4 }),
+    repo.listPosts({ status: 'approved', group: post.group, category: post.category, limit: 4 }),
     post.authorId ? repo.getUserById(post.authorId) : null,
   ])
 
@@ -79,7 +79,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               postId={post.id}
               initial={comments}
               userName={session?.name}
-              isAdmin={session?.role === 'admin'}
+              isAdmin={!!session && ['admin', 'super_admin', 'editor'].includes(session.role)}
+              needsIdentification={!!post.needsIdentification}
+              identifiedSpecies={post.identifiedSpecies || ''}
             />
           </div>
         </div>
@@ -93,7 +95,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
           {post.speciesSlug && (
             <Link
-              href={`/prani/${post.speciesSlug}`}
+              href={post.speciesHref || `/prani/${post.speciesSlug}`}
               className="card mt-3 block p-4 text-sm font-medium text-forest-800 hover:bg-forest-50"
             >
               এই প্রজাতি সম্পর্কে বিস্তারিত জানুন →

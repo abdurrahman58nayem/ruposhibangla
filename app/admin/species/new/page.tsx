@@ -7,6 +7,7 @@ export default function Page() {
   const blank: Species = {
     slug: '',
     type: 'prani',
+    group: 'pranijogot',
     category: 'পাখি',
     nameBn: '',
     nameEn: '',

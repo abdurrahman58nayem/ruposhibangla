@@ -1,8 +1,8 @@
-import type { Species } from '@/lib/types'
+import type { Species, SpeciesSeed } from '@/lib/types'
 
 const img = (slug: string) => `/seed/udbhid/${slug}.jpg`
 
-export const PLANTS: Species[] = [
+export const PLANTS: SpeciesSeed[] = [
   {
     slug: 'shal',
     type: 'udbhid',

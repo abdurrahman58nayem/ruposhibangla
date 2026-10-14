@@ -3,9 +3,10 @@ import './globals.css'
 import SiteHeader from '@/components/SiteHeader'
 import BottomNav from '@/components/BottomNav'
 import SiteFooter from '@/components/SiteFooter'
+import { Providers } from '@/components/Providers'
 import { getRepo } from '@/lib/repo'
 
-const DEFAULT_NAME = 'প্রকৃতি বাংলা'
+const DEFAULT_NAME = 'রূপসী বাংলা'
 const DEFAULT_DESC =
   'বাংলাদেশের পাখি, প্রাণী, উদ্ভিদ, গ্রামবাংলা ও জীববৈচিত্র্যের সব তথ্য এক জায়গায় — ছবি, ভিডিও, কবির চোখে প্রকৃতি ও নিজস্ব এআই সহচর সহ।'
 
@@ -17,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
     settings = null as any
   }
   const name = settings?.siteName || DEFAULT_NAME
-  const url = process.env.NEXT_PUBLIC_SITE_URL || 'https://prakritibangla.org'
+  const url = process.env.NEXT_PUBLIC_SITE_URL || 'https://ruposhibangla.org'
   return {
     metadataBase: new URL(url),
     title: {
@@ -34,8 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
       'দোয়েল',
       'বাংলার বাঘ',
       'গ্রামবাংলা',
-      'প্রকৃতি বাংলা',
       'রূপসী বাংলা',
+      'Ruposhi Bangla',
     ],
     authors: [{ name }],
     openGraph: {
@@ -69,12 +70,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="bn-BD" dir="ltr">
-      <body className="min-h-screen bg-[#f7faf7] antialiased">
-        <SiteHeader notice={notice} />
-        <main className="pb-safe">{children}</main>
-        <SiteFooter />
-        <BottomNav />
+    <html lang="bn-BD" dir="ltr" suppressHydrationWarning>
+      <head>
+        {/* থিম ফ্ল্যাশ এড়াতে — প্রথম পেইন্টের আগেই ক্লাস বসে যায় */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('pb_theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var c=document.documentElement.classList;d?c.add('dark'):c.remove('dark');c.style.colorScheme=d?'dark':'light';if(localStorage.getItem('pb_reduce_motion')==='1'||window.matchMedia('(prefers-reduced-motion: reduce)').matches)c.add('reduce-motion');var l=localStorage.getItem('pb_lang');if(l)document.documentElement.lang=l==='bn'?'bn-BD':'en';}catch(e){}})()`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-[#f7faf7] antialiased dark:bg-[#08130d]">
+        <Providers>
+          <SiteHeader notice={notice} />
+          <main className="pb-safe">{children}</main>
+          <SiteFooter />
+          <BottomNav />
+        </Providers>
       </body>
     </html>
   )

@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server'
 import { getRepo } from '@/lib/repo'
 import { hashPassword, createSessionToken, SESSION_COOKIE } from '@/lib/auth'
 import { slugify, uid } from '@/lib/utils'
+import { guard as rateGuard, tooManyRequests, RULES } from '@/lib/rate-limit'
 import type { UserRecord } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
+  const _rl = rateGuard(req, RULES.auth, 'register')
+  if (!_rl.ok) return tooManyRequests(_rl)
+
   const body = (await req.json().catch(() => null)) as {
     name?: string
     username?: string

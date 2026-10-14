@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
   if (!user) return { title: 'প্রোফাইল পাওয়া যায়নি' }
   return {
     title: `${user.name} (@${user.username})`,
-    description: user.bio || `${user.name} — ${'প্রকৃতি বাংলায়'} শেয়ার করা ছবি ও ভিডিও`,
+    description: user.bio || `${user.name} — ${'রূপসী বাংলায়'} শেয়ার করা ছবি ও ভিডিও`,
   }
 }
 

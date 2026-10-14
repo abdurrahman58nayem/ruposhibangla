@@ -1,17 +1,21 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import SmartImage from './SmartImage'
+import { licenseFor } from '@/data/seed/media-licenses'
 import PostCard from './PostCard'
 import SpeciesCard from './SpeciesCard'
 import { getRepo } from '@/lib/repo'
 import { IUCN, toBn, bnDate } from '@/lib/utils'
+import { speciesPath, typeLabel } from '@/lib/categories'
+import SpeciesActions from '@/components/SpeciesActions'
+import { DATA_STATUS_LABEL } from '@/lib/i18n'
 import { MapPin, Utensils, Ruler, CalendarDays, Trees, BookOpen, Quote, Camera, Info, ExternalLink } from 'lucide-react'
 import type { Species, SpeciesType } from '@/lib/types'
 
 export default async function SpeciesDetail({ slug, type }: { slug: string; type: SpeciesType }) {
   const repo = getRepo()
   const s = await repo.getSpecies(slug)
-  if (!s || s.type !== type) notFound()
+  if (!s || (type && s.type !== type)) notFound()
 
   try {
     await repo.bumpSpeciesViews(slug)
@@ -25,8 +29,9 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
     repo.getSettings(),
   ])
   const relatedSpecies = related.filter((x) => x.slug !== s.slug).slice(0, 4)
+  const lic = licenseFor(s.image)
   const status = IUCN[s.conservation] || IUCN.NE
-  const base = type === 'prani' ? '/prani' : '/udbhid'
+  const base = type === 'prani' ? '/prani' : type === 'udbhid' ? '/udbhid' : type === 'sthan' ? '/sthan' : '/sahitto'
 
   const facts = [
     s.habitat && { icon: Trees, label: 'বাসস্থান', value: s.habitat },
@@ -77,6 +82,29 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
             sizes="(max-width: 1024px) 100vw, 60vw"
             className="aspect-[3/2] w-full rounded-2xl"
           />
+          {lic && (
+            <p className="mt-1.5 text-[11px] leading-relaxed text-black/45">
+              {lic.verified ? (
+                <>
+                  ছবির ক্রেডিট: {lic.credit || 'অজানা'}{' '}
+                  {lic.source ? (
+                    <a href={lic.source} target="_blank" rel="noreferrer" className="text-forest-700 hover:underline">
+                      উৎস
+                    </a>
+                  ) : null}{' '}
+                  · লাইসেন্স: {lic.license}
+                </>
+              ) : (
+                <>
+                  এই ছবির উৎস ও লাইসেন্স যাচাই করা বাকি —{' '}
+                  <a href="/credits" className="text-forest-700 hover:underline">
+                    মিডিয়া ক্রেডিট তালিকা
+                  </a>{' '}
+                  দেখুন
+                </>
+              )}
+            </p>
+          )}
           {!!s.gallery?.length && (
             <div className="mt-3 grid grid-cols-4 gap-2">
               {s.gallery.slice(0, 4).map((g, i) => (
@@ -111,6 +139,20 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
             {s.conservationBn && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-black/60">{s.conservationBn}</span>
             )}
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                (s.dataStatus || 'partial') === 'verified'
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : (s.dataStatus || 'partial') === 'identity_uncertain'
+                    ? 'bg-red-100 text-red-700'
+                    : (s.dataStatus || 'partial') === 'needs_correction'
+                      ? 'bg-orange-100 text-orange-800'
+                      : 'bg-amber-100 text-amber-800'
+              }`}
+              title={s.conflictingInfo || undefined}
+            >
+              তথ্য: {DATA_STATUS_LABEL[s.dataStatus || 'partial']?.bn}
+            </span>
           </div>
 
           <p className="mt-4 text-[15px] leading-relaxed text-black/80">{s.summary}</p>
@@ -126,6 +168,19 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
               ভুল-ত্রুটি জানান
             </Link>
           </div>
+
+          <div className="mt-3">
+            <SpeciesActions slug={s.slug} title={s.nameBn} />
+          </div>
+
+          {/* তথ্য অসম্পূর্ণ হলে স্পষ্টভাবে জানানো */}
+          {(s.dataStatus || 'partial') !== 'verified' && (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-[11px] leading-relaxed text-amber-900">
+              <b>এই রেকর্ডের তথ্য এখনো অসম্পূর্ণ।</b>{' '}
+              {s.conflictingInfo || 'আরও নির্ভরযোগ্য উৎস যোগ করে ধাপে ধাপে পূর্ণ করা হবে।'} আপনার কাছে তথ্য
+              থাকলে <b>জেনো</b>-তে পাঠিয়ে দিন।
+            </div>
+          )}
         </div>
       </div>
 

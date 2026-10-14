@@ -1,30 +1,75 @@
-import type { Species, News, Post, UserRecord, SiteSettings } from '@/lib/types'
+import type { Species, SpeciesSeed, News, Post, UserRecord, SiteSettings, GroupId } from '@/lib/types'
 import { BIRDS } from './birds'
 import { ANIMALS } from './animals'
 import { PLANTS } from './plants'
+import { FISH } from './fish'
+import { REPTILES } from './reptiles'
+import { AMPHIBIANS } from './amphibians'
+import { INSECTS } from './insects'
+import { INVERTEBRATES } from './invertebrates'
+import { FUNGI_ALGAE } from './fungi-algae'
+import { MICROBES } from './microbes'
+import { PLACES } from './places'
+import { LITERATURE } from './literature'
 
-export const SPECIES: Species[] = [...BIRDS, ...ANIMALS, ...PLANTS]
+/**
+ * পুরোনো/উত্তরাধিকারসূত্রে পাওয়া রেকর্ডে `group` না থাকলে বিভাগ থেকে অনুমান করা হয়।
+ * কোনো রেকর্ড অসম্পূর্ণ থাকলে সেটি `dataStatus: 'partial'` দিয়ে চিহ্নিত থাকে —
+ * কখনোই সম্পূর্ণ বলে দাবি করা হয় না।
+ */
+export function inferGroup(s: Pick<Species, 'type' | 'category'>): GroupId {
+  const c = String(s.category || '').replace(/য়/g, 'য়')
+  if (s.type === 'sthan' || s.type === 'sahitto') return s.type === 'sthan' ? 'nadi' : 'sahitto'
+  if (s.type === 'udbhid') {
+    if (/ছত্রাক|শৈবাল|লাইকেন/.test(c)) return 'chhatrak'
+    if (/অণুজীব|ব্যাকটেরিয়া|ব্যাকটেরিয়া/.test(c)) return 'onujib'
+    if (/বন|ম্যানগ্রোভ|তাল|বট|ঔষধি/.test(c)) return 'gachhbon'
+    return 'udbhidful'
+  }
+  if (/পাখি/.test(c)) return 'pakhi'
+  if (/মাছ/.test(c)) return 'machh'
+  if (/স্তন্যপা/.test(c)) return 'stanapayi'
+  if (/সরীসৃপ/.test(c)) return 'sarisrip'
+  if (/উভচর/.test(c)) return 'ubhochor'
+  if (/পতঙ্গ|কীট/.test(c)) return 'kitpotongo'
+  if (/অমেরুদণ্ডী|মোলাস্ক|আর্থ্রোপড|ক্রাস্টেশিয়ান/.test(c)) return 'ameruddondi'
+  return 'pranijogot'
+}
+
+function normalize(s: SpeciesSeed): Species {
+  return {
+    ...s,
+    group: s.group || inferGroup(s),
+    dataStatus: s.dataStatus || 'partial',
+    updatedAt: s.updatedAt || new Date('2026-01-01').toISOString(),
+  }
+}
+
+export const SPECIES: Species[] = [
+  ...BIRDS, ...ANIMALS, ...PLANTS, ...FISH, ...REPTILES, ...AMPHIBIANS,
+  ...INSECTS, ...INVERTEBRATES, ...FUNGI_ALGAE, ...MICROBES, ...PLACES, ...LITERATURE,
+].map(normalize)
 
 export const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: 'প্রকৃতি বাংলা',
-  siteNameEn: 'Prakriti Bangla',
-  tagline: 'দেশ, মানুষ, প্রকৃতি — এক ছাতার তলায়',
+  siteName: 'রূপসী বাংলা',
+  siteNameEn: 'Ruposhi Bangla',
+  tagline: 'বাংলাদেশের প্রকৃতি ও জীববৈচিত্র্যের ডিজিটাল মিলনমেলা',
   logoUrl: '/brand/logo-mark.png',
   headerNotice: 'বাংলাদেশের প্রাণী ও উদ্ভিদের তথ্য জানুন, ছবি শেয়ার করুন — সব এক জায়গায়।',
   headerNoticeActive: true,
   about:
-    'প্রকৃতি বাংলা বাংলাদেশের প্রাণী, পাখি, উদ্ভিদ, গ্রাম-প্রকৃতি ও মানুষের এক জীবন্ত ডিজিটাল আর্কাইভ। এখানে দেশের জীববৈচিত্র্য সম্পর্কে তথ্য পাবেন, নিজের তোলা ছবি-ভিডিও শেয়ার করতে পারবেন এবং দেশ ও প্রকৃতি নিয়ে কাজ করা মানুষদের সাথে যুক্ত হতে পারবেন।',
+    'রূপসী বাংলা বাংলাদেশের প্রাণী, পাখি, উদ্ভিদ, গ্রাম-প্রকৃতি ও মানুষের এক জীবন্ত ডিজিটাল আর্কাইভ। এখানে দেশের জীববৈচিত্র্য সম্পর্কে তথ্য পাবেন, নিজের তোলা ছবি-ভিডিও শেয়ার করতে পারবেন এবং দেশ ও প্রকৃতি নিয়ে কাজ করা মানুষদের সাথে যুক্ত হতে পারবেন।',
   socials: [
     { label: 'Facebook', url: 'https://facebook.com/', icon: 'facebook' },
     { label: 'YouTube', url: 'https://youtube.com/', icon: 'youtube' },
     { label: 'X', url: 'https://x.com/', icon: 'x' },
     { label: 'Instagram', url: 'https://instagram.com/', icon: 'instagram' },
   ],
-  contactEmail: 'hello@prakritibangla.org',
-  aiName: 'প্রকৃতি সহচর',
+  contactEmail: 'hello@ruposhibangla.org',
+  aiName: 'রূপসী সহচর',
   aiIntro:
     'আমি এই সাইটের নিজস্ব সহচর। বাংলাদেশের প্রাণী, পাখি, উদ্ভিদ, গ্রামবাংলা ও প্রকৃতি-সংরক্ষণ — যেকোনো বিষয়ে জিজ্ঞেস করুন।',
-  footerNote: 'প্রকৃতি বাংলা — বাংলাদেশের প্রকৃতি ও জীববৈচিত্র্যের জন্য একটি উন্মুক্ত উদ্যোগ।',
+  footerNote: 'রূপসী বাংলা — বাংলাদেশের প্রকৃতি ও জীববৈচিত্র্যের জন্য একটি উন্মুক্ত উদ্যোগ।',
 }
 
 /** মূল চ্যানেল — রূপসী বাংলা (ব্লু-টিক যাচাইকৃত, আমাদের নিজস্ব চ্যানেল) */
@@ -35,13 +80,13 @@ export const CHANNEL_USER = {
   role: 'partner' as const,
   verified: true,
   avatar: '/brand/logo-mark.png',
-  bio: 'রূপসী বাংলা — দেশের প্রকৃতি, মানুষ ও গ্রামের গল্প। প্রকৃতি বাংলার মূল চ্যানেল।',
+  bio: 'রূপসী বাংলা — দেশের প্রকৃতি, মানুষ ও গ্রামের গল্প। রূপসী বাংলার মূল চ্যানেল।',
   location: 'বাংলাদেশ',
   createdAt: '2026-01-01T00:00:00.000Z',
   followers: 1284,
   following: 0,
   passwordHash: '',
-  email: 'channel@prakritibangla.org',
+  email: 'channel@ruposhibangla.org',
 }
 
 export const SEED_USERS: UserRecord[] = [

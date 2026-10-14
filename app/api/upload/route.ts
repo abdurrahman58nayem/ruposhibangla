@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
 import { storeFile, MAX_UPLOAD_BYTES, storageKind } from '@/lib/storage'
 import { getSession } from '@/lib/auth'
+import { guard as rateGuard, tooManyRequests, RULES } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
+  const _rl = rateGuard(req, RULES.upload, 'upload')
+  if (!_rl.ok) return tooManyRequests(_rl)
+
   const form = await req.formData().catch(() => null)
   const file = form?.get('file') as File | null
   if (!file) return NextResponse.json({ error: 'ফাইল পাওয়া যায়নি' }, { status: 400 })

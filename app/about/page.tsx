@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'আমাদের সম্পর্কে',
-  description: 'প্রকৃতি বাংলা — বাংলাদেশের প্রকৃতি, প্রাণী, উদ্ভিদ ও গ্রাম-মানুষ নিয়ে একটি উন্মুক্ত ডিজিটাল উদ্যোগ।',
+  description: 'রূপসী বাংলা — বাংলাদেশের প্রকৃতি, প্রাণী, উদ্ভিদ ও গ্রাম-মানুষ নিয়ে একটি উন্মুক্ত ডিজিটাল উদ্যোগ।',
 }
 
 export default async function Page() {

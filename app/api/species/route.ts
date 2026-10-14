@@ -10,6 +10,8 @@ export async function GET(req: Request) {
   const url = new URL(req.url)
   const rows = await getRepo().listSpecies({
     type: (url.searchParams.get('type') as any) || undefined,
+    group: (url.searchParams.get('group') as any) || undefined,
+    dataStatus: (url.searchParams.get('dataStatus') as any) || undefined,
     category: url.searchParams.get('category') || undefined,
     q: url.searchParams.get('q') || undefined,
     limit: Math.min(Number(url.searchParams.get('limit') || 60), 300),
@@ -23,10 +25,14 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as Partial<Species> | null
   if (!body?.nameBn) return NextResponse.json({ error: 'নাম দিন' }, { status: 400 })
   const slug = slugify(body.slug || body.nameBn)
+  const type: Species['type'] = (['prani', 'udbhid', 'sthan', 'sahitto'] as const).includes(body.type as any)
+    ? (body.type as Species['type'])
+    : 'prani'
   const species: Species = {
     slug,
-    type: body.type === 'udbhid' ? 'udbhid' : 'prani',
-    category: body.category || (body.type === 'udbhid' ? 'বন গাছ' : 'পাখি'),
+    type,
+    group: body.group || (type === 'udbhid' ? 'udbhidful' : type === 'sthan' ? 'nadi' : type === 'sahitto' ? 'sahitto' : 'pranijogot'),
+    category: body.category || (type === 'udbhid' ? 'বন গাছ' : type === 'sthan' ? 'নদী' : type === 'sahitto' ? 'কবিতা' : 'পাখি'),
     nameBn: body.nameBn,
     nameEn: body.nameEn || '',
     scientificName: body.scientificName || '',
@@ -46,6 +52,21 @@ export async function POST(req: Request) {
     gallery: body.gallery || [],
     poetViews: body.poetViews || [],
     sources: body.sources || [],
+    synonyms: body.synonyms || [],
+    taxonomy: body.taxonomy,
+    physical: body.physical,
+    identification: body.identification,
+    behavior: body.behavior,
+    distribution: body.distribution,
+    ecologicalRole: body.ecologicalRole,
+    origin: body.origin,
+    threats: body.threats,
+    conservationActions: body.conservationActions,
+    media: body.media,
+    dataStatus: body.dataStatus || 'partial',
+    lastVerifiedAt: body.lastVerifiedAt,
+    conflictingInfo: body.conflictingInfo,
+    sensitive: body.sensitive,
     featured: !!body.featured,
     views: 0,
     createdAt: new Date().toISOString(),

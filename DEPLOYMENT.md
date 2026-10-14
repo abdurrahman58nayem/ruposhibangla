@@ -17,7 +17,7 @@ GitHub-এ পুশ করুন:
 
 ```bash
 git add -A
-git commit -m "প্রকৃতি বাংলা — প্রথম সংস্করণ"
+git commit -m "রূপসী বাংলা — প্রথম সংস্করণ"
 git push origin main
 ```
 
@@ -30,7 +30,7 @@ git push origin main
 
 | Key | Value |
 |---|---|
-| `DATABASE_URL` | `postgresql://user:pass@ep-xxx.region.aws.neon.tech/prakriti_bangla?sslmode=require` |
+| `DATABASE_URL` | `postgresql://user:pass@ep-xxx.region.aws.neon.tech/ruposhibangla?sslmode=require` |
 | `AUTH_SECRET` | লম্বা র‍্যান্ডম স্ট্রিং (`openssl rand -base64 32`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://আপনার-ডোমেইন` |
 
@@ -44,7 +44,7 @@ git push origin main
 
 ## ৩) Cloudflare R2 (ছবি ও ভিডিও স্টোরেজ)
 
-1. Cloudflare Dashboard → **R2 → Create bucket** (যেমন: `prakriti-bangla`)
+1. Cloudflare Dashboard → **R2 → Create bucket** (যেমন: `ruposhibangla`)
 2. বাকেটে **Public access** চালু করুন (r2.dev URL) অথবা কাস্টম ডোমেইন যুক্ত করুন
 3. **Manage R2 API Tokens → Create API token** (Object Read & Write)
 4. Vercel Environment Variables:
@@ -54,7 +54,7 @@ git push origin main
 | `R2_ACCOUNT_ID` | Cloudflare অ্যাকাউন্ট আইডি |
 | `R2_ACCESS_KEY_ID` | R2 Access Key |
 | `R2_SECRET_ACCESS_KEY` | R2 Secret Key |
-| `R2_BUCKET_NAME` | `prakriti-bangla` |
+| `R2_BUCKET_NAME` | `ruposhibangla` |
 | `R2_PUBLIC_URL` | `https://pub-xxxx.r2.dev` |
 
 এগুলো সেট থাকলে প্রতিটি আপলোড সরাসরি R2-তে যাবে; লিঙ্কও R2-এরই তৈরি হবে।
@@ -103,7 +103,7 @@ Vercel-এর সার্ভারলেস পরিবেশে ফাইল-
 
 ## ৬) ডোমেইন ও SEO
 
-- ডোমেইন যুক্ত করুন: `prakritibangla.org` / `.com` / `.bd`
+- ডোমেইন যুক্ত করুন: `ruposhibangla.org` / `.com` / `.bd`
 - `NEXT_PUBLIC_SITE_URL` সঠিকভাবে সেট করুন (sitemap ও canonical লিংক এর ওপর নির্ভরশীল)
 - `/sitemap.xml` ও `/robots.txt` অটোমেটিক তৈরি হয়
 - Google Search Console-এ sitemap সাবমিট করুন

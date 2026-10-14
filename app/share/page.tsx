@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/share' },
 }
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ species?: string; category?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ species?: string; category?: string; kind?: string }> }) {
   const sp = await searchParams
   const repo = getRepo()
   const [all, session] = await Promise.all([repo.listSpecies({ limit: 500 }), getSession()])
@@ -42,6 +42,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ s
 
       <div className="mx-auto max-w-2xl">
         <ShareForm
+        defaultKind={(sp.kind as any) || 'photo'}
           speciesOptions={options}
           defaultSpecies={sp.species || ''}
           defaultCategory={sp.category || ''}

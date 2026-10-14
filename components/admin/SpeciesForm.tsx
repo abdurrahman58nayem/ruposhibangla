@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, Plus, Trash2 } from 'lucide-react'
 import UploadField from './UploadField'
-import type { Species } from '@/lib/types'
+import type { Species, DataStatus, GroupId } from '@/lib/types'
+import { CATEGORIES } from '@/lib/categories'
 
 const CONSERVATION = ['LC', 'NT', 'VU', 'EN', 'CR', 'EW', 'EX', 'DD', 'NE']
 const CATEGORIES_PRANI = ['পাখি', 'স্তন্যপায়ী', 'সরীসৃপ', 'উভচর', 'মাছ', 'পতঙ্গ', 'অন্যান্য']
@@ -70,7 +71,19 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
             <label className="label">ধরন</label>
             <select value={s.type} onChange={(e) => set('type', e.target.value as any)} className="field">
               <option value="prani">প্রাণী</option>
-              <option value="udbhid">উদ্ভিদ</option>
+              <option value="udbhid">উদ্ভিদ / ছত্রাক / অণুজীব</option>
+              <option value="sthan">নদী-বন-পাহাড় (স্থান)</option>
+              <option value="sahitto">প্রকৃতি ও সাহিত্য</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">প্রধান ক্যাটাগরি (১৭টি)</label>
+            <select value={s.group} onChange={(e) => set('group', e.target.value as any)} className="field">
+              {CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -154,6 +167,44 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
             <label className="label">সংরক্ষণ — বাংলায়</label>
             <input value={s.conservationBn || ''} onChange={(e) => set('conservationBn', e.target.value)} className="field" />
           </div>
+          <div>
+            <label className="label">তথ্যের অবস্থা</label>
+            <select value={s.dataStatus || 'partial'} onChange={(e) => set('dataStatus', e.target.value as DataStatus)} className="field">
+              <option value="verified">যাচাইকৃত</option>
+              <option value="review">পর্যালোচনাধীন</option>
+              <option value="partial">আংশিক তথ্য</option>
+              <option value="identity_uncertain">পরিচয় অনিশ্চিত</option>
+              <option value="needs_correction">সংশোধন প্রয়োজন</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">উৎপত্তি</label>
+            <select value={s.origin || ''} onChange={(e) => set('origin', (e.target.value || undefined) as any)} className="field">
+              <option value="">—</option>
+              <option value="native">দেশীয়</option>
+              <option value="domestic">গৃহপালিত</option>
+              <option value="cultivated">চাষকৃত</option>
+              <option value="migratory">পরিযায়ী</option>
+              <option value="exotic">বহিরাগত</option>
+              <option value="invasive">আগ্রাসী</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label">হুমকি</label>
+            <textarea value={s.threats || ''} onChange={(e) => set('threats', e.target.value)} rows={2} className="field resize-none" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label">সংরক্ষণের উপায়</label>
+            <textarea value={s.conservationActions || ''} onChange={(e) => set('conservationActions', e.target.value)} rows={2} className="field resize-none" />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="label">একাধিক সূত্রে পার্থক্য থাকলে</label>
+            <input value={s.conflictingInfo || ''} onChange={(e) => set('conflictingInfo', e.target.value)} className="field" />
+          </div>
+          <label className="flex items-center gap-2 text-sm sm:col-span-2">
+            <input type="checkbox" checked={!!s.sensitive} onChange={(e) => set('sensitive', e.target.checked)} />
+            বিপন্ন প্রজাতি — অবস্থান গোপন রাখতে হবে
+          </label>
           <div className="sm:col-span-2">
             <label className="label">প্রধান রং (কমা দিয়ে — ছবি থেকে শনাক্ত করতে কাজে লাগে)</label>
             <input

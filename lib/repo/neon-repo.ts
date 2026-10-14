@@ -1,5 +1,9 @@
 import { getSql } from '@/lib/db/client'
-import type { Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats } from '@/lib/types'
+import type {
+  Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
+  AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
+} from '@/lib/types'
+import { CATEGORIES } from '@/lib/categories'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
 
@@ -15,10 +19,40 @@ const P = (v: string | undefined | null): any[] => {
 
 type SpeciesRow = Record<string, any>
 
+function parseJson<T>(v: unknown, fallback: T): T {
+  try {
+    return (JSON.parse(String(v || '')) as T) ?? fallback
+  } catch {
+    return fallback
+  }
+}
+
+/** পুরোনো রেকর্ডে group না থাকলে বিভাগ থেকে অনুমান */
+function inferGroup(s: { type?: string; category?: string }): any {
+  const c = String(s.category || '').replace(/য়/g, 'য়')
+  if (s.type === 'sthan') return 'nadi'
+  if (s.type === 'sahitto') return 'sahitto'
+  if (s.type === 'udbhid') {
+    if (/ছত্রাক|শৈবাল|লাইকেন/.test(c)) return 'chhatrak'
+    if (/অণুজীব|ব্যাকটেরি/.test(c)) return 'onujib'
+    if (/বন|ম্যানগ্রোভ|তাল|বট|ঔষধি/.test(c)) return 'gachhbon'
+    return 'udbhidful'
+  }
+  if (/পাখি/.test(c)) return 'pakhi'
+  if (/মাছ/.test(c)) return 'machh'
+  if (/স্তন্যপা/.test(c)) return 'stanapayi'
+  if (/সরীসৃপ/.test(c)) return 'sarisrip'
+  if (/উভচর/.test(c)) return 'ubhochor'
+  if (/পতঙ্গ|কীট/.test(c)) return 'kitpotongo'
+  if (/অমেরুদণ্ডী|মোলাস্ক|আর্থ্রোপড/.test(c)) return 'ameruddondi'
+  return 'pranijogot'
+}
+
 function rowToSpecies(r: SpeciesRow): Species {
   return {
     slug: r.slug,
     type: r.type,
+    group: r.group || inferGroup({ type: r.type, category: r.category }),
     category: r.category,
     nameBn: r.name_bn,
     nameEn: r.name_en || '',
@@ -39,10 +73,47 @@ function rowToSpecies(r: SpeciesRow): Species {
     gallery: P(r.gallery),
     poetViews: P(r.poet_views),
     sources: P(r.sources),
+    synonyms: P(r.synonyms),
+    taxonomy: parseJson(r.taxonomy, {}),
+    physical: r.physical || '',
+    identification: r.identification || '',
+    behavior: r.behavior || '',
+    distribution: r.distribution || '',
+    ecologicalRole: r.ecological_role || '',
+    origin: r.origin || undefined,
+    threats: r.threats || '',
+    conservationActions: r.conservation_actions || '',
+    media: P(r.media),
+    dataStatus: r.data_status || 'partial',
+    lastVerifiedAt: r.last_verified_at ? new Date(r.last_verified_at).toISOString() : undefined,
+    conflictingInfo: r.conflicting_info || '',
+    sensitive: !!r.sensitive,
     featured: !!r.featured,
     views: Number(r.views || 0),
     createdAt: new Date(r.created_at).toISOString(),
     updatedAt: new Date(r.updated_at).toISOString(),
+  }
+}
+
+function rowToAiQuestion(r: Record<string, any>): AiQuestion {
+  return {
+    id: r.id,
+    question: r.question || '',
+    userId: r.user_id || null,
+    userName: r.user_name || '',
+    userKey: r.user_key || '',
+    trackCode: r.track_code || '',
+    imageUrl: r.image_url || '',
+    aiAnalysis: r.ai_analysis || '',
+    missingInfo: r.missing_info || '',
+    searchResults: P(r.search_results),
+    status: r.status || 'new',
+    answer: r.answer || '',
+    answeredBy: r.answered_by || '',
+    answeredAt: r.answered_at ? new Date(r.answered_at).toISOString() : undefined,
+    suggestToKnowledgeBase: !!r.suggest_to_kb,
+    speciesSlug: r.species_slug || '',
+    createdAt: new Date(r.created_at).toISOString(),
   }
 }
 
@@ -66,7 +137,52 @@ function rowToPost(r: Record<string, any>): Post {
     likes: Number(r.likes || 0),
     comments: Number(r.comments || 0),
     featured: !!r.featured,
+    pinned: !!r.pinned,
+    group: r.group || undefined,
+    needsIdentification: !!r.needs_identification,
+    identifiedSpecies: r.identified_species || '',
     createdAt: new Date(r.created_at).toISOString(),
+  }
+}
+
+/** একাধিক পোস্টের লেখক-তথ্য এক কলেই জুড়ে দেয় */
+function speciesHref(type?: string, slug?: string): string | undefined {
+  if (!slug) return undefined
+  if (type === 'udbhid') return `/udbhid/${slug}`
+  if (type === 'sthan') return `/sthan/${slug}`
+  if (type === 'sahitto') return `/sahitto/${slug}`
+  return `/prani/${slug}`
+}
+
+async function withAuthors(rows: Post[]): Promise<Post[]> {
+  const bare = (p: Post) => ({ ...p, author: { name: p.authorName, verified: false, avatar: '' } })
+  try {
+    const sql = getSql()
+    const ids = [...new Set(rows.map((p) => p.authorId).filter(Boolean) as string[])]
+    const slugs = [...new Set(rows.map((p) => p.speciesSlug).filter(Boolean) as string[])]
+    const byId = new Map<string, any>()
+    if (ids.length) {
+      const ures = await sql`select id, username, name, verified, avatar from users where id = any(${ids})`
+      asRows(ures).forEach((u: any) => byId.set(u.id, u))
+    }
+    const bySlug = new Map<string, any>()
+    if (slugs.length) {
+      const sres = await sql`select slug, type from species where slug = any(${slugs})`
+      asRows(sres).forEach((r: any) => bySlug.set(r.slug, r))
+    }
+    return rows.map((p) => {
+      const u = p.authorId ? byId.get(p.authorId) : undefined
+      const sp = p.speciesSlug ? bySlug.get(p.speciesSlug) : undefined
+      return {
+        ...p,
+        author: u
+          ? { name: u.name, username: u.username, verified: !!u.verified, avatar: u.avatar || '' }
+          : { name: p.authorName, verified: false, avatar: '' },
+        speciesHref: speciesHref(sp?.type, p.speciesSlug || undefined),
+      }
+    })
+  } catch {
+    return rows.map(bare)
   }
 }
 
@@ -138,13 +254,21 @@ export const neonRepo: Repo = {
     const sql = getSql()
     const type = q.type && q.type !== 'all' ? q.type : null
     const cat = q.category && q.category !== 'all' ? q.category : null
+    const grp = q.group && q.group !== 'all' ? q.group : null
+    // “প্রাণীজগৎ” = সব প্রাণী
+    const umbrella = q.group === 'pranijogot'
+    const grpFilter = umbrella ? null : grp
+    const typeFilter = umbrella ? 'prani' : type
+    const st = q.dataStatus && q.dataStatus !== 'all' ? q.dataStatus : null
     const term = q.q ? `%${q.q.trim().toLowerCase()}%` : null
     const limit = q.limit ?? 500
     const offset = q.offset ?? 0
     const rows = await sql`
       select * from species
-      where (${type}::text is null or type = ${type})
+      where (${typeFilter}::text is null or type = ${typeFilter})
         and (${cat}::text is null or category = ${cat})
+        and (${grpFilter}::text is null or "group" = ${grpFilter})
+        and (${st}::text is null or data_status = ${st})
         and (${term}::text is null or lower(
               name_bn || ' ' || coalesce(name_en,'') || ' ' || coalesce(scientific_name,'') || ' ' ||
               category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'')
@@ -165,6 +289,9 @@ export const neonRepo: Repo = {
       select count(*)::int as c from species
       where (${type}::text is null or type = ${type})
         and (${cat}::text is null or category = ${cat})
+        and (${q.group === 'pranijogot' ? null : (q.group && q.group !== 'all' ? q.group : null)}::text is null or "group" = ${q.group === 'pranijogot' ? null : (q.group && q.group !== 'all' ? q.group : null)})
+        and (${q.group === 'pranijogot' ? 'prani' : null}::text is null or type = ${q.group === 'pranijogot' ? 'prani' : null})
+        and (${(q.dataStatus && q.dataStatus !== 'all' ? q.dataStatus : null)}::text is null or data_status = ${(q.dataStatus && q.dataStatus !== 'all' ? q.dataStatus : null)})
         and (${term}::text is null or lower(
               name_bn || ' ' || coalesce(name_en,'') || ' ' || coalesce(scientific_name,'') || ' ' ||
               category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'')
@@ -182,14 +309,20 @@ export const neonRepo: Repo = {
   async upsertSpecies(s) {
     const sql = getSql()
     await sql`
-      insert into species (slug, type, category, name_bn, name_en, scientific_name, other_names, summary,
-        description, habitat, diet, size_info, season, where_to_see, reproduction, conservation,
-        conservation_bn, color_tags, image, gallery, poet_views, sources, featured, views, updated_at)
-      values (${s.slug}, ${s.type}, ${s.category}, ${s.nameBn}, ${s.nameEn || ''}, ${s.scientificName || ''},
-        ${J(s.otherNames)}, ${s.summary || ''}, ${s.description || ''}, ${s.habitat || ''}, ${s.diet || ''},
-        ${s.sizeOrHeight || ''}, ${s.season || ''}, ${s.whereToSee || ''}, ${s.reproduction || ''},
-        ${s.conservation || 'NE'}, ${s.conservationBn || ''}, ${J(s.colorTags)}, ${s.image || ''},
-        ${J(s.gallery)}, ${J(s.poetViews)}, ${J(s.sources)}, ${!!s.featured}, ${s.views || 0}, now())
+      insert into species (slug, type, category, "group", name_bn, name_en, scientific_name, other_names,
+        synonyms, taxonomy, summary, description, physical, identification, diet, behavior, reproduction,
+        habitat, distribution, where_to_see, season, size_info, ecological_role, origin, conservation,
+        conservation_bn, threats, conservation_actions, conflicting_info, sensitive,
+        color_tags, image, gallery, media, poet_views, sources, data_status, last_verified_at, featured, views, updated_at)
+      values (${s.slug}, ${s.type}, ${s.category}, ${s.group}, ${s.nameBn}, ${s.nameEn || ''}, ${s.scientificName || ''},
+        ${J(s.otherNames)}, ${J(s.synonyms)}, ${JSON.stringify(s.taxonomy || {})},
+        ${s.summary || ''}, ${s.description || ''}, ${s.physical || ''}, ${s.identification || ''}, ${s.diet || ''},
+        ${s.behavior || ''}, ${s.reproduction || ''}, ${s.habitat || ''}, ${s.distribution || ''},
+        ${s.whereToSee || ''}, ${s.season || ''}, ${s.sizeOrHeight || ''}, ${s.ecologicalRole || ''},
+        ${s.origin || ''}, ${s.conservation || 'NE'}, ${s.conservationBn || ''}, ${s.threats || ''},
+        ${s.conservationActions || ''}, ${s.conflictingInfo || ''}, ${!!s.sensitive},
+        ${J(s.colorTags)}, ${s.image || ''}, ${J(s.gallery)}, ${J(s.media)}, ${J(s.poetViews)}, ${J(s.sources)},
+        ${s.dataStatus || 'partial'}, ${s.lastVerifiedAt || null}, ${!!s.featured}, ${s.views || 0}, now())
       on conflict (slug) do update set
         type = excluded.type, category = excluded.category, name_bn = excluded.name_bn,
         name_en = excluded.name_en, scientific_name = excluded.scientific_name,
@@ -199,7 +332,13 @@ export const neonRepo: Repo = {
         conservation = excluded.conservation, conservation_bn = excluded.conservation_bn,
         color_tags = excluded.color_tags, image = excluded.image, gallery = excluded.gallery,
         poet_views = excluded.poet_views, sources = excluded.sources, featured = excluded.featured,
-        updated_at = now()
+        "group" = excluded."group", synonyms = excluded.synonyms, taxonomy = excluded.taxonomy,
+        physical = excluded.physical, identification = excluded.identification, behavior = excluded.behavior,
+        distribution = excluded.distribution, ecological_role = excluded.ecological_role, origin = excluded.origin,
+        threats = excluded.threats, conservation_actions = excluded.conservation_actions,
+        conflicting_info = excluded.conflicting_info, sensitive = excluded.sensitive, media = excluded.media,
+        data_status = excluded.data_status, last_verified_at = excluded.last_verified_at,
+        views = excluded.views, updated_at = now()
     `
     return s
   },
@@ -245,6 +384,7 @@ export const neonRepo: Repo = {
             and (${kind}::text is null or kind = ${kind})
             and (${species}::text is null or species_slug = ${species})
             and (${author}::text is null or author_id = ${author})
+            and (${(q.group && q.group !== 'all' ? q.group : null)}::text is null or "group" = ${(q.group && q.group !== 'all' ? q.group : null)})
             and created_at > ${asRows(cur)[0].created_at}
         `
         offset = Number(asRows(cnt)[0]?.c || 0)
@@ -257,13 +397,14 @@ export const neonRepo: Repo = {
         and (${kind}::text is null or kind = ${kind})
         and (${species}::text is null or species_slug = ${species})
         and (${author}::text is null or author_id = ${author})
+        and (${(q.group && q.group !== 'all' ? q.group : null)}::text is null or "group" = ${(q.group && q.group !== 'all' ? q.group : null)})
         and (${term}::text is null or lower(
               coalesce(title,'') || ' ' || coalesce(body,'') || ' ' || coalesce(author_name,'') || ' ' ||
               coalesce(tags,'') || ' ' || coalesce(location,'')) like ${term})
       order by created_at desc
       limit ${limit} offset ${offset}
     `
-    const items = asRows(rows).map(rowToPost)
+    const items = await withAuthors(asRows(rows).map(rowToPost))
     const nextCursor = items.length === limit ? items[items.length - 1].id : null
     return { items, nextCursor }
   },
@@ -271,18 +412,21 @@ export const neonRepo: Repo = {
   async getPost(id) {
     const sql = getSql()
     const rows = await sql`select * from posts where id = ${id}`
-    return asRows(rows)[0] ? rowToPost(asRows(rows)[0]) : null
+    if (!asRows(rows)[0]) return null
+    return (await withAuthors([rowToPost(asRows(rows)[0])]))[0]
   },
 
   async createPost(p) {
     const sql = getSql()
     await sql`
       insert into posts (id, kind, category, title, body, media_url, media_type, thumb_url, location,
-        species_slug, tags, author_name, author_id, author_key, status, likes, comments, featured, created_at)
+        species_slug, tags, author_name, author_id, author_key, status, likes, comments, featured,
+        pinned, "group", needs_identification, identified_species, created_at)
       values (${p.id}, ${p.kind}, ${p.category}, ${p.title || ''}, ${p.body || ''}, ${p.mediaUrl || ''},
         ${p.mediaType || ''}, ${p.thumbUrl || ''}, ${p.location || ''}, ${p.speciesSlug || ''}, ${J(p.tags)},
         ${p.authorName}, ${p.authorId || null}, ${p.authorKey || ''}, ${p.status}, ${p.likes || 0},
-        ${p.comments || 0}, ${!!p.featured}, ${p.createdAt})
+        ${p.comments || 0}, ${!!p.featured}, ${!!p.pinned}, ${p.group || ''}, ${!!p.needsIdentification},
+        ${p.identifiedSpecies || ''}, ${p.createdAt})
       on conflict (id) do nothing
     `
     return p
@@ -299,7 +443,10 @@ export const neonRepo: Repo = {
         thumb_url = ${next.thumbUrl || ''}, location = ${next.location || ''},
         species_slug = ${next.speciesSlug || ''}, tags = ${J(next.tags)}, author_name = ${next.authorName},
         author_id = ${next.authorId || null}, author_key = ${next.authorKey || ''}, status = ${next.status},
-        likes = ${next.likes || 0}, comments = ${next.comments || 0}, featured = ${!!next.featured}
+        likes = ${next.likes || 0}, comments = ${next.comments || 0}, featured = ${!!next.featured},
+        pinned = ${!!next.pinned}, "group" = ${next.group || ''},
+        needs_identification = ${!!next.needsIdentification},
+        identified_species = ${next.identifiedSpecies || ''}
       where id = ${id}
     `
     return next
@@ -341,6 +488,12 @@ export const neonRepo: Repo = {
       name: r.name,
       userId: r.user_id,
       body: r.body,
+      suggestedSpecies: r.suggested_species || '',
+      suggestedName: r.suggested_name || '',
+      idSource: (r.id_source as any) || undefined,
+      idVerified: !!r.id_verified,
+      verifiedBy: r.verified_by || null,
+      verifiedAt: r.verified_at ? new Date(r.verified_at).toISOString() : null,
       createdAt: new Date(r.created_at).toISOString(),
     }))
   },
@@ -348,11 +501,46 @@ export const neonRepo: Repo = {
   async addComment(c) {
     const sql = getSql()
     await sql`
-      insert into comments (id, post_id, name, user_id, body, created_at)
-      values (${c.id}, ${c.postId}, ${c.name}, ${c.userId || null}, ${c.body}, ${c.createdAt})
+      insert into comments (id, post_id, name, user_id, body, created_at,
+        suggested_species, suggested_name, id_source, id_verified, verified_by, verified_at)
+      values (${c.id}, ${c.postId}, ${c.name}, ${c.userId || null}, ${c.body}, ${c.createdAt},
+        ${c.suggestedSpecies || ''}, ${c.suggestedName || ''}, ${c.idSource || ''}, ${!!c.idVerified},
+        ${c.verifiedBy || ''}, ${c.verifiedAt || null})
     `
     await sql`update posts set comments = comments + 1 where id = ${c.postId}`
     return c
+  },
+
+  async updateComment(id, patch) {
+    const sql = getSql()
+    const cur = asRows(await sql`select * from comments where id = ${id}`)[0]
+    if (!cur) return null
+    const next: any = {
+      id,
+      postId: cur.post_id,
+      name: cur.name,
+      userId: cur.user_id,
+      body: cur.body,
+      suggestedSpecies: cur.suggested_species || '',
+      suggestedName: cur.suggested_name || '',
+      idSource: cur.id_source || undefined,
+      idVerified: !!cur.id_verified,
+      verifiedBy: cur.verified_by || null,
+      verifiedAt: cur.verified_at ? new Date(cur.verified_at).toISOString() : null,
+      createdAt: new Date(cur.created_at).toISOString(),
+      ...patch,
+    }
+    await sql`
+      update comments set body = ${next.body},
+        suggested_species = ${next.suggestedSpecies || ''},
+        suggested_name = ${next.suggestedName || ''},
+        id_source = ${next.idSource || ''},
+        id_verified = ${!!next.idVerified},
+        verified_by = ${next.verifiedBy || ''},
+        verified_at = ${next.verifiedAt || null}
+      where id = ${id}
+    `
+    return next as any
   },
 
   async deleteComment(id) {
@@ -513,6 +701,251 @@ export const neonRepo: Repo = {
     }
   },
 
+  // ---------- coverage ----------
+  async coverage(): Promise<CoverageRow[]> {
+    const sql = getSql()
+    const rows = await sql`
+      select "group",
+             count(*)::int as total,
+             count(*) filter (where data_status = 'verified')::int as verified,
+             count(*) filter (where data_status <> 'verified')::int as partial,
+             count(*) filter (where coalesce(name_bn,'') = '')::int as missing_name_bn,
+             count(*) filter (where coalesce(image,'') = '')::int as missing_image,
+             count(*) filter (where coalesce(sources,'[]') in ('[]',''))::int as missing_source,
+             max(updated_at) as last_updated
+      from species group by "group"
+      union all
+      select 'pranijogot' as "group",
+             count(*)::int as total,
+             count(*) filter (where data_status = 'verified')::int as verified,
+             count(*) filter (where data_status <> 'verified')::int as partial,
+             count(*) filter (where coalesce(name_bn,'') = '')::int as missing_name_bn,
+             count(*) filter (where coalesce(image,'') = '')::int as missing_image,
+             count(*) filter (where coalesce(sources,'[]') in ('[]',''))::int as missing_source,
+             max(updated_at) as last_updated
+      from species where type = 'prani'`
+    const map = new Map<string, any>()
+    for (const r of asRows(rows)) map.set(r.group, r)
+    return CATEGORIES.map((c) => {
+      const r = map.get(c.id) as any
+      return {
+        group: c.id,
+        label: c.label,
+        total: Number(r?.total || 0),
+        verified: Number(r?.verified || 0),
+        partial: Number(r?.partial || 0),
+        missingNameBn: Number(r?.missing_name_bn || 0),
+        missingImage: Number(r?.missing_image || 0),
+        missingSource: Number(r?.missing_source || 0),
+        lastUpdated: r?.last_updated ? new Date(r.last_updated).toISOString() : undefined,
+      }
+    })
+  },
+
+  // ---------- save ----------
+  async toggleSave(item) {
+    const sql = getSql()
+    const rows = await sql`delete from saves where user_key = ${item.userKey} and target_type = ${item.targetType} and target_id = ${item.targetId} returning id`
+    if (asRows(rows).length) return false
+    await sql`insert into saves (id, user_key, target_type, target_id) values (${item.id}, ${item.userKey}, ${item.targetType}, ${item.targetId})`
+    return true
+  },
+  async listSaves(userKey) {
+    const sql = getSql()
+    const rows = await sql`select * from saves where user_key = ${userKey} order by created_at desc limit 200`
+    return asRows(rows).map((r: any) => ({
+      id: r.id, userKey: r.user_key, targetType: r.target_type, targetId: r.target_id,
+      createdAt: new Date(r.created_at).toISOString(),
+    }))
+  },
+
+  // ---------- report ----------
+  async createReport(r) {
+    const sql = getSql()
+    await sql`insert into reports (id, target_type, target_id, reason, details, reporter_name, reporter_key, status)
+      values (${r.id}, ${r.targetType}, ${r.targetId}, ${r.reason || ''}, ${r.details || ''}, ${r.reporterName || ''}, ${r.reporterKey || ''}, ${r.status || 'new'})`
+    return r
+  },
+  async listReports() {
+    const sql = getSql()
+    const rows = await sql`select * from reports order by created_at desc limit 300`
+    return asRows(rows).map((r: any) => ({
+      id: r.id, targetType: r.target_type, targetId: r.target_id, reason: r.reason, details: r.details,
+      reporterName: r.reporter_name, reporterKey: r.reporter_key, status: r.status,
+      createdAt: new Date(r.created_at).toISOString(),
+    }))
+  },
+  async updateReport(id, patch) {
+    const sql = getSql()
+    const sets: string[] = []
+    const vals: any[] = []
+    let i = 1
+    const map: Record<string, string> = { status: 'status', reason: 'reason', details: 'details' }
+    for (const [k, col] of Object.entries(map)) {
+      if ((patch as any)[k] !== undefined) {
+        sets.push(`${col} = $${i++}`)
+        vals.push((patch as any)[k])
+      }
+    }
+    if (!sets.length) return null
+    vals.push(id)
+    const rows = await sql(`update reports set ${sets.join(', ')} where id = $${i} returning *`, vals)
+    const r = asRows(rows)[0] as any
+    return r ? { id: r.id, status: r.status } as Report : null
+  },
+
+  // ---------- observation ----------
+  async createObservation(o) {
+    const sql = getSql()
+    await sql`insert into observations (id, species_slug, guessed_name, name, user_id, author_key, photo_url,
+      location, coarse_location, location_shared, notes, observed_at, uncertain, status, identified_by)
+      values (${o.id}, ${o.speciesSlug || ''}, ${o.guessedName || ''}, ${o.name || ''}, ${o.userId || null},
+        ${o.authorKey}, ${o.photoUrl || ''}, ${o.location || ''}, ${o.coarseLocation || ''},
+        ${!!o.locationShared}, ${o.notes || ''}, ${o.observedAt}, ${!!o.uncertain}, ${o.status || 'submitted'}, ${o.identifiedBy || ''})`
+    return o
+  },
+  async listObservations(opts = {}) {
+    const sql = getSql()
+    const status = opts.status && opts.status !== 'all' ? opts.status : null
+    const userKey = opts.userKey || null
+    const sp = opts.speciesSlug || null
+    const limit = opts.limit ?? 100
+    const rows = await sql`
+      select * from observations
+      where (${status}::text is null or status = ${status})
+        and (${userKey}::text is null or author_key = ${userKey})
+        and (${sp}::text is null or species_slug = ${sp})
+      order by created_at desc limit ${limit}`
+    return asRows(rows).map((r: any) => ({
+      id: r.id, speciesSlug: r.species_slug, guessedName: r.guessed_name, name: r.name, userId: r.user_id,
+      authorKey: r.author_key, photoUrl: r.photo_url, location: r.location, coarseLocation: r.coarse_location,
+      locationShared: !!r.location_shared, notes: r.notes,
+      observedAt: new Date(r.observed_at).toISOString(), uncertain: !!r.uncertain,
+      status: r.status, identifiedBy: r.identified_by, createdAt: new Date(r.created_at).toISOString(),
+    }))
+  },
+  async updateObservation(id, patch) {
+    const sql = getSql()
+    const sets: string[] = []
+    const vals: any[] = []
+    let i = 1
+    const map: Record<string, string> = { status: 'status', speciesSlug: 'species_slug', identifiedBy: 'identified_by', notes: 'notes', uncertain: 'uncertain' }
+    for (const [k, col] of Object.entries(map)) {
+      if ((patch as any)[k] !== undefined) {
+        sets.push(`${col} = $${i++}`)
+        vals.push((patch as any)[k])
+      }
+    }
+    if (!sets.length) return null
+    vals.push(id)
+    const rows = await sql(`update observations set ${sets.join(', ')} where id = $${i} returning *`, vals)
+    const r = asRows(rows)[0] as any
+    return r ? { id: r.id, status: r.status } as Observation : null
+  },
+
+  // ---------- notification ----------
+  async addNotification(n) {
+    const sql = getSql()
+    await sql`insert into notifications (id, user_key, type, title, body, url, read)
+      values (${n.id}, ${n.userKey}, ${n.type}, ${n.title}, ${n.body || ''}, ${n.url || ''}, ${!!n.read})`
+    return n
+  },
+  async listNotifications(userKey) {
+    const sql = getSql()
+    const rows = await sql`select * from notifications where user_key = ${userKey} order by created_at desc limit 50`
+    return asRows(rows).map((r: any) => ({
+      id: r.id, userKey: r.user_key, type: r.type, title: r.title, body: r.body, url: r.url,
+      read: !!r.read, createdAt: new Date(r.created_at).toISOString(),
+    }))
+  },
+  async markNotificationsRead(userKey) {
+    const sql = getSql()
+    await sql`update notifications set read = true where user_key = ${userKey}`
+  },
+
+  // ---------- AI questions ----------
+  async createAiQuestion(q) {
+    const sql = getSql()
+    await sql`insert into ai_questions (id, question, user_id, user_name, user_key, track_code, image_url,
+      ai_analysis, missing_info, search_results, status, species_slug)
+      values (${q.id}, ${q.question}, ${q.userId || null}, ${q.userName || ''}, ${q.userKey}, ${q.trackCode},
+        ${q.imageUrl || ''}, ${q.aiAnalysis || ''}, ${q.missingInfo || ''}, ${J(q.searchResults)},
+        ${q.status || 'new'}, ${q.speciesSlug || ''})`
+    return q
+  },
+  async listAiQuestions(opts = {}) {
+    const sql = getSql()
+    const status = opts.status && opts.status !== 'all' ? opts.status : null
+    const rows = await sql`select * from ai_questions
+      where (${status}::text is null or status = ${status}) order by created_at asc limit 300`
+    return asRows(rows).map(rowToAiQuestion)
+  },
+  async getAiQuestionByCode(code) {
+    const sql = getSql()
+    const rows = await sql`select * from ai_questions where track_code = ${code} limit 1`
+    const r = asRows(rows)[0]
+    return r ? rowToAiQuestion(r) : null
+  },
+  async updateAiQuestion(id, patch) {
+    const sql = getSql()
+    const sets: string[] = []
+    const vals: any[] = []
+    let i = 1
+    const map: Record<string, string> = { status: 'status', answer: 'answer', answeredBy: 'answered_by', aiAnalysis: 'ai_analysis', missingInfo: 'missing_info', speciesSlug: 'species_slug' }
+    for (const [k, col] of Object.entries(map)) {
+      if ((patch as any)[k] !== undefined) {
+        sets.push(`${col} = $${i++}`)
+        vals.push((patch as any)[k])
+      }
+    }
+    if ((patch as any).suggestToKnowledgeBase !== undefined) {
+      sets.push(`suggest_to_kb = $${i++}`)
+      vals.push(!!(patch as any).suggestToKnowledgeBase)
+    }
+    if (patch.answer) {
+      sets.push(`answered_at = now()`)
+    }
+    if (!sets.length) return null
+    vals.push(id)
+    const rows = await sql(`update ai_questions set ${sets.join(', ')} where id = $${i} returning *`, vals)
+    const r = asRows(rows)[0] as any
+    if (r && patch.answer && r.user_key) {
+      await sql`insert into notifications (id, user_key, type, title, body, url)
+        values (${`ntf-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`}, ${r.user_key}, 'ai_answer',
+          'আপনার প্রশ্নের উত্তর পাওয়া গেছে', ${String(patch.answer).slice(0, 180)}, ${`/ai/q/${r.track_code}`})`
+    }
+    return r ? rowToAiQuestion(r) : null
+  },
+
+  // ---------- audit ----------
+  async addAudit(log) {
+    const sql = getSql()
+    await sql`insert into audit_logs (id, actor_id, actor_name, action, target, detail)
+      values (${log.id}, ${log.actorId || ''}, ${log.actorName || ''}, ${log.action}, ${log.target || ''}, ${log.detail || ''})`
+  },
+  async listAudit(limit = 100) {
+    const sql = getSql()
+    const rows = await sql`select * from audit_logs order by created_at desc limit ${limit}`
+    return asRows(rows).map((r: any) => ({
+      id: r.id, actorId: r.actor_id, actorName: r.actor_name, action: r.action,
+      target: r.target, detail: r.detail, createdAt: new Date(r.created_at).toISOString(),
+    }))
+  },
+
+  // ---------- block ----------
+  async toggleBlock(blockerKey, userId) {
+    const sql = getSql()
+    const rows = await sql`delete from blocks where blocker_key = ${blockerKey} and user_id = ${userId} returning user_id`
+    if (asRows(rows).length) return false
+    await sql`insert into blocks (blocker_key, user_id) values (${blockerKey}, ${userId})`
+    return true
+  },
+  async blockedIds(blockerKey) {
+    const sql = getSql()
+    const rows = await sql`select user_id from blocks where blocker_key = ${blockerKey}`
+    return asRows(rows).map((r: any) => r.user_id)
+  },
+
   // ---------- stats / search ----------
   async stats(): Promise<Stats> {
     const sql = getSql()
@@ -532,7 +965,20 @@ export const neonRepo: Repo = {
       one("select count(*)::int as c from users where verified = true"),
       one("select count(*)::int as c from posts where status = 'pending'"),
     ])
-    return { species, birds, animals: nonBirdAnimals, plants, posts, photos, videos, users, partners, pending }
+    const [places, literature, verifiedSpecies, partialSpecies, reels, aiPending, reports, observations] = await Promise.all([
+      one("select count(*)::int as c from species where type = 'sthan'"),
+      one("select count(*)::int as c from species where type = 'sahitto'"),
+      one("select count(*)::int as c from species where data_status = 'verified'"),
+      one("select count(*)::int as c from species where data_status <> 'verified'"),
+      one("select count(*)::int as c from posts where status = 'approved' and kind = 'reel'"),
+      one("select count(*)::int as c from ai_questions where status not in ('answered','resolved')"),
+      one("select count(*)::int as c from reports where status = 'new'"),
+      one("select count(*)::int as c from observations"),
+    ])
+    return {
+      species, birds, animals: nonBirdAnimals, plants, places, literature, verifiedSpecies, partialSpecies,
+      posts, photos, videos, reels, users, partners, pending, aiPending, reports, observations,
+    }
   },
 
   async search(q) {
@@ -560,7 +1006,10 @@ export const neonRepo: Repo = {
 
   async reseed() {
     const sql = getSql()
-    await sql`truncate species, posts, comments, likes, follows, news, jeno restart identity`
+    await sql`truncate species, posts, comments, likes, follows, news, jeno, observations, reports, saves, notifications restart identity`
+    await sql`delete from audit_logs`
+    await sql`delete from ai_questions`
+    await sql`delete from blocks`
     for (const s of SPECIES) await this.upsertSpecies(s)
     for (const u of SEED_USERS) await this.createUser(u)
     for (const p of SEED_POSTS) await this.createPost(p)

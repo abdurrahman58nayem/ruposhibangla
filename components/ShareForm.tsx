@@ -3,17 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { UploadCloud, X, Loader2, CheckCircle2, Video, ImageIcon, FileText } from 'lucide-react'
+import { UploadCloud, X, Loader2, CheckCircle2, Video, ImageIcon, FileText, Film } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { CATEGORIES } from '@/lib/categories'
 
 type SpeciesOption = { slug: string; nameBn: string; category: string; type: string }
-
-const CATEGORIES = [
-  { id: 'prani', label: 'প্রাণী' },
-  { id: 'udbhid', label: 'উদ্ভিদ' },
-  { id: 'grambangla', label: 'গ্রামবাংলা' },
-  { id: 'manush', label: 'মানুষ' },
-]
 
 export default function ShareForm({
   speciesOptions,
@@ -21,21 +15,25 @@ export default function ShareForm({
   defaultCategory = '',
   userName = '',
   loggedIn = false,
+  defaultKind = 'photo',
 }: {
   speciesOptions: SpeciesOption[]
   defaultSpecies?: string
   defaultCategory?: string
   userName?: string
   loggedIn?: boolean
+  defaultKind?: 'photo' | 'video' | 'reel' | 'note'
 }) {
   const router = useRouter()
-  const [kind, setKind] = useState<'photo' | 'video' | 'note'>('photo')
+  const [kind, setKind] = useState<'photo' | 'video' | 'reel' | 'note'>(defaultKind)
   const [category, setCategory] = useState(defaultCategory || 'prani')
   const [speciesSlug, setSpeciesSlug] = useState(defaultSpecies)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [location, setLocation] = useState('')
   const [tags, setTags] = useState('')
+  const [needsIdentification, setNeedsIdentification] = useState(false)
+  const [pending, setPending] = useState(false)
   const [name, setName] = useState(userName)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -86,6 +84,10 @@ export default function ShareForm({
       setError('একটি ছবি বা ভিডিও নির্বাচন করুন')
       return
     }
+    if (kind === 'reel' && uploaded?.mediaType !== 'video' && file && !file.type.startsWith('video/')) {
+      setError('রিলস হিসেবে শুধু ভিডিও প্রকাশ করা যায়')
+      return
+    }
     if (body.trim().length > 4000) {
       setError('লেখাটি অনেক বড়')
       return
@@ -97,12 +99,20 @@ export default function ShareForm({
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          kind: uploaded?.mediaType === 'video' || kind === 'video' ? 'video' : kind === 'note' ? 'note' : 'photo',
-          category,
+          kind:
+            kind === 'reel'
+              ? 'reel'
+              : uploaded?.mediaType === 'video' || kind === 'video'
+                ? 'video'
+                : kind === 'note'
+                  ? 'note'
+                  : 'photo',
+          group: category,
+          needsIdentification,
           title,
           body,
           mediaUrl: mediaUrl || '',
-          mediaType: uploaded?.mediaType || (kind === 'video' ? 'video' : 'image'),
+          mediaType: uploaded?.mediaType || (kind === 'video' || kind === 'reel' ? 'video' : 'image'),
           location,
           speciesSlug,
           tags: tags.split(/[,#،\s]+/).map((t) => t.trim()).filter(Boolean).slice(0, 10),
@@ -111,6 +121,11 @@ export default function ShareForm({
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'জমা দেওয়া যায়নি')
+      if (data.pending) {
+        setPending(true)
+        setBusy(false)
+        return
+      }
       setDone(true)
       setTimeout(() => router.push(`/post/${data.post.id}`), 900)
     } catch (e: any) {
@@ -138,6 +153,7 @@ export default function ShareForm({
           [
             { id: 'photo', label: 'ছবি', icon: ImageIcon },
             { id: 'video', label: 'ভিডিও', icon: Video },
+            { id: 'reel', label: 'রিলস', icon: Film },
             { id: 'note', label: 'লেখা', icon: FileText },
           ] as const
         ).map((k) => (
@@ -165,14 +181,14 @@ export default function ShareForm({
               <span className="text-[11px] text-black/45">JPG, PNG, WEBP, MP4 — সর্বোচ্চ ২৫ মেগাবাইট</span>
               <input
                 type="file"
-                accept={kind === 'video' ? 'video/*' : 'image/*,video/*'}
+                accept={kind === 'video' || kind === 'reel' ? 'video/*' : 'image/*,video/*'}
                 className="hidden"
                 onChange={(e) => pick(e.target.files?.[0] || null)}
               />
             </label>
           ) : (
             <div className="relative overflow-hidden rounded-2xl bg-black">
-              {kind === 'video' ? (
+              {kind === 'video' || kind === 'reel' ? (
                 <video src={preview} controls className="max-h-80 w-full" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -229,7 +245,7 @@ export default function ShareForm({
       {/* Category + species */}
       <div className="mb-4 grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="label">বিভাগ</label>
+          <label className="label">ক্যাটাগরি</label>
           <select value={category} onChange={(e) => setCategory(e.target.value)} className="field">
             {CATEGORIES.map((c) => (
               <option key={c.id} value={c.id}>
@@ -251,6 +267,19 @@ export default function ShareForm({
         </div>
       </div>
 
+      <label className="mb-4 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-[13px] text-amber-900">
+        <input
+          type="checkbox"
+          className="mt-0.5"
+          checked={needsIdentification}
+          onChange={(e) => setNeedsIdentification(e.target.checked)}
+        />
+        <span>
+          <b>পরিচয় জানতে চাই</b> — এটি কোন প্রজাতি তা নিশ্চিত নই। সম্প্রদায় প্রস্তাব দিতে পারবে; কোনো প্রস্তাবই
+          স্বয়ংক্রিয়ভাবে যাচাইকৃত হবে না, সম্পাদক/বিশেষজ্ঞ পর্যালোচনার পরেই “যাচাইকৃত” দেখাবে।
+        </span>
+      </label>
+
       {/* Location + tags */}
       <div className="mb-5 grid gap-3 sm:grid-cols-2">
         <div>
@@ -264,6 +293,12 @@ export default function ShareForm({
       </div>
 
       {error && <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {pending && (
+        <p className="mb-3 rounded-xl bg-forest-50 px-3 py-2 text-sm text-forest-800">
+          ধন্যবাদ! অ্যাকাউন্টবিহীন পোস্ট পর্যালোচনার পর প্রকাশ করা হয় — অ্যাডমিন প্যানেল থেকে অনুমোদনের পর এটি ফিডে
+          দেখা যাবে।
+        </p>
+      )}
 
       <button type="submit" disabled={busy} className="btn-primary w-full py-3">
         {busy ? <Loader2 size={17} className="animate-spin" /> : <UploadCloud size={17} />}

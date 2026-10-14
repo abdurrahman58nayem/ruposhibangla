@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import CategoryRail from '@/components/CategoryRail'
 import { ArrowRight, Sparkles, Camera, Bird, Leaf, Map, Quote, Newspaper } from 'lucide-react'
 import Feed from '@/components/Feed'
 import SpeciesCard from '@/components/SpeciesCard'
@@ -91,8 +92,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---------- Categories ---------- */}
+      {/* ---------- ১৭টি প্রধান ক্যাটাগরি ---------- */}
       <section className="container-pb mt-8">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <h2 className="text-sm font-bold text-forest-900">জীববৈচিত্র্যের ক্যাটাগরি</h2>
+          <Link href="/categories" className="text-xs font-semibold text-forest-700 hover:underline">
+            সব ক্যাটাগরি →
+          </Link>
+        </div>
+        <CategoryRail />
+      </section>
+
+      {/* ---------- দ্রুত প্রবেশপথ ---------- */}
+      <section className="container-pb mt-4">
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
           {CHIPS.map((c) => (
             <Link key={c.href} href={c.href} className="chip">

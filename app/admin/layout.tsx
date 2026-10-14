@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession()
 
-  if (!session || session.role !== 'admin') {
+  if (!session || !['admin', 'super_admin', 'editor'].includes(session.role)) {
     return (
       <div className="container-pb py-16">
         <div className="mx-auto max-w-md card p-8 text-center">
@@ -39,7 +39,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   const repo = getRepo()
-  const pending = (await repo.stats()).pending
+  const stats = await repo.stats()
 
   return (
     <div className="container-pb py-5">
@@ -55,7 +55,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </div>
 
-      <AdminNav pending={pending} />
+      <AdminNav pending={stats.pending} aiPending={stats.aiPending} reports={stats.reports} />
 
       <div className="mt-5">{children}</div>
     </div>
