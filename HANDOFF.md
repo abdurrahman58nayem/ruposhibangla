@@ -25,6 +25,8 @@
 | গোপন কী (R2) ডেটাবেজে | `Repo.getSecret/setSecret` (json + neon) | ✅ `secret:` প্রিফিক্স; **পাবলিক `/api/settings`-এ আসে না** |
 | R2 অ্যাডমিন প্যানেল থেকে | `/admin/media` → `StorageSettingsForm`, API `app/api/admin/storage/route.ts` | ✅ সেভ + সংযোগ-পরীক্ষা + মুছুন; মান মাস্ক করা |
 | প্রথম অ্যাডমিন তৈরি (bootstrap) | `lib/bootstrap.ts` → `ensureAdminUser()` | ✅ env-এ `ADMIN_PASSWORD` থাকলে |
+| Neon ফাঁকা থাকলে স্বয়ংক্রিয় সিড | `lib/repo/neon-repo.ts` → `seedIfEmptyNeon()` | ✅ species ও posts দুটোই খালি হলে কেবল |
+| সব `getRepo()` কলে init() চালু | `lib/repo/index.ts` → `getRepo()` → `void getReadyRepo()` | ✅ |
 | `init()` কখনো ডাকা হতো না — ঠিক | `lib/repo/index.ts` → `getReadyRepo()` | ✅ লগইন/রেজিস্টার/অ্যাডমিন/সেটআপ-এ |
 | লগইন ইমেইল দিয়েও | `app/api/auth/login/route.ts` | ✅ ব্যবহারনাম **বা** ইমেইল |
 | অ্যাকাউন্ট সম্পাদনা | `/admin/account` + `app/api/admin/account/route.ts` | ✅ নাম/ইমেইল/পাসওয়ার্ড (বর্তমান পাসওয়ার্ড চায়) + অডিট লগ |
@@ -94,6 +96,7 @@ AI_PROVIDER / AI_API_KEY   ঐচ্ছিক — না দিলে লোক�
 - **Automated test** — কোনো টেস্ট-রানার নেই; CI শুধু tsc + lint + build। Vitest/Jest + Playwright যোগ করুন।
 - **§২৫-এর ২৭টি গ্রহণযোগ্যতা পরীক্ষা** একবার পুরোটা চালিয়ে দেখুন।
 - `app/admin/ai/page.tsx` খুব পাতলা — AI প্রশ্নের ৭-স্তর রিভিউ UI সম্পূর্ণ করুন।
+- **Neon-এর `init()`-এর সিডিংয়ের গতি** — বর্তমানে ৫৮৯টি `upsertSpecies` আলাদা কল; বড় হলে ব্যাচ-ইনসার্টে বদলান।
 - AI ভিশন (ছবি-প্রশ্ন) `AI_API_KEY` দিলেই চালু হওয়া উচিত — যাচাই করুন।
 
 ### F. নীতিমালা (কখনো ভাঙবেন না)

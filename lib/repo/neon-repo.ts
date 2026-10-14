@@ -242,6 +242,31 @@ const asRows = (result: unknown): any[] => {
   return Array.isArray(rows) ? rows : []
 }
 
+/**
+ * Neon ডেটাবেজ ফাঁকা থাকলে (কোনো প্রজাতি ও কোনো পোস্ট নেই) একবার সিড ডেটা বসায়।
+ *
+ * কেন দরকার: GitHub Workflow শুধু টেবিল তৈরি করে (সার্ভার ছাড়াই)। প্রজাতির ৫৮৯টি
+ * রেকর্ড বসানোর জন্য আলাদা করে /api/admin/setup কল করতে হতো — এখন সাইট প্রথমবার
+ * চালু হলেই নিজে থেকেই হয়ে যায়।
+ *
+ * নিরাপত্তা: species ও posts — দুটোই খালি থাকলে কেবল চালু হয়। কোনো একটিতে ডেটা
+ * থাকলে কিছুই করা হয় না, ফলে কোনো বিদ্যমান তথ্য কখনো মুছে যায় না।
+ */
+async function seedIfEmptyNeon(repo: any): Promise<void> {
+  try {
+    const sql = getSql()
+    const s = asRows(await sql`select count(*)::int as c from species`)
+    const p = asRows(await sql`select count(*)::int as c from posts`)
+    if (Number(s[0]?.c || 0) === 0 && Number(p[0]?.c || 0) === 0) {
+      console.log('[neon] ডেটাবেজ ফাঁকা — ৫৮৯টি প্রজাতি, চ্যানেল, পোস্ট ও খবর বসানো হচ্ছে…')
+      await repo.reseed()
+      console.log('[neon] সিড সম্পন্ন')
+    }
+  } catch (e) {
+    console.error('[neon] সিড যাচাই চলতে সমস্যা:', e)
+  }
+}
+
 export const neonRepo: Repo = {
   kind: 'neon',
 
@@ -249,6 +274,7 @@ export const neonRepo: Repo = {
     const sql = getSql()
     await sql`select 1`
     await ensureAdminUser(neonRepo)
+    await seedIfEmptyNeon(neonRepo)
   },
 
   // ---------- species ----------

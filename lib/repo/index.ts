@@ -3,8 +3,14 @@ import { jsonRepo } from './json'
 import { neonRepo } from './neon-repo'
 import type { Repo } from './types'
 
-export function getRepo(): Repo {
+function rawRepo(): Repo {
   return hasDb() ? neonRepo : jsonRepo
+}
+
+/** সিঙ্ক রেপো — যেকোনো জায়গায় ব্যবহার করা যায়; প্রথমবারে init() ব্যাকগ্রাউন্ডে চালু করে */
+export function getRepo(): Repo {
+  void getReadyRepo()
+  return rawRepo()
 }
 
 let readyPromise: Promise<Repo> | null = null
@@ -15,7 +21,7 @@ let readyPromise: Promise<Repo> | null = null
  */
 export function getReadyRepo(): Promise<Repo> {
   if (!readyPromise) {
-    const repo = getRepo()
+    const repo = rawRepo()
     readyPromise = repo
       .init()
       .then(() => repo)
