@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getSession } from '@/lib/auth'
-import { getRepo } from '@/lib/repo'
+import { getReadyRepo } from '@/lib/repo'
 import AdminNav from '@/components/admin/AdminNav'
 import LogoutButton from '@/components/admin/LogoutButton'
 import { ShieldAlert, ArrowLeft } from 'lucide-react'
@@ -38,7 +38,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     )
   }
 
-  const repo = getRepo()
+  const repo = await getReadyRepo()
   const stats = await repo.stats()
 
   return (

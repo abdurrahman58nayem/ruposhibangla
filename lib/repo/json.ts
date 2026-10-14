@@ -5,6 +5,7 @@ import type {
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
 import { CATEGORIES } from '@/lib/categories'
+import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
 
@@ -18,6 +19,8 @@ type DB = {
   news: News[]
   jeno: Jeno[]
   settings: SiteSettings
+  /** R2/AI-এর মতো গোপন কী — কখনো ক্লায়েন্টে পাঠানো হয় না */
+  secrets: Record<string, string>
   aiQuestions: AiQuestion[]
   notifications: Notification[]
   saves: SavedItem[]
@@ -50,6 +53,7 @@ function emptyDb(): DB {
     news: [],
     jeno: [],
     settings: { ...DEFAULT_SETTINGS },
+    secrets: {},
     aiQuestions: [],
     notifications: [],
     saves: [],
@@ -100,6 +104,7 @@ function seedDb(): DB {
     news: SEED_NEWS.map((n) => ({ ...n })),
     jeno: [],
     settings: { ...DEFAULT_SETTINGS },
+    secrets: {},
     aiQuestions: [],
     notifications: [],
     saves: [],
@@ -170,6 +175,7 @@ function migrate(db: DB): DB {
   db.auditLogs ||= []
   db.blocks ||= []
   db.settings = { ...DEFAULT_SETTINGS, ...(db.settings || {}) }
+  db.secrets = { ...(db.secrets || {}) }
   return db
 }
 
@@ -205,6 +211,7 @@ export const jsonRepo: Repo = {
 
   async init() {
     read()
+    await ensureAdminUser(jsonRepo)
   },
 
   // ---------- species ----------
@@ -507,6 +514,16 @@ export const jsonRepo: Repo = {
   async saveSettings(s) {
     const db = read()
     db.settings = s
+    write(db)
+  },
+  async getSecret(name) {
+    return read().secrets?.[name] || ''
+  },
+  async setSecret(name, value) {
+    const db = read()
+    db.secrets = db.secrets || {}
+    if (value) db.secrets[name] = value
+    else delete db.secrets[name]
     write(db)
   },
 

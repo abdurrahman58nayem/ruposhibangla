@@ -1,8 +1,15 @@
 import MediaManager from '@/components/admin/MediaManager'
-import { storageKind } from '@/lib/storage'
+import StorageSettingsForm from '@/components/admin/StorageSettingsForm'
+import { storageKindAsync } from '@/lib/storage'
 
 export const dynamic = 'force-dynamic'
 
-export default function Page() {
-  return <MediaManager storage={storageKind()} />
+export default async function Page() {
+  const storage = await storageKindAsync()
+  return (
+    <div className="space-y-6">
+      <StorageSettingsForm />
+      <MediaManager storage={storage} />
+    </div>
+  )
 }

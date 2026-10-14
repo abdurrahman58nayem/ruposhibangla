@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Leaf, Newspaper, ImageIcon, Users, MessageSquare, Settings, Database, Sparkles, PieChart, Flag, Binoculars } from 'lucide-react'
+import { LayoutDashboard, Leaf, Newspaper, ImageIcon, Users, MessageSquare, Settings, Database, Sparkles, PieChart, Flag, Binoculars, UserCog } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ITEMS = [
@@ -19,6 +19,7 @@ const ITEMS = [
   { href: '/admin/jeno', label: 'জেনো', icon: MessageSquare },
   { href: '/admin/settings', label: 'সেটিংস', icon: Settings },
   { href: '/admin/media', label: 'মিডিয়া / R2', icon: Database },
+  { href: '/admin/account', label: 'আমার অ্যাকাউন্ট', icon: UserCog },
 ]
 
 export default function AdminNav({ pending = 0, aiPending = 0, reports = 0 }: { pending?: number; aiPending?: number; reports?: number }) {

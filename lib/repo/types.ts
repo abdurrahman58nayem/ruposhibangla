@@ -123,6 +123,10 @@ export interface Repo {
   getSettings(): Promise<SiteSettings>
   saveSettings(s: SiteSettings): Promise<void>
 
+  // --- secrets (R2/AI ক্রেডেনশিয়াল — সার্ভার-সাইড, কখনো ক্লায়েন্টে যায় না) ---
+  getSecret(name: string): Promise<string>
+  setSecret(name: string, value: string): Promise<void>
+
   // --- misc ---
   stats(): Promise<Stats>
   search(q: string): Promise<{ species: Species[]; posts: Post[]; news: News[] }>

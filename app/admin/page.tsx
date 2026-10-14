@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getRepo } from '@/lib/repo'
 import { hasDb } from '@/lib/db/client'
-import { storageKind } from '@/lib/storage'
+import { storageKindAsync } from '@/lib/storage'
 import { toBn } from '@/lib/utils'
 import { Database, HardDrive, AlertTriangle, CheckCircle2, Sparkles, ExternalLink } from 'lucide-react'
 import SetupButton from '@/components/admin/SetupButton'
@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
   const [stats, jeno, users] = await Promise.all([repo.stats(), repo.listJeno(), repo.listUsers()])
 
   const dbOn = hasDb()
-  const storage = storageKind()
+  const storage = await storageKindAsync()
   const newJeno = jeno.filter((j) => j.status === 'new').length
   const channel = users.find((u) => u.username === 'ruposhibangla')
 

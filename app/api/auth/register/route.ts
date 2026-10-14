@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getRepo } from '@/lib/repo'
+import { getReadyRepo } from '@/lib/repo'
 import { hashPassword, createSessionToken, SESSION_COOKIE } from '@/lib/auth'
 import { slugify, uid } from '@/lib/utils'
 import { guard as rateGuard, tooManyRequests, RULES } from '@/lib/rate-limit'
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   if (username.length < 3) return NextResponse.json({ error: 'ব্যবহারনাম কমপক্ষে ৩ অক্ষরের হতে হবে' }, { status: 400 })
   if (password.length < 6) return NextResponse.json({ error: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে' }, { status: 400 })
 
-  const repo = getRepo()
+  const repo = await getReadyRepo()
   if (await repo.getUserByUsername(username)) {
     return NextResponse.json({ error: 'এই ব্যবহারনাম আগেই নেওয়া হয়েছে' }, { status: 409 })
   }

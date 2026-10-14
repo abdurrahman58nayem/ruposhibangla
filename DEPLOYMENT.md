@@ -4,6 +4,33 @@
 
 ---
 
+## ০) মার্জ করার পর লাইভ করতে — ১০টি ধাপ (এই অংশটি আগে পড়ুন)
+
+1. **main-এ মার্জ** — PR মার্জ হলে GitHub Actions-এ `CI` (tsc + lint + build) চলবে; সবুজ হলে এগোন।
+2. **GitHub-এ Neon সিক্রেট** — রিপো → *Settings → Secrets and variables → Actions → New repository secret*
+   → Name: `DATABASE_URL`, Value: Neon-এর pooled connection string।
+3. **টেবিল তৈরি** — *Actions → “Migrate (Neon)” → Run workflow*।
+   টিক দিন **Reseed** ও `site_url`-এ লাইভ ঠিকানা দিন (যেমন `https://ruposhibangla.org`)।
+   এতে `db/schema.sql`-এর ১৬টি টেবিল তৈরি হবে ও ৫৮৯টি প্রজাতির তথ্য বসবে।
+   > এরপর থেকে `db/schema.sql` বদলালে `main`-এ পুশ করলেই মাইগ্রেশন আপনি-থেকেই চলে।
+4. **Vercel-এ Environment Variables** —
+   `DATABASE_URL` · `AUTH_SECRET` (`openssl rand -base64 32`) · `ADMIN_USERNAME` · `ADMIN_EMAIL` ·
+   `ADMIN_PASSWORD` (প্রথম অ্যাডমিন তৈরিতে) · `NEXT_PUBLIC_SITE_URL`।
+5. **Redeploy** — Vercel → *Deployments → ⋯ → Redeploy* (env যোগের পরে অবশ্যই)।
+6. **অ্যাডমিন লগইন** — `/login` → ব্যবহারনাম `admin` **অথবা** ইমেইল — দুটোতেই চলে।
+   (প্রথম অ্যাডমিন `ADMIN_*` env থেকে স্বয়ংক্রিয়ভাবে তৈরি হয়; পাসওয়ার্ড scrypt-হ্যাশ করা থাকে।)
+7. **সাথে সাথে পাসওয়ার্ড বদলুন** — `/admin/account` → নাম, ইমেইল ও পাসওয়ার্ড বদলানো যায়।
+8. **R2 যুক্ত করুন** — `/admin/media` → *Cloudflare R2 সংযোগ* → Account ID, Bucket, Access Key, Secret
+   বসিয়ে **“সংযোগ পরীক্ষা”** চাপুন। (Vercel env-এ `R2_*` দিলেও হয় — তখন env-ই কার্যকর থাকে।)
+9. **লোগো ও সাইট পরিচয়** — `/admin/settings` → লোগো আপলোড (বর্গাকার PNG/SVG, ন্যূনতম ২৫৬×২৫৬),
+   সাইটের নাম, ট্যাগলাইন, হেডার নোটিশ, সোশ্যাল লিংক।
+10. **শেষ যাচাই** — `/admin` (ড্যাশবোর্ডের সংখ্যা সব ডেটাবেজ থেকে আসে) · `/admin/coverage` (কভারেজ) ·
+    `/admin/users` (রূপসী বাংলা চ্যানেলে ব্লু টিক আছে কিনা) · `/sitemap.xml` · `/robots.txt`।
+
+> ⚠️ Vercel-এর সার্ভারলেস পরিবেশে ফাইল-সিস্টেমে লেখা যায় না — প্রোডাকশনে **Neon ও R2 ব্যবহার করবেনই**।
+
+---
+
 ## ১) রিপোজিটরি
 
 ```bash
@@ -34,9 +61,11 @@ git push origin main
 | `AUTH_SECRET` | লম্বা র‍্যান্ডম স্ট্রিং (`openssl rand -base64 32`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://আপনার-ডোমেইন` |
 
-3. ডিপ্লয়ের পর সাইটে প্রথম অ্যাকাউন্ট খুলুন (প্রথমজনই অ্যাডমিন) → `/admin` → **ড্যাশবোর্ড**
-4. সেখানে **“টেবিল তৈরি”** ক্লিক করুন (Neon-এ ১০টি টেবিল তৈরি হবে)
-5. এরপর **“প্রজাতির তথ্য বসানো”** ক্লিক করুন — বাংলাদেশের সব প্রজাতি, রূপসী বাংলা চ্যানেল, সিড পোস্ট ও খবর ডেটাবেজে চলে যাবে
+3. টেবিল তৈরির **দুটি উপায়** — যেকোনো একটি:
+   - **GitHub Workflow (সুপারিশকৃত):** রিপো → *Settings → Secrets → Actions* → `DATABASE_URL` যোগ করুন,
+     তারপর *Actions → Migrate (Neon) → Run workflow*। স্কিমার উৎস `db/schema.sql` (১৬টি টেবিল)।
+   - **অ্যাডমিন প্যানেল:** `/admin` → **“টেবিল তৈরি”** → এরপর **“প্রজাতির তথ্য বসানো”**।
+4. লোকালে/টার্মিনালে: `DATABASE_URL="..." node scripts/migrate.mjs` (যোগ করতে পারেন `--reseed`)
 
 > চাইলে `db/schema.sql` ফাইলটি সরাসরি Neon SQL Editor-এ রান করতেও পারেন।
 
@@ -113,12 +142,13 @@ Vercel-এর সার্ভারলেস পরিবেশে ফাইল-
 
 ## ৭) ডিপ্লয়ের পর প্রথম কাজ
 
-1. `/register` → অ্যাকাউন্ট (প্রথমটি অ্যাডমিন)
-2. `/admin/settings` → সাইটের নাম, লোগো, হেডার নোটিশ, সোশ্যাল লিংক
-3. `/admin/users` → রূপসী বাংলা চ্যানেলে ব্লু টিক নিশ্চিত করুন
-4. `/admin/media` → নিজেদের ছবি আপলোড (R2)
-5. `/admin/species` → নতুন প্রজাতি যোগ / বিদ্যমান তথ্য হালনাগাদ
-6. `/admin/news` → প্রথম খবর প্রকাশ
+1. `/login` → অ্যাডমিন (`ADMIN_USERNAME`/`ADMIN_EMAIL` + `ADMIN_PASSWORD`) — প্রথম অ্যাডমিন env থেকে তৈরি হয়
+2. `/admin/account` → **পাসওয়ার্ড বদলুন**
+3. `/admin/media` → R2 সংযোগ যুক্ত করুন (Account ID, Bucket, Access/Secret Key → “সংযোগ পরীক্ষা”)
+4. `/admin/settings` → সাইটের নাম, **লোগো আপলোড**, হেডার নোটিশ, সোশ্যাল লিংক
+5. `/admin/users` → রূপসী বাংলা চ্যানেলে ব্লু টিক নিশ্চিত করুন
+6. `/admin/species` → নতুন প্রজাতি যোগ / বিদ্যমান তথ্য হালনাগাদ (CSV/JSON আমদানি-রপ্তানিও আছে)
+7. `/admin/news` → প্রথম খবর প্রকাশ
 
 ---
 
@@ -130,3 +160,6 @@ Vercel-এর সার্ভারলেস পরিবেশে ফাইল-
 | আপলোড লোকালে জমা হচ্ছে | R2-এর ৫টি env-এর সবগুলো পূরণ হয়েছে কিনা দেখুন |
 | অ্যাডমিন প্যানেলে ঢুকতে পারছি না | প্রথম অ্যাকাউন্টটি অ্যাডমিন; দ্বিতীয়জন হলে `/admin/users` থেকে role বদলান |
 | ফন্ট/লেআউট এলোমেলো | ব্রাউজার ক্যাশ ক্লিয়ার করে আবার লোড করুন (Hind Siliguri Google Fonts থেকে লোড হয়) |
+| Workflow-এ “DATABASE_URL সিক্রেট সেট করা নেই” | রিপো → *Settings → Secrets and variables → Actions* → `DATABASE_URL` যোগ করুন |
+| `/admin` “অ্যাডমিন অনুমতি নেই” | `ADMIN_USERNAME`/`ADMIN_EMAIL`/`ADMIN_PASSWORD` env ঠিক আছে কিনা দেখুন ও Redeploy করুন; অ্যাডমিন থাকলে bootstrap কাজ করে না |
+| লোগো বদলালেও দেখাচ্ছে না | `/admin/settings`-এ “সংরক্ষিত” বার্তা এসেছে কিনা দেখুন; ব্রাউজার হার্ড-রিফ্রেশ (Ctrl+Shift+R) করুন |

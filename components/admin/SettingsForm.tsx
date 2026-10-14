@@ -52,6 +52,10 @@ export default function SettingsForm({ initial }: { initial: SiteSettings }) {
           </div>
           <div className="sm:col-span-2">
             <UploadField value={s.logoUrl} onChange={(url) => setS({ ...s, logoUrl: url })} label="লোগো" />
+            <p className="mt-1 text-[11px] text-black/45">
+              এখান থেকে লোগো বদলালে সাইটের হেডার, ফুটার, ফেভিকন-বাদে সব জায়গার লোগো ও সোশ্যাল শেয়ার কার্ডে
+              সাথে সাথে বদলাবে। বর্গাকার PNG/SVG (ন্যূনতম ২৫৬×২৫৬) ব্যবহার করুন।
+            </p>
           </div>
           <div className="sm:col-span-2">
             <label className="label">পরিচিতি (সম্পর্কে পাতায়)</label>

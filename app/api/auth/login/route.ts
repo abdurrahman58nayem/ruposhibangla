@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getRepo } from '@/lib/repo'
+import { getReadyRepo } from '@/lib/repo'
 import { verifyPassword, createSessionToken, SESSION_COOKIE } from '@/lib/auth'
 import { guard as rateGuard, tooManyRequests, RULES } from '@/lib/rate-limit'
 
@@ -14,9 +14,16 @@ export async function POST(req: Request) {
   const password = String(body?.password || '')
   if (!username || !password) return NextResponse.json({ error: 'ব্যবহারনাম ও পাসওয়ার্ড দিন' }, { status: 400 })
 
-  const user = await getRepo().getUserByUsername(username)
+  const repo = await getReadyRepo()
+
+  // ব্যবহারনাম বা ইমেইল — দুটোতেই লগইন করা যায়
+  let user = await repo.getUserByUsername(username)
+  if (!user && username.includes('@')) {
+    const email = username.toLowerCase()
+    user = (await repo.listUsers()).find((u) => (u.email || '').toLowerCase() === email) || null
+  }
   if (!user || !verifyPassword(password, user.passwordHash)) {
-    return NextResponse.json({ error: 'ব্যবহারনাম বা পাসওয়ার্ড সঠিক নয়' }, { status: 401 })
+    return NextResponse.json({ error: 'ব্যবহারনাম/ইমেইল বা পাসওয়ার্ড সঠিক নয়' }, { status: 401 })
   }
 
   const res = NextResponse.json({

@@ -4,6 +4,7 @@ import type {
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
 import { CATEGORIES } from '@/lib/categories'
+import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
 
@@ -247,6 +248,7 @@ export const neonRepo: Repo = {
   async init() {
     const sql = getSql()
     await sql`select 1`
+    await ensureAdminUser(neonRepo)
   },
 
   // ---------- species ----------
@@ -684,13 +686,16 @@ export const neonRepo: Repo = {
     const sql = getSql()
     const rows = await sql`select key, value from settings`
     const out: any = { ...DEFAULT_SETTINGS }
-    asRows(rows).forEach((r: any) => {
-      try {
-        out[r.key] = JSON.parse(r.value)
-      } catch {
-        out[r.key] = r.value
-      }
-    })
+    asRows(rows)
+      // `secret:` দিয়ে শুরু হওয়া কীগুলো গোপন (R2/AI ক্রেডেনশিয়াল) — কখনো সেটিংসে ফেরত দেওয়া হয় না
+      .filter((r: any) => !String(r.key || '').startsWith('secret:'))
+      .forEach((r: any) => {
+        try {
+          out[r.key] = JSON.parse(r.value)
+        } catch {
+          out[r.key] = r.value
+        }
+      })
     return out as SiteSettings
   },
   async saveSettings(s) {
@@ -698,6 +703,20 @@ export const neonRepo: Repo = {
     for (const [k, v] of Object.entries(s)) {
       await sql`insert into settings (key, value) values (${k}, ${JSON.stringify(v)})
         on conflict (key) do update set value = excluded.value`
+    }
+  },
+  async getSecret(name) {
+    const sql = getSql()
+    const rows = asRows(await sql`select value from settings where key = ${'secret:' + name}`)
+    return rows[0]?.value || ''
+  },
+  async setSecret(name, value) {
+    const sql = getSql()
+    if (value) {
+      await sql`insert into settings (key, value) values (${'secret:' + name}, ${value})
+        on conflict (key) do update set value = excluded.value`
+    } else {
+      await sql`delete from settings where key = ${'secret:' + name}`
     }
   },
 
