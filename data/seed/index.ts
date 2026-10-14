@@ -11,6 +11,7 @@ import { FUNGI_ALGAE } from './fungi-algae'
 import { MICROBES } from './microbes'
 import { PLACES } from './places'
 import { LITERATURE } from './literature'
+import { EXTRA_SPECIES } from './extra-species'
 
 /**
  * পুরোনো/উত্তরাধিকারসূত্রে পাওয়া রেকর্ডে `group` না থাকলে বিভাগ থেকে অনুমান করা হয়।
@@ -48,6 +49,7 @@ function normalize(s: SpeciesSeed): Species {
 export const SPECIES: Species[] = [
   ...BIRDS, ...ANIMALS, ...PLANTS, ...FISH, ...REPTILES, ...AMPHIBIANS,
   ...INSECTS, ...INVERTEBRATES, ...FUNGI_ALGAE, ...MICROBES, ...PLACES, ...LITERATURE,
+  ...EXTRA_SPECIES,
 ].map(normalize)
 
 export const DEFAULT_SETTINGS: SiteSettings = {
