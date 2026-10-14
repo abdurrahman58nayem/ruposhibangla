@@ -73,6 +73,40 @@ M = [
     ("shingi", "heteropneustes-fossilis-stinging-catfish-1.jpg", "prani", "শিং", "https://commons.wikimedia.org/wiki/Category:Fish_of_West_Bengal", "উইকিমিডিয়া কমন্স", "high"),
     ("shol", "channa-striata-snakehead-murrel-site-com-1.jpg", "prani", "শোল", "https://commons.wikimedia.org/wiki/Category:Channa_striata", "উইকিমিডিয়া কমন্স", "medium"),
     ("silver-carp", "hypophthalmichthys-molitrix-silver-carp--1.jpg", "prani", "সিলভার কার্প", "https://commons.wikimedia.org/wiki/File:Silver_Carp_Adult_(Hypophthalmichthys_molitrix).jpg", "উইকিমিডিয়া কমন্স", "high"),
+    # ---------- জলজ অমেরুদণ্ডী (prani) ----------
+    ("bagda-chingri", "penaeus-monodon-giant-tiger-prawn-site-c-1.jpg", "prani", "বাগদা চিংড়ি", "https://commons.wikimedia.org/wiki/Category:Penaeus_monodon", "উইকিমিডিয়া কমন্স", "high"),
+    ("golda-chingri", "macrobrachium-rosenbergii-giant-river-pr-1.jpg", "prani", "গলদা চিংড়ি", "https://commons.wikimedia.org/wiki/Category:Macrobrachium_rosenbergii", "উইকিমিডিয়া কমন্স", "high"),
+    ("kankra", "scylla-serrata-mud-crab-site-commons-wik-1.jpg", "prani", "কাঁকড়া", "https://commons.wikimedia.org/wiki/File:Scylla_serrata_Mud_Crab.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("shamuk", "pila-globosa-apple-snail-site-commons-wi-1.jpg", "prani", "গলুই শামুক", "https://commons.wikimedia.org/wiki/Category:Pila_globosa", "উইকিমিডিয়া কমন্স", "high"),
+    ("nadir-jhinuk", "lamellidens-marginalis-freshwater-mussel-1.jpg", "prani", "নদীর ঝিনুক", "https://commons.wikimedia.org/wiki/Category:Lamellidens_marginalis", "উইকিমিডিয়া কমন্স", "high"),
+    ("jok", "hirudinaria-medicinal-leech-site-commons-1.jpg", "prani", "জোঁক", "https://commons.wikimedia.org/wiki/Category:Hirudo_medicinalis", "উইকিমিডিয়া কমন্স", "low"),
+    ("kecho", "earthworm-pheretima-site-commons-wikimed-1.jpg", "prani", "কেঁচো", "https://commons.wikimedia.org/wiki/File:Pheretima_sieboldi_siborutomimizu_01.jpg", "উইকিমিডিয়া কমন্স", "medium"),
+    ("makorsha", "argiope-spider-orb-weaver-site-commons-w-1.jpg", "prani", "মাকড়সা", "https://commons.wikimedia.org/wiki/Category:Argiope_aemula", "উইকিমিডিয়া কমন্স", "medium"),
+    ("laphano-makorsha", "plexippus-paykulli-jumping-spider-site-c-1.jpg", "prani", "লাফানো মাকড়সা", "https://commons.wikimedia.org/wiki/Category:Plexippus_paykulli", "উইকিমিডিয়া কমন্স", "high"),
+    # ---------- ছত্রাক / শৈবাল (udbhid) ----------
+    ("jhinuk-mushroom", "pleurotus-ostreatus-oyster-mushroom-site-1.jpg", "udbhid", "ঝিনুক মাশরুম", "https://commons.wikimedia.org/wiki/File:Pleurotus_ostreatus_(Oyster_Mushroom)_of_different_ages._Sycamore_tree_host.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("kather-chhatrak", "ganoderma-lucidum-bracket-fungus-site-co-1.jpg", "udbhid", "কাঠের ছত্রাক", "https://commons.wikimedia.org/wiki/Category:Ganoderma", "উইকিমিডিয়া কমন্স", "medium"),
+    ("khat-mashroom", "agaricus-bisporus-button-mushroom-site-c-1.jpg", "udbhid", "খাদ্য মাশরুম", "https://commons.wikimedia.org/wiki/File:Agaricus_bisporus_mushroom.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("lichen", "lichen-on-tree-bark-site-commons-wikimed-1.jpg", "udbhid", "লাইকেন", "https://commons.wikimedia.org/wiki/Category:Lichens", "উইকিমিডিয়া কমন্স", "high"),
+    ("spiroygaera", "spirogyra-algae-micrograph-site-commons--1.jpg", "udbhid", "স্পাইরোগাইরা", "https://commons.wikimedia.org/wiki/File:Spirogyra_algae_under_microscope.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("yeast", "saccharomyces-cerevisiae-yeast-cells-mic-1.jpg", "udbhid", "ইস্ট", "https://commons.wikimedia.org/wiki/Category:Microscopic_images_of_Saccharomyces_cerevisiae", "উইকিমিডিয়া কমন্স", "high"),
+    ("chlorella", "chlorella-vulgaris-site-commons-wikimedi-1.jpg", "udbhid", "ক্লোরেলা", "https://commons.wikimedia.org/wiki/File:Chlorella_vulgaris_NIES2170.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("azolla", "azolla-pinnata-mosquito-fern-site-common-1.jpg", "udbhid", "আজোল্লা", "https://commons.wikimedia.org/wiki/Category:Azolla_filiculoides", "উইকিমিডিয়া কমন্স", "medium"),
+    # ---------- উভচর (prani) ----------
+    ("kuno-byang", "duttaphrynus-melanostictus-common-toad-s-1.jpg", "prani", "কুনো ব্যাঙ", "https://commons.wikimedia.org/wiki/Category:Duttaphrynus_melanostictus", "উইকিমিডিয়া কমন্স", "high"),
+    ("sonali-bang", "hoplobatrachus-tigerinus-indian-bullfrog-1.jpg", "prani", "সোনালি টিকটিকি ব্যাঙ", "https://commons.wikimedia.org/wiki/File:Hoplobatrachus_tigerinus_-_%E0%A6%B8%E0%A7%8B%E0%A6%A8%E0%A6%BE_%E0%A6%AC%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%99_(Indian_bullfrog)_3.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("gechobang", "polypedates-leucomystax-tree-frog-site-c-1.jpg", "prani", "গেছো ব্যাঙ", "https://commons.wikimedia.org/wiki/File:Common_Tree_Frog_(Polypedates_leucomystax)8.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("kecho-sisilia", "ichthyophis-glutinosus-caecilian-site-co-1.jpg", "prani", "কেঁচো সিসিলিয়ান", "https://commons.wikimedia.org/wiki/Category:Ichthyophis_glutinosus", "উইকিমিডিয়া কমন্স", "high"),
+    ("khude-byang", "microhyla-ornata-ornate-narrow-mouthed-f-1.jpg", "prani", "ক্ষুদে ব্যাঙ", "https://commons.wikimedia.org/wiki/Category:Microhyla_ornata", "উইকিমিডিয়া কমন্স", "high"),
+    ("nol-byang", "euphlyctis-cyanophlyctis-skittering-frog-1.jpg", "prani", "নল ব্যাঙ", "https://commons.wikimedia.org/wiki/File:Euphlyctis_cyanophlyctis_(Skittering_frog)_(1)_34.jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("lonabang", "fejervarya-cancrivora-crab-eating-frog-s-1.jpg", "prani", "কাঁকড়াবাজ ব্যাঙ", "https://commons.wikimedia.org/wiki/File:Crab-eating_Frog_(Fejervarya_cancrivora)_(14136733284).jpg", "উইকিমিডিয়া কমন্স", "medium"),
+    # ---------- নদী-হাওর-দ্বীপ (sthan) ----------
+    ("tanguar-haor", "tanguar-haor-bangladesh-site-commons-wik-1.jpg", "sthan", "টাঙ্গুয়ার হাওর", "https://commons.wikimedia.org/wiki/Category:Tanguar_Haor", "উইকিমিডিয়া কমন্স", "high"),
+    ("hakaluki-haor", "hakaluki-haor-bangladesh-site-commons-wi-1.jpg", "sthan", "হাকালুকি হাওর", "https://commons.wikimedia.org/wiki/File:Fishing_by_spear_in_a_haor_of_Sunamganj,_Bangladesh.jpg", "উইকিমিডিয়া কমন্স", "medium"),
+    ("nijhum-dwip", "nijhum-dwip-bangladesh-site-commons-wiki-1.jpg", "sthan", "নিঝুম দ্বীপ", "https://commons.wikimedia.org/wiki/Category:Nijhum_Dwip", "উইকিমিডিয়া কমন্স", "high"),
+    ("sent-martin", "saint-martin-island-bangladesh-site-comm-1.jpg", "sthan", "সেন্ট মার্টিন দ্বীপ", "https://commons.wikimedia.org/wiki/Category:St._Martin%27s_Island", "উইকিমিডিয়া কমন্স", "high"),
+    ("jamuna", "jamuna-river-bangladesh-site-commons-wik-1.jpg", "sthan", "যমুনা", "https://commons.wikimedia.org/wiki/Category:Jamuna_River", "উইকিমিডিয়া কমন্স", "high"),
+    ("meghna", "meghna-river-bangladesh-site-commons-wik-1.jpg", "sthan", "মেঘনা", "https://commons.wikimedia.org/wiki/Category:Meghna_River", "উইকিমিডিয়া কমন্স", "high"),
 ]
 
 
