@@ -7,6 +7,8 @@ import { DETAILS_UDABHID } from './udbhidful'
 import { DETAILS_UDABHID2 } from './udbhidful2'
 import { DETAILS_MACHH } from './machh'
 import { DETAILS_MACHH2 } from './machh2'
+import { DETAILS_STANAPAYI } from './stanapayi'
+import { DETAILS_STANAPAYI2 } from './stanapayi2'
 import type { DetailsMap } from './types'
 
 export type { SpeciesDetail, DetailsMap } from './types'
@@ -21,6 +23,8 @@ export const SPECIES_DETAILS: DetailsMap = {
   ...DETAILS_UDABHID2,
   ...DETAILS_MACHH,
   ...DETAILS_MACHH2,
+  ...DETAILS_STANAPAYI,
+  ...DETAILS_STANAPAYI2,
 }
 
 export const DETAILS_COUNT = Object.keys(SPECIES_DETAILS).length
