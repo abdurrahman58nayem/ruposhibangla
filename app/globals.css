@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,6 +9,14 @@
   --forest-deep: #082015;
   --gold: #d7944f;
   --cream: #fdf8f0;
+
+  /* বাংলাদেশের প্রকৃতি ও ঐতিহ্য — মূল রঙের ছক */
+  --rb-forest: #1e4a35;
+  --rb-paddy: #e0a62c;
+  --rb-nadi: #2e7fb8;
+  --rb-mati: #cc5f42;
+  --rb-shapla: #d1517a;
+  --rb-kantha: #b04a4a;
 }
 
 * {
@@ -18,14 +26,62 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* ফন্ট রেন্ডারিং — বাংলা অক্ষর স্পষ্ট ও মসৃণ দেখাবে */
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  font-family: 'Hind Siliguri', 'Noto Sans Bengali', SolaimanLipi, system-ui, sans-serif;
+  font-family:
+    'Hind Siliguri',
+    'Noto Sans Bengali',
+    'Inter',
+    SolaimanLipi,
+    Kalpurush,
+    system-ui,
+    -apple-system,
+    sans-serif;
   background-color: #f7faf7;
   color: #14261d;
-  line-height: 1.75;
+  /* বাংলা লিপিতে মাত্রা-যুক্ত অক্ষর — একটু বেশি লাইন-হাইট পড়তে সহজ */
+  line-height: 1.85;
+  /* বেস সাইজ বাড়ানো — যেকোনো বয়সের দর্শক সহজে পড়তে পারবে */
+  font-size: 16.5px;
+  letter-spacing: 0;
+  font-variant-ligatures: common-ligatures;
+  font-feature-settings: 'kern' 1, 'liga' 1;
   overflow-x: hidden;
+}
+
+/* শিরোনাম — প্রিমিয়াম বাংলা সেরিফ */
+h1,
+h2,
+h3,
+.font-display {
+  font-family: 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+/* ছোট লেখাও যেন ঝাপসা না হয় */
+small,
+.text-xs {
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+/* ফোকাস — কীবোর্ড ব্যবহারকারীর জন্য স্পষ্ট রিং */
+:focus-visible {
+  outline: 2px solid #2b754f;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* কম দৃষ্টিশক্তির দর্শকের জন্য — সিস্টেম সেটিং মানা */
+@media (prefers-contrast: more) {
+  body {
+    color: #06170e;
+  }
 }
 
 @layer components {
@@ -60,7 +116,7 @@ body {
 
   .chip {
     @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-forest-100 bg-white
-      px-3 py-1.5 text-xs font-medium text-forest-800 transition hover:border-forest-300 hover:bg-forest-50;
+      px-3.5 py-1.5 text-[13px] font-medium text-forest-800 transition hover:border-forest-300 hover:bg-forest-50;
   }
 
   .chip-active {
@@ -77,11 +133,12 @@ body {
   }
 
   .section-title {
-    @apply text-lg font-bold text-forest-900 sm:text-xl;
+    @apply text-[1.2rem] font-bold leading-snug text-forest-900 sm:text-[1.4rem];
+    font-family: 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
   }
 
   .prose-bn {
-    @apply text-[15px] leading-[1.9] text-black/80;
+    @apply text-[16.5px] leading-[1.95] text-black/85;
   }
 
   .prose-bn p {

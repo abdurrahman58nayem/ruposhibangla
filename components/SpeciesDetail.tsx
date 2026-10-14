@@ -8,6 +8,8 @@ import { getRepo } from '@/lib/repo'
 import { IUCN, toBn, bnDate } from '@/lib/utils'
 import { speciesPath, typeLabel } from '@/lib/categories'
 import SpeciesActions from '@/components/SpeciesActions'
+import SpeciesSections from '@/components/SpeciesSections'
+import SpeciesVideoEmbed, { type VideoEmbed } from '@/components/SpeciesVideoEmbed'
 import { DATA_STATUS_LABEL } from '@/lib/i18n'
 import { MapPin, Utensils, Ruler, CalendarDays, Trees, BookOpen, Quote, Camera, Info, ExternalLink } from 'lucide-react'
 import type { Species, SpeciesType } from '@/lib/types'
@@ -31,6 +33,16 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
   const relatedSpecies = related.filter((x) => x.slug !== s.slug).slice(0, 4)
   const lic = licenseFor(s.image)
   const status = IUCN[s.conservation] || IUCN.NE
+  /** §12 — কপিরাইট-মুক্ত ভিডিও: ডাউনলোড না করে সরাসরি এম্বেড */
+  const videos: VideoEmbed[] = (s.media || [])
+    .filter((m) => m.kind === 'video' && m.url)
+    .map((m) => ({
+      url: m.url,
+      title: m.caption || `${s.nameBn} — ভিডিও`,
+      credit: m.credit,
+      license: m.license,
+      sourceUrl: m.sourceUrl,
+    }))
   const base = type === 'prani' ? '/prani' : type === 'udbhid' ? '/udbhid' : type === 'sthan' ? '/sthan' : '/sahitto'
 
   const facts = [
@@ -192,7 +204,15 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
               <BookOpen size={18} /> বিস্তারিত পরিচয়
             </h2>
             <div className="prose-bn">{s.description}</div>
+
+            {/* সম্পূর্ণ বিবরণ — বিষয়ভিত্তিক সেকশন (থাকলে) */}
+            <div className="mt-6 space-y-6 border-t border-black/5 pt-5">
+              <SpeciesSections s={s} />
+            </div>
           </section>
+
+          {/* কপিরাইট-মুক্ত ভিডিও — এম্বেড, ডাউনলোড নয় */}
+          {!!videos.length && <SpeciesVideoEmbed videos={videos} />}
 
           {!!s.poetViews?.length && (
             <section id="kobi" className="card mt-4 scroll-mt-24 p-5">

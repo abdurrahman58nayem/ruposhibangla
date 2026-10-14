@@ -6,6 +6,7 @@ import { buildFeedPage } from '@/lib/feed'
 import { getRepo } from '@/lib/repo'
 import { getSession } from '@/lib/auth'
 import { CATEGORIES, categoryLabel } from '@/lib/categories'
+import CategoryIcon from '@/components/icons/CategoryIcon'
 import { cn } from '@/lib/utils'
 import type { PostKind } from '@/lib/types'
 
@@ -119,6 +120,7 @@ export default async function Page({
               href={buildHref(base, { group: c.id })}
               className={cn('chip whitespace-nowrap', group === c.id && 'chip-active')}
             >
+              <CategoryIcon id={c.id} size={14} variant={group === c.id ? 'mono' : 'auto'} strokeWidth={2} />
               {c.label}
             </Link>
           ))}

@@ -15,6 +15,7 @@ import { EXTRA_SPECIES } from './extra-species'
 import { MORE_PLANTS } from './more-plants'
 import { MORE_ANIMALS } from './more-animals'
 import { SEED_IMAGE_BY_SLUG } from './media-images'
+import { withDetails, DETAILS_COUNT } from './details'
 
 /**
  * পুরোনো/উত্তরাধিকারসূত্রে পাওয়া রেকর্ডে `group` না থাকলে বিভাগ থেকে অনুমান করা হয়।
@@ -131,13 +132,14 @@ function withSeedImages(list: Species[]): Species[] {
   })
 }
 
-export const SPECIES: Species[] = withSeedImages(dedupe(ALL_SPECIES_SEED))
+export const SPECIES: Species[] = withDetails(withSeedImages(dedupe(ALL_SPECIES_SEED)))
 
 /** কতগুলো রেকর্ড ডুপ্লিকেট হিসেবে এক করা হয়েছে (স্বচ্ছতার জন্য) */
 export const SPECIES_STATS = {
   raw: ALL_SPECIES_SEED.length,
   unique: SPECIES.length,
   merged: ALL_SPECIES_SEED.length - SPECIES.length,
+  details: DETAILS_COUNT,
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {

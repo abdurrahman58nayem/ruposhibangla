@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Menu, Search, X, Leaf, User, LayoutDashboard, Bell, Languages } from 'lucide-react'
+import { Menu, Search, X, User, LayoutDashboard, Bell, Languages } from 'lucide-react'
 import type { SiteSettings, UserRole } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useApp } from '@/components/Providers'
@@ -72,15 +72,18 @@ export default function HeaderClient({
       </button>
 
       <Link href="/" className="flex min-w-0 items-center gap-2">
-        <span className="relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-forest-700 sm:h-10 sm:w-10">
+        <span className="relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5 sm:h-10 sm:w-10">
           {settings.logoUrl ? (
-            <Image src={settings.logoUrl} alt={settings.siteName} width={40} height={40} className="h-full w-full object-cover" />
+            <Image src={settings.logoUrl} alt={settings.siteName} width={40} height={40} className="h-full w-full object-contain" />
           ) : (
-            <Leaf className="text-white" size={20} />
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src="/brand/logo-mark.png" alt={settings.siteName} width={40} height={40} className="h-full w-full object-contain" />
           )}
         </span>
         <span className="min-w-0 leading-tight">
-          <span className="block truncate text-[15px] font-bold text-forest-900 sm:text-lg">{settings.siteName}</span>
+          <span className="block truncate font-display text-[16px] font-bold text-forest-900 sm:text-[19px]">
+            {settings.siteName}
+          </span>
           <span className="hidden truncate text-[11px] text-black/50 sm:block">{settings.tagline}</span>
         </span>
       </Link>

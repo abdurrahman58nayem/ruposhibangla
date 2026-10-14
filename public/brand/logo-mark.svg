@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="রূপসী বাংলা">
+  <title>রূপসী বাংলা</title>
+  <defs>
+    <linearGradient id="rbSun" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F2C14E"/>
+      <stop offset="1" stop-color="#D98A1F"/>
+    </linearGradient>
+    <linearGradient id="rbRiver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2E8FA8"/>
+      <stop offset="1" stop-color="#125C6E"/>
+    </linearGradient>
+    <linearGradient id="rbLeaf" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1E4A35"/>
+      <stop offset="1" stop-color="#3D9163"/>
+    </linearGradient>
+    <linearGradient id="rbShapla" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#E9789B"/>
+      <stop offset="1" stop-color="#B8456E"/>
+    </linearGradient>
+    <linearGradient id="rbRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1E4A35"/>
+      <stop offset="0.5" stop-color="#D98A1F"/>
+      <stop offset="1" stop-color="#2E8FA8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- পটভূমি -->
+  <circle cx="256" cy="256" r="256" fill="#FBF7EE"/>
+
+  <!-- নকশী কাঁথা — ক্ষুদ্র বিন্দুর বলয় -->
+  <g fill="#B8456E" opacity="0.30">
+    <circle cx="256" cy="26" r="5"/><circle cx="316" cy="32" r="5"/><circle cx="372" cy="52" r="5"/>
+    <circle cx="420" cy="88" r="5"/><circle cx="458" cy="136" r="5"/><circle cx="480" cy="192" r="5"/>
+    <circle cx="486" cy="256" r="5"/><circle cx="480" cy="320" r="5"/><circle cx="458" cy="376" r="5"/>
+    <circle cx="420" cy="424" r="5"/><circle cx="372" cy="460" r="5"/><circle cx="316" cy="480" r="5"/>
+    <circle cx="256" cy="486" r="5"/><circle cx="196" cy="480" r="5"/><circle cx="140" cy="460" r="5"/>
+    <circle cx="92" cy="424" r="5"/><circle cx="54" cy="376" r="5"/><circle cx="32" cy="320" r="5"/>
+    <circle cx="26" cy="256" r="5"/><circle cx="32" cy="192" r="5"/><circle cx="54" cy="136" r="5"/>
+    <circle cx="92" cy="88" r="5"/><circle cx="140" cy="52" r="5"/><circle cx="196" cy="32" r="5"/>
+  </g>
+
+  <!-- প্রধান বলয় -->
+  <circle cx="256" cy="256" r="212" fill="none" stroke="url(#rbRing)" stroke-width="12" opacity="0.90"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#1E4A35" stroke-width="2" opacity="0.14"/>
+
+  <!-- গোলাপি-সোনালি আলোর আভা -->
+  <circle cx="256" cy="256" r="188" fill="#FFFFFF"/>
+  <circle cx="256" cy="256" r="188" fill="url(#rbSun)" opacity="0.05"/>
+
+  <!-- সূর্য — সোনালি ক্ষেত -->
+  <circle cx="344" cy="152" r="66" fill="url(#rbSun)"/>
+  <circle cx="344" cy="152" r="86" fill="#F2C14E" opacity="0.14"/>
+
+  <!-- ধানের শিষ — প্রকৃতি -->
+  <g stroke="url(#rbLeaf)" stroke-linecap="round" fill="none">
+    <path d="M150 400 C 168 330, 182 282, 214 236" stroke-width="13"/>
+    <path d="M214 236 C 190 222, 172 226, 158 240" stroke-width="9"/>
+    <path d="M214 236 C 196 208, 200 188, 216 174" stroke-width="9"/>
+    <path d="M198 292 C 176 286, 162 292, 152 306" stroke-width="9"/>
+    <path d="M206 258 C 184 254, 170 258, 160 272" stroke-width="9"/>
+  </g>
+  <g fill="#D98A1F">
+    <ellipse cx="158" cy="240" rx="12" ry="6" transform="rotate(-30 158 240)"/>
+    <ellipse cx="216" cy="174" rx="12" ry="6" transform="rotate(18 216 174)"/>
+    <ellipse cx="152" cy="306" rx="12" ry="6" transform="rotate(-8 152 306)"/>
+    <ellipse cx="160" cy="272" rx="12" ry="6" transform="rotate(-16 160 272)"/>
+  </g>
+
+  <!-- নদী — দুই তরঙ্গ -->
+  <path d="M96 356 C 150 330, 206 382, 256 356 C 306 330, 362 382, 416 356 L 416 412 C 362 438, 306 386, 256 412 C 206 438, 150 386, 96 412 Z" fill="url(#rbRiver)"/>
+  <path d="M104 404 C 158 380, 210 428, 256 406 C 302 384, 354 428, 408 406" fill="none" stroke="#9FDCE8" stroke-width="7" opacity="0.55" stroke-linecap="round"/>
+
+  <!-- শাপলা — হৃদয় -->
+  <g transform="translate(256 300)">
+    <path d="M0 62 C -52 22, -66 -22, -40 -50 C -18 -72, 0 -54, 0 -34 C 0 -54, 18 -72, 40 -50 C 66 -22, 52 22, 0 62 Z" fill="url(#rbShapla)"/>
+    <path d="M0 42 C -26 16, -34 -10, -20 -28 C -9 -42, 0 -30, 0 -16 C 0 -30, 9 -42, 20 -28 C 34 -10, 26 16, 0 42 Z" fill="#FFFFFF" opacity="0.35"/>
+    <circle cx="0" cy="-6" r="9" fill="#F2C14E"/>
+  </g>
+
+  <!-- জাতীয় সবুজ কোণা -->
+  <path d="M96 96 h44 v-12 h-32 v32 z" fill="#1E4A35" opacity="0.55"/>
+</svg>

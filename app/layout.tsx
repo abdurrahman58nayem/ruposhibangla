@@ -49,7 +49,15 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: { card: 'summary_large_image', title: name, description: DEFAULT_DESC },
     alternates: { canonical: '/' },
-    icons: { icon: '/brand/logo-mark.png' },
+    icons: {
+      icon: [
+        { url: '/brand/favicon-32.png', sizes: '32x32', type: 'image/png' },
+        { url: '/brand/favicon-64.png', sizes: '64x64', type: 'image/png' },
+      ],
+      apple: '/brand/apple-touch-icon.png',
+      shortcut: '/brand/favicon-64.png',
+    },
+    manifest: '/manifest.webmanifest',
   }
 }
 
