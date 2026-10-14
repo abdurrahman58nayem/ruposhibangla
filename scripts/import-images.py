@@ -107,6 +107,28 @@ M = [
     ("sent-martin", "saint-martin-island-bangladesh-site-comm-1.jpg", "sthan", "সেন্ট মার্টিন দ্বীপ", "https://commons.wikimedia.org/wiki/Category:St._Martin%27s_Island", "উইকিমিডিয়া কমন্স", "high"),
     ("jamuna", "jamuna-river-bangladesh-site-commons-wik-1.jpg", "sthan", "যমুনা", "https://commons.wikimedia.org/wiki/Category:Jamuna_River", "উইকিমিডিয়া কমন্স", "high"),
     ("meghna", "meghna-river-bangladesh-site-commons-wik-1.jpg", "sthan", "মেঘনা", "https://commons.wikimedia.org/wiki/Category:Meghna_River", "উইকিমিডিয়া কমন্স", "high"),
+    # ---------- সরীসৃপ (prani) ----------
+    ("gokhro", "naja-kaouthia-monocled-cobra-site-common-1.jpg", "prani", "গোখরো", "https://commons.wikimedia.org/wiki/File:Indian_Cobra_Naja_naja_by_Dr_Raju_Kasambe_DSCN4991_(16).jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("chondrobora", "daboia-russelii-russell-s-viper-site-com-1.jpg", "prani", "চন্দ্রবোড়া", "https://commons.wikimedia.org/wiki/Category:Daboia_russelii", "উইকিমিডিয়া কমন্স", "high"),
+    ("ojogor", "python-molurus-indian-rock-python-site-c-1.jpg", "prani", "অজগর", "https://commons.wikimedia.org/wiki/Category:Python_molurus", "উইকিমিডিয়া কমন্স", "high"),
+    ("dhamon-sap", "ptyas-mucosa-indian-rat-snake-site-commo-1.jpg", "prani", "ধামন সাপ", "https://commons.wikimedia.org/wiki/Category:Ptyas_mucosa", "উইকিমিডিয়া কমন্স", "high"),
+    ("dhorashap", "xenochrophis-piscator-checkered-keelback-1.jpg", "prani", "ধোড়া সাপ", "https://commons.wikimedia.org/wiki/Category:Xenochrophis_piscator", "উইকিমিডিয়া কমন্স", "high"),
+    ("ghor-tiktiki", "hemidactylus-frenatus-common-house-gecko-1.jpg", "prani", "বাড়ির টিকটিকি", "https://commons.wikimedia.org/wiki/File:Successful_cockroach_hunting_of_the_common_house_gecko_(Hemidactylus_frenatus).jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("girigiti", "calotes-versicolor-oriental-garden-lizar-1.jpg", "prani", "গিরিগিটি", "https://commons.wikimedia.org/wiki/Category:Calotes_versicolor", "উইকিমিডিয়া কমন্স", "high"),
+    ("ghoreal", "gavialis-gangeticus-gharial-site-commons-1.jpg", "prani", "ঘড়িয়াল", "https://commons.wikimedia.org/wiki/Gavialis_gangeticus", "উইকিমিডিয়া কমন্স", "high"),
+    ("green-sea-turtle", "chelonia-mydas-green-sea-turtle-site-com-1.jpg", "prani", "সবুজ সামুদ্রিক কচ্ছপ", "https://commons.wikimedia.org/wiki/Category:Chelonia_mydas", "উইকিমিডিয়া কমন্স", "high"),
+    ("halud-pahari-kachhim", "lissemys-punctata-indian-flapshell-turtl-1.jpg", "prani", "হলুদ কচ্ছপ", "https://commons.wikimedia.org/wiki/Category:Lissemys_punctata", "উইকিমিডিয়া কমন্স", "high"),
+    ("kalo-kachhim", "geoclemys-hamiltonii-black-pond-turtle-s-1.jpg", "prani", "কালো কচ্ছপ", "https://commons.wikimedia.org/wiki/Category:Geoclemys_hamiltonii", "উইকিমিডিয়া কমন্স", "high"),
+    ("olive-ridley", "lepidochelys-olivacea-olive-ridley-turtl-1.jpg", "prani", "অলিভ রিডলি কচ্ছপ", "https://commons.wikimedia.org/wiki/Category:Lepidochelys_olivacea", "উইকিমিডিয়া কমন্স", "high"),
+    ("loudoga", "ahaetulla-nasuta-green-vine-snake-site-c-1.jpg", "prani", "লাউডগা", "https://commons.wikimedia.org/wiki/Category:Ahaetulla_nasuta", "উইকিমিডিয়া কমন্স", "high"),
+    # ---------- স্তন্যপায়ী (prani) ----------
+    ("badur", "pteropus-giganteus-indian-flying-fox-sit-1.png", "prani", "ভাদুড়", "https://commons.wikimedia.org/wiki/File:Indian_Flying_Fox_(Pteropus_giganteus)_Kolkata_West_Bengal_India_27042013.png", "উইকিমিডিয়া কমন্স", "high"),
+    ("bon-biral", "felis-chaus-jungle-cat-site-commons-wiki-1.jpg", "prani", "বন বিড়াল", "https://commons.wikimedia.org/wiki/Category:Felis_chaus", "উইকিমিডিয়া কমন্স", "high"),
+    ("buno-shukor", "sus-scrofa-wild-boar-site-commons-wikime-1.jpg", "prani", "বুনো শূকর", "https://commons.wikimedia.org/wiki/File:Wild_Boar_(Sus_scrofa_cristatus)_(20132274208).jpg", "উইকিমিডিয়া কমন্স", "high"),
+    ("kathbiralii", "funambulus-pennantii-five-striped-palm-s-1.jpg", "prani", "পাতি কাঠবিড়ালি", "https://commons.wikimedia.org/wiki/Category:Funambulus_pennantii", "উইকিমিডিয়া কমন্স", "high"),
+    ("neul", "urva-edwardsii-indian-grey-mongoose-site-1.jpg", "prani", "নকুল", "https://commons.wikimedia.org/wiki/Category:Urva_edwardsii", "উইকিমিডিয়া কমন্স", "high"),
+    ("shojaru", "hystrix-indica-indian-crested-porcupine--1.jpg", "prani", "সজারু", "https://commons.wikimedia.org/wiki/Hystrix_indica", "উইকিমিডিয়া কমন্স", "high"),
+    ("shombor", "rusa-unicolor-sambar-deer-site-commons-w-1.jpg", "prani", "সম্বর হরিণ", "https://commons.wikimedia.org/wiki/File:Young_Sambar_Deer_(Rusa_unicolor).jpg", "উইকিমিডিয়া কমন্স", "high"),
 ]
 
 
