@@ -17,6 +17,7 @@ import { MORE_ANIMALS } from './more-animals'
 import { MORE_BIRDS } from './more-birds'
 import { MORE_FISH } from './more-fish'
 import { MORE_HERPS } from './more-herps'
+import { MORE_MAMMALS } from './more-mammals'
 import { SEED_IMAGE_BY_SLUG } from './media-images'
 import { withDetails, DETAILS_COUNT } from './details'
 
@@ -123,7 +124,7 @@ function dedupe(list: Species[]): Species[] {
 const ALL_SPECIES_SEED: Species[] = [
   ...BIRDS, ...ANIMALS, ...PLANTS, ...FISH, ...REPTILES, ...AMPHIBIANS,
   ...INSECTS, ...INVERTEBRATES, ...FUNGI_ALGAE, ...MICROBES, ...PLACES, ...LITERATURE,
-  ...EXTRA_SPECIES, ...MORE_PLANTS, ...MORE_ANIMALS, ...MORE_BIRDS, ...MORE_FISH, ...MORE_HERPS,
+  ...EXTRA_SPECIES, ...MORE_PLANTS, ...MORE_ANIMALS, ...MORE_BIRDS, ...MORE_FISH, ...MORE_HERPS, ...MORE_MAMMALS,
 ].map(normalize)
 
 /** §12 — স্ক্রিপ্টে সংগৃহীত ছবি (data/seed/media-images.ts) যুক্ত করা */
