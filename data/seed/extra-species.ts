@@ -338,9 +338,12 @@ export const EXTRA_SPECIES: Species[] = [
     dataStatus: 'partial', sources: [HERPS_BD, GBIF],
   },
   {
-    slug: 'chandrabora', type: 'prani', group: 'sarisrip', category: 'সরীসৃপ',
-    nameBn: 'চন্দ্রবোড়া', nameEn: 'Banded Krait', scientificName: 'Bungarus fasciatus',
-    otherNames: ['শঙ্খিনী', 'চন্দ্রবোড়া সাপ'],
+    // নাম সংশোধন: এটি Banded Krait = 'শঙ্খিনী'। 'চন্দ্রবোড়া' নামটি Russell's Viper
+    // (Daboia russelii) -এর জন্য ব্যবহৃত হয়; আগের ভুল নামের কারণে এই রেকর্ডটি
+    // Russell's Viper-এর রেকর্ডে মার্জ হয়ে যাচ্ছিল (একই nameBn)।
+    slug: 'shonkhini', type: 'prani', group: 'sarisrip', category: 'সরীসৃপ',
+    nameBn: 'শঙ্খিনী', nameEn: 'Banded Krait', scientificName: 'Bungarus fasciatus',
+    otherNames: ['শঙ্খচূড়', 'ডোরা কেউটে', 'রাজা সাপ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Reptilia', order: 'Squamata', family: 'Elapidae', genus: 'Bungarus', species: 'Bungarus fasciatus' },
     summary: 'হলুদ-কালো ডোরার অত্যন্ত বিষধর সাপ; জলাশয়ের ধারে দেখা যায়।',
     description: 'চন্দ্রবোড়া সাধারণত শান্ত স্বভাবের; দিনে লুকিয়ে থাকে ও রাতে শিকার করে। পুকুরপাড় ও জলাশয়ের আশেপাশে বেশি দেখা যায়।',
