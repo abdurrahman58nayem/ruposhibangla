@@ -1,5 +1,5 @@
 import { getSql } from '@/lib/db/client'
-import { resolveSpeciesImage } from '@/lib/species-image'
+import { resolveSpeciesImage, resolveSpeciesMedia } from '@/lib/species-image'
 import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
@@ -87,7 +87,7 @@ function rowToSpecies(r: SpeciesRow): Species {
     origin: r.origin || undefined,
     threats: r.threats || '',
     conservationActions: r.conservation_actions || '',
-    media: P(r.media),
+    media: resolveSpeciesMedia(r.slug, P(r.media)),
     dataStatus: r.data_status || 'partial',
     lastVerifiedAt: r.last_verified_at ? new Date(r.last_verified_at).toISOString() : undefined,
     conflictingInfo: r.conflicting_info || '',
@@ -331,6 +331,7 @@ export const neonRepo: Repo = {
               category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'')
             ) like ${term})
         and (${!!q.featured}::boolean = false or featured = true)
+        and (${!q.hasVideo}::boolean = true or media like '%"kind":"video"%' or media like '%"kind": "video"%')
       order by featured desc, name_bn asc, slug asc
       limit ${limit} offset ${offset}
     `

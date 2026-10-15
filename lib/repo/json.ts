@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import { resolveSpeciesImage } from '@/lib/species-image'
+import { resolveSpeciesImage, resolveSpeciesMedia } from '@/lib/species-image'
 import path from 'node:path'
 import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
@@ -165,6 +165,7 @@ function migrate(db: DB): DB {
   db.species = (db.species || []).map((s) => ({
     ...s,
     image: resolveSpeciesImage(s.slug, s.image),
+    media: resolveSpeciesMedia(s.slug, s.media),
   }))
   db.posts ||= []
   db.comments ||= []
@@ -229,6 +230,7 @@ export const jsonRepo: Repo = {
       if (q.category && q.category !== 'all' && s.category !== q.category) return false
       if (q.dataStatus && q.dataStatus !== 'all' && (s.dataStatus || 'partial') !== q.dataStatus) return false
       if (q.featured && !s.featured) return false
+      if (q.hasVideo && !(s.media || []).some((m) => m.kind === 'video' && m.url)) return false
       if (q.q && !matchesSpecies(s, q.q)) return false
       return true
     })

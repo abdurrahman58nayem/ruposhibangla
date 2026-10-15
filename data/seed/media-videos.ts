@@ -28,4 +28,15 @@ export const SEED_VIDEOS: Record<string, SpeciesMedia[]> = {
       sourceUrl: 'https://commons.wikimedia.org/wiki/File:004_Pied_kingfisher_at_Queen_Elizabeth_National_Park_Video_by_Giles_Laurent.webm',
     },
   ],
+  dudhraj: [
+    {
+      kind: 'video',
+      url: 'https://upload.wikimedia.org/wikipedia/commons/8/83/Birds_of_Sahyadri_-Asian_Paradise_Flycatcher_-.webm',
+      caption: 'Indian Paradise Flycatcher — Sahyadri, India-তে ধারণ করা; এই ফুটেজ বাংলাদেশের নয়।',
+      credit: 'Vivek Kale',
+      license: 'CC BY 3.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Birds_of_Sahyadri_-Asian_Paradise_Flycatcher_-.webm',
+    },
+  ],
 }

@@ -12,6 +12,8 @@ export type SpeciesQuery = {
   q?: string
   dataStatus?: DataStatus | 'all'
   featured?: boolean
+  /** true হলে শুধু ভিডিও-আছে এমন প্রজাতি (রিলস ফিডের জন্য) */
+  hasVideo?: boolean
   limit?: number
   offset?: number
 }

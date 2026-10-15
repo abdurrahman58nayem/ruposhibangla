@@ -4,10 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, Plus, Trash2 } from 'lucide-react'
 import UploadField from './UploadField'
-import type { Species, DataStatus, GroupId } from '@/lib/types'
+import type { Species, SpeciesMedia, DataStatus, GroupId } from '@/lib/types'
 import { CATEGORIES } from '@/lib/categories'
 
 const CONSERVATION = ['LC', 'NT', 'VU', 'EN', 'CR', 'EW', 'EX', 'DD', 'NE']
+const MEDIA_LICENSES = [
+  '', 'CC0 1.0', 'CC BY 4.0', 'CC BY 3.0', 'CC BY 2.0', 'CC BY-SA 4.0', 'CC BY-SA 3.0',
+  'CC BY-SA 2.0', 'CC BY-NC 4.0', 'CC BY-NC-SA 4.0', 'Public domain', 'যাচাই বাকি',
+]
+const DIRECT_VIDEO_RE = /\.(webm|mp4|ogv|ogg|mov|m4v)(\?.*)?$/i
 const CATEGORIES_PRANI = ['পাখি', 'স্তন্যপায়ী', 'সরীসৃপ', 'উভচর', 'মাছ', 'পতঙ্গ', 'অন্যান্য']
 const CATEGORIES_UDBHID = ['বন গাছ', 'ফল গাছ', 'ফুল গাছ', 'ঔষধি গাছ', 'জলজ উদ্ভিদ', 'ম্যানগ্রোভ', 'তাল-জাতীয়', 'বট-জাতীয়', 'ঘাস-জাতীয়', 'ফসল', 'অন্যান্য']
 
@@ -25,6 +30,28 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
     const next = [...poetViews]
     next[i] = { ...next[i], [key]: value }
     set('poetViews', next)
+  }
+
+  const media = s.media || []
+  const setMedia = (i: number, key: keyof SpeciesMedia, value: string) => {
+    const next = [...media]
+    next[i] = { ...next[i], [key]: value }
+    set('media', next)
+  }
+  const detectKind = (url: string): 'video' | 'image' =>
+    DIRECT_VIDEO_RE.test(url) || /youtube\.com|youtu\.be|commons\.wikimedia\.org\/wiki\/File:/i.test(url)
+      ? 'video'
+      : 'image'
+  /** রিলসে দেখানোর শর্ত: সরাসরি ভিডিও ফাইল + পূর্ণ ক্রেডিট/লাইসেন্স/উৎস (§12) */
+  const reelStatus = (m: SpeciesMedia): { ok: boolean; reason: string } => {
+    if (!m.url) return { ok: false, reason: 'URL দিন' }
+    if (!DIRECT_VIDEO_RE.test(m.url))
+      return { ok: false, reason: 'সরাসরি ফাইল (.webm/.mp4) নয় — শুধু প্রজাতির পাতায় দেখাবে' }
+    if (!m.credit) return { ok: false, reason: 'ক্রেডিট (নির্মাতা) বাকি' }
+    if (!m.license || m.license === 'যাচাই বাকি') return { ok: false, reason: 'লাইসেন্স বাকি' }
+    if (!m.licenseUrl) return { ok: false, reason: 'লাইসেন্স URL বাকি' }
+    if (!m.sourceUrl) return { ok: false, reason: 'উৎস URL বাকি' }
+    return { ok: true, reason: 'রিলসে দেখাবে' }
   }
 
   async function save(e: React.FormEvent) {
@@ -266,6 +293,129 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
             rows={3}
             className="field resize-none"
           />
+        </div>
+      </div>
+
+      <div className="card p-5">
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-bold text-forest-900">ভিডিও ও মিডিয়া (রিলস)</h3>
+          <button
+            type="button"
+            onClick={() => set('media', [...media, { url: '', kind: 'video' }])}
+            className="btn-soft shrink-0 px-3 py-1 text-xs"
+          >
+            <Plus size={13} /> ভিডিও যোগ করুন
+          </button>
+        </div>
+        <p className="mb-3 text-[11px] leading-relaxed text-black/45">
+          এখানে যোগ করা ভিডিও প্রজাতির পাতার “ভিডিও” সেকশনে দেখাবে।{' '}
+          <b>রিলসে</b> দেখাতে হলে সরাসরি ভিডিও ফাইলের URL (.webm/.mp4 — যেমন Wikimedia
+          Commons-এর upload.wikimedia.org লিংক) দিতে হবে, সাথে ক্রেডিট + লাইসেন্স + লাইসেন্স URL +
+          উৎস URL বাধ্যতামূলক। YouTube লিংক দিলে তা শুধু প্রজাতির পাতায় দেখাবে, রিলসে নয়।
+          ভিডিও ডাউনলোড করে আপলোড করবেন না — উৎসের লিংক থেকেই চলবে।
+        </p>
+        {media.length === 0 && <p className="text-xs text-black/45">এখনো কোনো ভিডিও নেই।</p>}
+        <div className="space-y-3">
+          {media.map((m, i) => {
+            const st = reelStatus(m)
+            return (
+              <div key={i} className="rounded-xl bg-earth-50/50 p-3">
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="label">ভিডিও URL *</label>
+                    <input
+                      value={m.url}
+                      onChange={(e) => {
+                        const url = e.target.value.trim()
+                        const next = [...media]
+                        next[i] = { ...next[i], url, kind: detectKind(url) }
+                        set('media', next)
+                      }}
+                      placeholder="https://upload.wikimedia.org/.../পাখি.webm"
+                      className="field"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="label">শিরোনাম/ব্যাখ্যা</label>
+                    <input
+                      value={m.caption || ''}
+                      onChange={(e) => setMedia(i, 'caption', e.target.value)}
+                      placeholder="যেমন: ঢাকার পুকুরে ধলাবুক মাছরাঙা (ধারণস্থান উল্লেখ করুন)"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">ধরন</label>
+                    <select
+                      value={m.kind}
+                      onChange={(e) => setMedia(i, 'kind', e.target.value)}
+                      className="field"
+                    >
+                      <option value="video">ভিডিও</option>
+                      <option value="image">ছবি</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">ক্রেডিট (নির্মাতা/ফটোগ্রাফার) *</label>
+                    <input
+                      value={m.credit || ''}
+                      onChange={(e) => setMedia(i, 'credit', e.target.value)}
+                      placeholder="যেমন: Rahim Uddin"
+                      className="field"
+                    />
+                  </div>
+                  <div>
+                    <label className="label">লাইসেন্স *</label>
+                    <select
+                      value={m.license || ''}
+                      onChange={(e) => setMedia(i, 'license', e.target.value)}
+                      className="field"
+                    >
+                      {MEDIA_LICENSES.map((l) => (
+                        <option key={l} value={l}>
+                          {l || '— বেছে নিন —'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">লাইসেন্স URL *</label>
+                    <input
+                      value={m.licenseUrl || ''}
+                      onChange={(e) => setMedia(i, 'licenseUrl', e.target.value)}
+                      placeholder="https://creativecommons.org/licenses/..."
+                      className="field"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="label">উৎস URL (মূল ফাইলের পাতা) *</label>
+                    <input
+                      value={m.sourceUrl || ''}
+                      onChange={(e) => setMedia(i, 'sourceUrl', e.target.value)}
+                      placeholder="https://commons.wikimedia.org/wiki/File:..."
+                      className="field"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                      st.ok ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}
+                  >
+                    {st.ok ? '✔' : '○'} {st.reason}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => set('media', media.filter((_, j) => j !== i))}
+                    className="inline-flex items-center gap-1 text-[11px] text-red-600"
+                  >
+                    <Trash2 size={12} /> সরিয়ে দিন
+                  </button>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
