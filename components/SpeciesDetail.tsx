@@ -43,6 +43,7 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
       title: m.caption || `${s.nameBn} — ভিডিও`,
       credit: m.credit,
       license: m.license,
+      licenseUrl: m.licenseUrl,
       sourceUrl: m.sourceUrl,
     }))
   const base = type === 'prani' ? '/prani' : type === 'udbhid' ? '/udbhid' : type === 'sthan' ? '/sthan' : '/sahitto'

@@ -9,6 +9,7 @@ import-images.py সব সারি নতুন করে লেখে (source
 
 ব্যবহার:
   python3 scripts/add-images.py /tmp/rows.tsv
+  python3 scripts/add-images.py --replace /tmp/rows.tsv  # আগে থাকা slug-এর ছবি/উৎস বদলাতে
 
 rows.tsv এর কলাম (TAB দিয়ে আলাদা):
   slug  dir  subject  srcfile  source_url  site  confidence
@@ -43,11 +44,35 @@ def existing_slugs(text: str) -> set:
     return set(re.findall(r"slug: '([^']*)'", text))
 
 
+def remove_slug_block(text: str, slug: str) -> tuple[str, bool]:
+    """Remove one generated media record so --replace can append its new version."""
+    lines = text.splitlines(keepends=True)
+    needle = "slug: '%s'," % slug
+    matches = [i for i, line in enumerate(lines) if line.strip() == needle]
+    if not matches:
+        return text, False
+    index = matches[0]
+    start = index
+    while start >= 0 and lines[start].strip() != "{":
+        start -= 1
+    end = index
+    while end < len(lines) and lines[end].strip() != "},":
+        end += 1
+    if start < 0 or end >= len(lines):
+        raise ValueError("generated image record block not found for " + slug)
+    del lines[start : end + 1]
+    return "".join(lines), True
+
+
 def main() -> None:
-    if len(sys.argv) < 2:
+    args = sys.argv[1:]
+    replace = bool(args and args[0] == "--replace")
+    if replace:
+        args = args[1:]
+    if not args:
         print(__doc__)
         sys.exit(1)
-    rows_path = sys.argv[1]
+    rows_path = args[0]
     with open(TS, encoding="utf-8") as fh:
         text = fh.read()
     have = existing_slugs(text)
@@ -65,8 +90,16 @@ def main() -> None:
                 continue
             slug, d, subject, src, source, site, conf = parts
             if slug in have:
-                skipped_dup.append(slug)
-                continue
+                if replace:
+                    text, removed = remove_slug_block(text, slug)
+                    if removed:
+                        have.discard(slug)
+                    else:
+                        skipped_dup.append(slug)
+                        continue
+                else:
+                    skipped_dup.append(slug)
+                    continue
             sp = os.path.join(SRC, src)
             if not os.path.exists(sp):
                 skipped_missing.append((slug, src))
@@ -99,7 +132,7 @@ def main() -> None:
             low = w < 400  # ইতিমধ্যে MIN_W পাস করেছে, তাই False-ই থাকবে
             have.add(slug)
             added.append(slug)
-            note = "%s-এ প্রকাশিত উন্মুক্ত-লাইসেন্স ছবি। মূল ফাইলের লেখক ও সুনির্দিষ্ট লাইসেন্স প্রকাশের আগে যাচাই করতে হবে।" % site
+            note = "%s-এ পাওয়া ছবির মূল উৎস, লেখক ও সুনির্দিষ্ট লাইসেন্স প্রকাশের আগে যাচাই করতে হবে।" % site
             if conf == "low":
                 note += " উৎস-পাতায় প্রজাতিটি সম্পর্কে সন্দেহ আছে — বিশেষজ্ঞের মাধ্যমে যাচাই প্রয়োজন।"
             blocks.append(

@@ -1,3 +1,5 @@
+import { SEED_IMAGES } from './media-images'
+
 /**
  * মিডিয়া লাইসেন্স রেকর্ড (§12) — প্রকাশের আগে প্রতিটি ছবি/ভিডিওর উৎস, লেখক ও লাইসেন্স যাচাই করা বাধ্যতামূলক।
  *
@@ -496,5 +498,19 @@ export const MEDIA_LICENSES: MediaLicense[] = [
 export function licenseFor(file: string): MediaLicense | undefined {
   if (!file) return undefined
   const clean = file.split('?')[0]
-  return MEDIA_LICENSES.find((m) => m.file === clean)
+  const registered = MEDIA_LICENSES.find((m) => m.file === clean)
+  if (registered) return registered
+  const seedImage = SEED_IMAGES.find((image) => image.file === clean)
+  if (!seedImage) return undefined
+  return {
+    file: seedImage.file,
+    subject: seedImage.subject,
+    slug: seedImage.slug,
+    kind: 'image',
+    credit: '',
+    source: seedImage.source,
+    license: seedImage.license,
+    verified: seedImage.verified,
+    note: seedImage.note,
+  }
 }

@@ -123,7 +123,7 @@ export const MORE_BIRDS: Species[] = [
     origin: 'native', conservation: 'LC', conservationBn: 'ন্যূনতম বিপদগ্রস্ত',
     threats: 'জলাশয় ভরাট, কীটনাশক, জল দূষণ, বাসা ধ্বংস।',
     conservationActions: 'জলাশয় সংরক্ষণ, কীটনাশক কমানো, দূষণ নিয়ন্ত্রণ।',
-    colorTags: ['#4a2f2a', '#6d4a35', '#2b1c19'], image: '',
+    colorTags: ['#4a2f2a', '#6d4a35', '#2b1c19'], image: '/seed/prani/glossy-ibis.jpg',
     dataStatus: 'partial', sources: [BIRDS_BD, GBIF, IUCN],
   },
   {

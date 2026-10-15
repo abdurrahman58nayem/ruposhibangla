@@ -15,6 +15,7 @@ export type VideoEmbed = {
   title: string
   credit?: string
   license?: string
+  licenseUrl?: string
   sourceUrl?: string
   poster?: string
 }
@@ -53,10 +54,10 @@ export default function SpeciesVideoEmbed({ videos }: { videos: VideoEmbed[] }) 
 
           return (
             <figure key={i} className="overflow-hidden rounded-xl bg-black/95">
-              <div className="relative aspect-video w-full">
+              <div className="relative mx-auto aspect-[9/16] w-full max-w-sm bg-black">
                 {asDirectVideo(v.url) ? (
                   <video
-                    className="h-full w-full"
+                    className="h-full w-full object-contain"
                     controls
                     preload="metadata"
                     poster={v.poster}
@@ -97,7 +98,17 @@ export default function SpeciesVideoEmbed({ videos }: { videos: VideoEmbed[] }) 
               <figcaption className="bg-black/80 px-3 py-2 text-[11px] leading-relaxed text-white/70">
                 <span className="font-medium text-white/90">{v.title}</span>
                 {v.credit && <> · ক্রেডিট: {v.credit}</>}
-                {v.license && <> · লাইসেন্স: {v.license}</>}
+                {v.license && (
+                  <>
+                    {' '}
+                    · লাইসেন্স:{' '}
+                    {v.licenseUrl ? (
+                      <a href={v.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted hover:text-white">
+                        {v.license}
+                      </a>
+                    ) : v.license}
+                  </>
+                )}
                 {v.sourceUrl && (
                   <>
                     {' '}
@@ -112,6 +123,10 @@ export default function SpeciesVideoEmbed({ videos }: { videos: VideoEmbed[] }) 
                     </a>
                   </>
                 )}
+                {' · '}
+                <a href="/reels" className="underline decoration-dotted hover:text-white">
+                  রিলসে পূর্ণপর্দায় দেখুন
+                </a>
               </figcaption>
             </figure>
           )

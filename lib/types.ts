@@ -80,6 +80,7 @@ export type SpeciesMedia = {
   caption?: string
   credit?: string
   license?: string
+  licenseUrl?: string
   sourceUrl?: string
 }
 

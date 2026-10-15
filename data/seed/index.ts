@@ -21,9 +21,17 @@ import { MORE_MAMMALS } from './more-mammals'
 import { MORE_PLANTS2 } from './more-plants2'
 import { MORE_INSECTS } from './more-insects'
 import { MORE_BIRDS2 } from './more-birds2'
+import { MORE_BIRDS3 } from './more-birds3'
+import { MORE_BIRDS4 } from './more-birds4'
+import { MORE_BIRDS5 } from './more-birds5'
+import { MORE_BIRDS6 } from './more-birds6'
+import { MORE_BIRDS7 } from './more-birds7'
+import { MORE_BIRDS8 } from './more-birds8'
+import { MORE_BIRDS9 } from './more-birds9'
 import { MORE_PLANTS3 } from './more-plants3'
 import { MORE_INSECTS2 } from './more-insects2'
 import { SEED_IMAGE_BY_SLUG } from './media-images'
+import { SEED_VIDEOS } from './media-videos'
 import { withDetails, DETAILS_COUNT } from './details'
 
 /**
@@ -129,7 +137,7 @@ function dedupe(list: Species[]): Species[] {
 const ALL_SPECIES_SEED: Species[] = [
   ...BIRDS, ...ANIMALS, ...PLANTS, ...FISH, ...REPTILES, ...AMPHIBIANS,
   ...INSECTS, ...INVERTEBRATES, ...FUNGI_ALGAE, ...MICROBES, ...PLACES, ...LITERATURE,
-  ...EXTRA_SPECIES, ...MORE_PLANTS, ...MORE_ANIMALS, ...MORE_BIRDS, ...MORE_FISH, ...MORE_HERPS, ...MORE_MAMMALS, ...MORE_PLANTS2, ...MORE_INSECTS, ...MORE_BIRDS2, ...MORE_PLANTS3, ...MORE_INSECTS2,
+  ...EXTRA_SPECIES, ...MORE_PLANTS, ...MORE_ANIMALS, ...MORE_BIRDS, ...MORE_FISH, ...MORE_HERPS, ...MORE_MAMMALS, ...MORE_PLANTS2, ...MORE_INSECTS, ...MORE_BIRDS2, ...MORE_BIRDS3, ...MORE_BIRDS4, ...MORE_BIRDS5, ...MORE_BIRDS6, ...MORE_BIRDS7, ...MORE_BIRDS8, ...MORE_BIRDS9, ...MORE_PLANTS3, ...MORE_INSECTS2,
 ].map(normalize)
 
 /** §12 — স্ক্রিপ্টে সংগৃহীত ছবি (data/seed/media-images.ts) যুক্ত করা */
@@ -141,7 +149,19 @@ function withSeedImages(list: Species[]): Species[] {
   })
 }
 
-export const SPECIES: Species[] = withDetails(withSeedImages(dedupe(ALL_SPECIES_SEED)))
+/** Commons-এর যাচাইকৃত মুক্ত ভিডিও প্রজাতির media[]-তে যোগ করা হয়; একই URL দুবার নয়। */
+function withSeedVideos(list: Species[]): Species[] {
+  return list.map((s) => {
+    const videos = SEED_VIDEOS[s.slug]
+    if (!videos?.length) return s
+    const current = s.media || []
+    const urls = new Set(current.map((m) => m.url))
+    const additions = videos.filter((m) => m.kind === 'video' && m.url && !urls.has(m.url))
+    return additions.length ? { ...s, media: [...current, ...additions] } : s
+  })
+}
+
+export const SPECIES: Species[] = withDetails(withSeedVideos(withSeedImages(dedupe(ALL_SPECIES_SEED))))
 
 /** কতগুলো রেকর্ড ডুপ্লিকেট হিসেবে এক করা হয়েছে (স্বচ্ছতার জন্য) */
 export const SPECIES_STATS = {
