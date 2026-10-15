@@ -1,4 +1,5 @@
 import fs from 'node:fs'
+import { resolveSpeciesImage } from '@/lib/species-image'
 import path from 'node:path'
 import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
@@ -159,7 +160,10 @@ function read(): DB {
 
 /** পুরোনো .data/db.json-এ নতুন কালেকশন না থাকলে যোগ করে নেয় */
 function migrate(db: DB): DB {
-  db.species ||= []
+  db.species = (db.species || []).map((s) => ({
+    ...s,
+    image: resolveSpeciesImage(s.slug, s.image),
+  }))
   db.posts ||= []
   db.comments ||= []
   db.likes ||= []
@@ -228,7 +232,7 @@ export const jsonRepo: Repo = {
     })
     rows = [...rows].sort((a, b) => {
       if (!!b.featured !== !!a.featured) return b.featured ? 1 : -1
-      return a.nameBn.localeCompare(b.nameBn, 'bn')
+      return a.nameBn.localeCompare(b.nameBn, 'bn') || a.slug.localeCompare(b.slug)
     })
     if (q.offset) rows = rows.slice(q.offset)
     if (q.limit) rows = rows.slice(0, q.limit)

@@ -3,8 +3,8 @@ import Link from 'next/link'
 import { Search } from 'lucide-react'
 import CategoryRail from '@/components/CategoryRail'
 import SpeciesCard from '@/components/SpeciesCard'
-import { getRepo } from '@/lib/repo'
-import { CATEGORIES, CATEGORY_MAP } from '@/lib/categories'
+import { getReadyRepo } from '@/lib/repo'
+import { CATEGORY_MAP } from '@/lib/categories'
 import { toBn } from '@/lib/utils'
 import type { GroupId, SpeciesType } from '@/lib/types'
 
@@ -22,20 +22,29 @@ const TYPES: { id: SpeciesType | 'all'; label: string }[] = [
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ group?: string; type?: string; q?: string; status?: string }>
+  searchParams: Promise<{ group?: string; type?: string; q?: string; status?: string; page?: string }>
 }) {
   const sp = await searchParams
   const group = (sp.group && CATEGORY_MAP[sp.group] ? sp.group : 'all') as GroupId | 'all'
   const type = (TYPES.some((t) => t.id === sp.type) ? sp.type : 'all') as SpeciesType | 'all'
   const q = (sp.q || '').trim()
 
-  const repo = getRepo()
-  const [items, total, coverage] = await Promise.all([
-    repo.listSpecies({ group, type, q: q || undefined, limit: 60 }),
-    repo.countSpecies({ group, type, q: q || undefined }),
-    repo.coverage(),
-  ])
-  const groupTotal = coverage.find((c) => c.group === group)?.total ?? 0
+  const pageSize = 60
+  const requestedPage = /^\d{1,6}$/.test(sp.page || '') ? Math.max(1, Number(sp.page)) : 1
+  const repo = await getReadyRepo()
+  const filters = { group, type, q: q || undefined }
+  const total = await repo.countSpecies(filters)
+  const pages = Math.max(1, Math.ceil(total / pageSize))
+  const page = Math.min(requestedPage, pages)
+  const pageHref = (target: number) => {
+    const params = new URLSearchParams()
+    if (group !== 'all') params.set('group', group)
+    if (type !== 'all') params.set('type', type)
+    if (q) params.set('q', q)
+    params.set('page', String(target))
+    return `/gyan?${params}`
+  }
+  const items = await repo.listSpecies({ ...filters, limit: pageSize, offset: (page - 1) * pageSize })
 
   return (
     <div className="container-pb py-6">
@@ -96,9 +105,11 @@ export default async function Page({
           </>
         )}
         {group === 'all' && <>মোট </>}
-        <b className="text-forest-800">{toBn(group !== 'all' ? groupTotal : total)}</b> টি রেকর্ড
-        {q && <> · “{q}” অনুসন্ধানে {toBn(items.length)} টি</>}
+        <b className="text-forest-800">{toBn(total)}</b> টি রেকর্ড
+        {q && <> · “{q}” অনুসন্ধানে {toBn(total)} টি</>}
       </p>
+
+      {total > 0 && <p className="mt-1 text-xs text-black/50">দেখানো হচ্ছে {toBn((page - 1) * pageSize + 1)}–{toBn(Math.min(page * pageSize, total))}</p>}
 
       {items.length ? (
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -117,6 +128,13 @@ export default async function Page({
             ।
           </p>
         </div>
+      )}
+      {pages > 1 && (
+        <nav aria-label="জ্ঞানভান্ডারের পৃষ্ঠা" className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {page > 1 && <Link href={pageHref(page - 1)} className="btn-primary" rel="prev">আগের পৃষ্ঠা</Link>}
+          <span className="text-sm" aria-current="page">পৃষ্ঠা {toBn(page)} / {toBn(pages)}</span>
+          {page < pages && <Link href={pageHref(page + 1)} className="btn-primary" rel="next">পরের পৃষ্ঠা</Link>}
+        </nav>
       )}
     </div>
   )
