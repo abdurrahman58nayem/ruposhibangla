@@ -236,76 +236,196 @@ input[type='file']::file-selector-button {
   --forest-deep: #04140d;
   --gold: #e3b67c;
   --cream: #0e1a13;
+  --surface: #122119;
+  --surface-raised: #18291f;
+  --surface-border: rgba(177, 216, 190, 0.2);
+  color-scheme: dark;
 }
 
 .dark body {
   background-color: #08130d;
-  color: #dcebe2;
+  color: #e1eee5;
 }
 
 .dark .glass {
-  background: rgba(8, 20, 14, 0.88);
+  background: rgba(8, 20, 14, 0.94);
+  border-color: rgba(177, 216, 190, 0.18) !important;
 }
 
-/* প্রধান পৃষ্ঠতল */
-.dark .card,
-.dark .chip,
-.dark .btn-outline,
+/* Surface hierarchy: cards are visibly raised from the page, not the same green. */
+.dark .card {
+  background-color: var(--surface) !important;
+  border-color: var(--surface-border) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.dark .chip:not(.chip-active) {
+  background-color: var(--surface-raised) !important;
+  border-color: rgba(177, 216, 190, 0.22) !important;
+  color: #d9ebe0 !important;
+}
+
+.dark .chip-active {
+  background-color: #2d704e !important;
+  border-color: #60a880 !important;
+  color: #fff !important;
+}
+
+.dark .btn-outline {
+  background-color: var(--surface-raised) !important;
+  border-color: rgba(177, 216, 190, 0.3) !important;
+  color: #e1eee5 !important;
+}
+
+.dark .btn-primary {
+  background-color: #2e7551 !important;
+  color: #fff !important;
+}
+
+.dark .btn-soft {
+  background-color: #1b3023 !important;
+  color: #cce8d5 !important;
+}
+
 .dark .field,
 .dark select,
 .dark input,
 .dark textarea {
-  background-color: #102017 !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #dcebe2 !important;
+  background-color: #11231a !important;
+  border-color: rgba(177, 216, 190, 0.28) !important;
+  color: #e8f2eb !important;
+}
+
+.dark .field::placeholder,
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(220, 235, 226, 0.55) !important;
+}
+
+.dark input[type='file']::file-selector-button {
+  background: #263f30;
+  color: #e1eee5;
 }
 
 .dark .bg-white {
-  background-color: #102017 !important;
+  background-color: #15251c !important;
 }
 
-.dark .bg-forest-50,
+.dark .bg-forest-50 {
+  background-color: #192b20 !important;
+}
+
 .dark .bg-forest-100 {
-  background-color: #0f1f16 !important;
+  background-color: #22382a !important;
 }
 
-.dark .text-forest-900,
+.dark .text-forest-900 {
+  color: #d6eadc !important;
+}
+
 .dark .text-forest-800 {
-  color: #bfe6cd !important;
+  color: #c3e3ce !important;
 }
 
-.dark .text-black\/80,
-.dark .text-black\/70,
-.dark .text-black\/60,
-.dark .text-black\/55,
-.dark .text-black\/50,
-.dark .text-black\/45,
-.dark .text-black\/40 {
-  color: rgba(220, 235, 226, 0.72) !important;
+.dark .text-forest-700 {
+  color: #9fd2b0 !important;
 }
 
-.dark .border-black\/5,
-.dark .border-black\/10 {
-  border-color: rgba(255, 255, 255, 0.1) !important;
+.dark .text-forest-600,
+.dark .text-forest-500 {
+  color: #83c89c !important;
 }
 
-.dark .divide-black\/5 > * + * {
-  border-color: rgba(255, 255, 255, 0.08) !important;
+/* Muted default-theme text is too dim against dark surfaces; lift all opacity variants. */
+.dark [class*="text-black/"] {
+  color: rgba(222, 236, 226, 0.78) !important;
+}
+
+.dark [class~="text-black"] {
+  color: #e7f1ea !important;
+}
+
+.dark [class*="text-gray-"] {
+  color: #c4d5ca !important;
+}
+
+.dark [class*="border-black/"] {
+  border-color: rgba(177, 216, 190, 0.2) !important;
+}
+
+.dark [class~="divide-black/5"] > * + * {
+  border-color: rgba(177, 216, 190, 0.16) !important;
+}
+
+.dark [class~="bg-black/5"] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark [class~="hover:bg-black/5"]:hover {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Keep semantic chips readable without turning their color cues into light panels. */
+.dark [class~="bg-earth-50"],
+.dark [class~="bg-amber-50"],
+.dark [class~="bg-yellow-50"],
+.dark [class~="bg-orange-50"] {
+  background-color: #2a2418 !important;
+}
+
+.dark [class~="bg-red-50"],
+.dark [class~="bg-rose-50"],
+.dark [class~="bg-pink-50"] {
+  background-color: #2b1d21 !important;
+}
+
+.dark [class~="bg-emerald-50"],
+.dark [class~="bg-green-50"] {
+  background-color: #172b20 !important;
+}
+
+.dark [class~="bg-sky-50"],
+.dark [class~="bg-blue-50"] {
+  background-color: #172832 !important;
+}
+
+.dark [class~="text-amber-800"],
+.dark [class~="text-amber-900"],
+.dark [class~="text-yellow-800"] {
+  color: #f1d195 !important;
+}
+
+.dark [class~="text-red-600"],
+.dark [class~="text-red-700"],
+.dark [class~="text-rose-600"] {
+  color: #ffabb5 !important;
+}
+
+.dark [class~="text-emerald-700"],
+.dark [class~="text-emerald-800"],
+.dark [class~="text-green-700"] {
+  color: #92d9ae !important;
+}
+
+.dark [class~="text-sky-600"],
+.dark [class~="text-sky-700"],
+.dark [class~="text-blue-700"] {
+  color: #8dd5f1 !important;
 }
 
 .dark .prose-bn {
-  color: rgba(220, 235, 226, 0.85) !important;
+  color: rgba(226, 238, 229, 0.9) !important;
 }
 
 .dark .skeleton {
-  background-color: rgba(255, 255, 255, 0.07);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 .dark .skeleton::after {
-  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #23402f;
+  background: #355b43;
 }
 
 /* অ্যানিমেশন কমানোর পছন্দ */

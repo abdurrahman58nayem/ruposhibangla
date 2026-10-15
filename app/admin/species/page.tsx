@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { getRepo } from '@/lib/repo'
 import SpeciesRowActions from '@/components/admin/SpeciesRowActions'
 import ImportExport from '@/components/admin/ImportExport'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus, Eye } from 'lucide-react'
 import { IUCN } from '@/lib/utils'
+import { speciesPath } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,11 +74,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
                   <td className="p-3">
                     <div className="flex items-center justify-end gap-2">
                       <Link
-                        href={s.type === 'prani' ? `/prani/${s.slug}` : `/udbhid/${s.slug}`}
+                        href={speciesPath(s)}
                         className="rounded-full p-2 text-black/45 hover:bg-forest-50 hover:text-forest-800"
                         title="দেখুন"
+                        aria-label={`${s.nameBn} দেখুন`}
                       >
-                        <Pencil size={14} />
+                        <Eye size={14} />
                       </Link>
                       <SpeciesRowActions slug={s.slug} editHref={`/admin/species/${s.slug}`} />
                     </div>

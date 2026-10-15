@@ -24,16 +24,55 @@ export type FeedParams = {
 
 /** জনপ্রিয় সাজানোর সময় কার্সারে অবস্থান (অফসেট) রাখা হয় */
 const POP = 'pop:'
+/** কমিউনিটি পোস্ট না থাকলে প্রজাতির শাফল করা তালিকার কার্সার */
+const SPECIES = 'sp:'
+const SPECIES_FETCH_LIMIT = 5000
+
+/** প্রথম পৃষ্ঠার এলোমেলো ক্রম পরের পৃষ্ঠাগুলোতেও একই রাখতে seed-ভিত্তিক shuffle */
+function shuffleWithSeed<T>(items: T[], seed: number): T[] {
+  const shuffled = [...items]
+  let state = seed >>> 0 || 1
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0
+    const j = state % (i + 1)
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+function parseSpeciesCursor(cursor: string | null): { seed: number; offset: number } | null {
+  const match = cursor?.match(/^sp:([0-9a-z]+):(\d+)$/i)
+  if (!match) return null
+  const seed = Number.parseInt(match[1], 36)
+  const offset = Number.parseInt(match[2], 10)
+  return Number.isFinite(seed) && Number.isFinite(offset) ? { seed, offset } : null
+}
+
+function randomSeed(): number {
+  return (Math.floor(Math.random() * 0x7ffffffe) + 1) >>> 0
+}
 
 /**
  * পোস্ট আর প্রজাতির তথ্য একসাথে মিশিয়ে ফিড তৈরি করে — যাতে স্ক্রল করতে করতে
- * প্রাণী/উদ্ভিদের তথ্যও সামনে আসে।
+ * প্রাণী/উদ্ভিদের তথ্যও সামনে আসে। কমিউনিটি পোস্ট একেবারেই না থাকলে, একই
+ * shuffled species-list ধরে cursor-সহ পরের পৃষ্ঠাগুলো দেওয়া হয়।
  */
 export async function buildFeedPage(params: FeedParams = {}): Promise<{ items: FeedItem[]; nextCursor: string | null }> {
   const repo = getRepo()
   const limit = params.limit ?? 12
   const sort = params.sort === 'popular' ? 'popular' : 'new'
   const cursor = params.cursor ?? null
+  const mixSpecies =
+    params.withSpecies !== false &&
+    !params.speciesSlug &&
+    !params.authorId &&
+    !params.followingIds?.length &&
+    !params.category &&
+    !params.kind &&
+    !params.group &&
+    !params.q &&
+    sort === 'new'
+  const speciesCursor = mixSpecies ? parseSpeciesCursor(cursor) : null
 
   // জনপ্রিয়: একটি বড় জানালা এনে পছন্দ অনুযায়ী সাজিয়ে কেটে নেওয়া হয়
   const windowLimit = sort === 'popular' ? Math.min(200, Math.max(limit * 4, 48)) : limit
@@ -47,7 +86,9 @@ export async function buildFeedPage(params: FeedParams = {}): Promise<{ items: F
     speciesSlug: params.speciesSlug,
     authorId: params.authorId,
     q: params.q,
-    cursor: sort === 'popular' ? null : cursor,
+    // A species-only cursor is not a post cursor. Start from the latest posts
+    // again if a user refreshes or switches back to a community feed.
+    cursor: speciesCursor ? null : sort === 'popular' ? null : cursor,
     limit: windowLimit,
   })
 
@@ -69,13 +110,31 @@ export async function buildFeedPage(params: FeedParams = {}): Promise<{ items: F
     nextCursor = page.nextCursor
   }
 
+  // কমিউনিটি ফিড পুরোপুরি ফাঁকা হলে তথ্যভাণ্ডারই হবে scroll-এর ধারাবাহিক
+  // fallback; shuffled order-এর seed cursor-এ থাকে, তাই পৃষ্ঠা বদলালে পুনরাবৃত্তি হয় না।
+  if (mixSpecies && posts.length === 0) {
+    const all = await repo.listSpecies({ limit: SPECIES_FETCH_LIMIT })
+    const withImages = all.filter((s) => !!s.image)
+    const pool = withImages.length ? withImages : all
+    const seed = speciesCursor?.seed ?? randomSeed()
+    const start = speciesCursor?.offset ?? 0
+    const shuffled = shuffleWithSeed(pool, seed)
+    const pageSpecies = shuffled.slice(start, start + limit)
+    const items: FeedItem[] = pageSpecies.map((species) => ({
+      type: 'species',
+      key: `s-${species.slug}`,
+      data: species,
+    }))
+    const end = start + pageSpecies.length
+    const nextSpeciesCursor = end < shuffled.length ? `${SPECIES}${seed.toString(36)}:${end}` : null
+    return { items, nextCursor: nextSpeciesCursor }
+  }
+
   const items: FeedItem[] = []
   let speciesPool: Species[] = []
 
-  const mixSpecies = params.withSpecies !== false && !params.speciesSlug && !params.authorId && !params.followingIds?.length && sort === 'new'
-
   if (mixSpecies) {
-    const all = await repo.listSpecies({ limit: 200 })
+    const all = await repo.listSpecies({ limit: SPECIES_FETCH_LIMIT })
     speciesPool = all.filter((s) => !!s.image)
     if (!speciesPool.length) speciesPool = all.slice(0, 40)
     const start = Number((cursor || '0').replace(/\D/g, '').slice(0, 6) || posts.length)
@@ -84,9 +143,9 @@ export async function buildFeedPage(params: FeedParams = {}): Promise<{ items: F
     posts.forEach((post, i) => {
       items.push({ type: 'post', key: `p-${post.id}`, data: post })
       if ((i + 1) % step === 0 && speciesPool.length) {
-        const s = speciesPool[si % speciesPool.length]
+        const species = speciesPool[si % speciesPool.length]
         si += 1
-        items.push({ type: 'species', key: `s-${s.slug}-${i}-${si}`, data: s })
+        items.push({ type: 'species', key: `s-${species.slug}-${i}-${si}`, data: species })
       }
     })
   } else {
