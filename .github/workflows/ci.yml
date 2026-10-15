@@ -23,6 +23,9 @@ jobs:
       - name: Audit species images
         run: node scripts/check-species-images.cjs
 
+      - name: Test image recovery
+        run: node scripts/check-smart-image.cjs
+
       - name: Type check
         run: npx tsc --noEmit
 

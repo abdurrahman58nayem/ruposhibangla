@@ -14,16 +14,27 @@ type Props = Omit<ImageProps, 'src' | 'alt'> & {
   imgClassName?: string
 }
 
-export default function SmartImage({
+export default function SmartImage(props: Props) {
+  // A new URL must get a fresh attempt, even after the previous one failed.
+  return <ImageAttempt key={props.src || ''} {...props} />
+}
+
+function ImageAttempt({
   src,
   alt,
   fallbackLabel,
   fallbackKind = 'prani',
   className,
   imgClassName,
+  unoptimized = false,
+  onError,
   ...rest
 }: Props) {
   const [failed, setFailed] = useState(!src)
+  const [retryOriginal, setRetryOriginal] = useState(false)
+  // Bundled photographs already ship with the site. Do not make their display
+  // depend on an image-optimization service (or its deployment quota).
+  const direct = unoptimized || src?.startsWith('/seed/') || retryOriginal
 
   if (failed) {
     const Icon =
@@ -62,9 +73,18 @@ export default function SmartImage({
       <Image
         src={src as string}
         alt={alt}
-        onError={() => setFailed(true)}
-        className={cn('h-full w-full object-cover', imgClassName)}
         {...rest}
+        key={direct ? 'original' : 'optimized'}
+        unoptimized={direct}
+        onError={(event) => {
+          if (!direct) {
+            setRetryOriginal(true)
+          } else {
+            setFailed(true)
+            onError?.(event)
+          }
+        }}
+        className={cn('h-full w-full object-cover', imgClassName)}
       />
     </div>
   )
