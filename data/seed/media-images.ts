@@ -1007,6 +1007,19 @@ export const SEED_IMAGES: SeedImage[] = [
     note: 'উইকিমিডিয়া কমন্স-এ প্রকাশিত উন্মুক্ত-লাইসেন্স ছবি। মূল ফাইলের লেখক ও সুনির্দিষ্ট লাইসেন্স প্রকাশের আগে যাচাই করতে হবে।',
   },
   {
+    // পদ্মা নদী — `padma` স্লাগটি পদ্ম ফুলের, তাই নদীর জন্য আলাদা স্লাগ
+    slug: 'padma-nodi',
+    file: '/seed/sthan/padma-nodi.jpg',
+    subject: 'পদ্মা নদী',
+    source: 'https://commons.wikimedia.org/wiki/File:Padma_River_Daulatdia_Ghat_Rajbari_Bangladesh_(2).JPG',
+    site: 'উইকিমিডিয়া কমন্স',
+    confidence: 'high',
+    lowRes: false,
+    license: 'যাচাই বাকি',
+    verified: false,
+    note: 'উইকিমিডিয়া কমন্স-এ প্রকাশিত উন্মুক্ত-লাইসেন্স ছবি। মূল ফাইলের লেখক ও সুনির্দিষ্ট লাইসেন্স প্রকাশের আগে যাচাই করতে হবে।',
+  },
+  {
     slug: 'jamuna',
     file: '/seed/sthan/jamuna.jpg',
     subject: 'যমুনা',

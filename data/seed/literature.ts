@@ -123,7 +123,7 @@ export const LITERATURE: Species[] = [
         quote: '“এমন ধানের ক্ষেত যদি না জন্মাত / কেমনে ধরিতাম প্রাণ!”',
         note: 'ধান, মাটি ও গ্রামের শ্রম — জসীম উদ্‌দীনের প্রকৃতি সবসময় মানুষের সাথে জড়িয়ে থাকে।',
         needsReview: true,
-        speciesSlugs: ['ilish', 'padma'],
+        speciesSlugs: ['ilish', 'padma-nodi'],
       },
     ],
   },

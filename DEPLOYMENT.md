@@ -11,7 +11,8 @@
    → Name: `DATABASE_URL`, Value: Neon-এর pooled connection string।
 3. **টেবিল তৈরি** — *Actions → “Migrate (Neon)” → Run workflow*।
    টিক দিন **Reseed** ও `site_url`-এ লাইভ ঠিকানা দিন (যেমন `https://ruposhibangla.org`)।
-   এতে `db/schema.sql`-এর ১৬টি টেবিল তৈরি হবে ও ৫৮৯টি প্রজাতির তথ্য বসবে।
+   এতে `db/schema.sql`-এর ১৬টি টেবিল তৈরি হবে ও ৬৬১টি রেকর্ডের তথ্য বসবে।
+   (সিড বাড়লে নতুন রেকর্ডগুলো অ্যাপ চালু হওয়ার সময় নিজে থেকেই যোগ হয় — দেখুন `docs/SEED-SYNC.md`)
    > এরপর থেকে `db/schema.sql` বদলালে `main`-এ পুশ করলেই মাইগ্রেশন আপনি-থেকেই চলে।
 4. **Vercel-এ Environment Variables** —
    `DATABASE_URL` · `AUTH_SECRET` (`openssl rand -base64 32`) · `ADMIN_USERNAME` · `ADMIN_EMAIL` ·

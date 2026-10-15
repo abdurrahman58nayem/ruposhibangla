@@ -31,9 +31,12 @@ export const PLACES: Species[] = [
     ],
   },
   {
-    slug: 'padma', type: 'sthan', group: 'nadi', category: 'নদী',
+    // মনে রাখবেন: `padma` স্লাগটি পদ্ম ফুলের (plants.ts) জন্য সংরক্ষিত —
+    // নদীর স্লাগ আলাদা (`padma-nodi`), নাহলে Postgres-এ slug PK-তে দুটো একে অপরকে মুছে দিতো।
+    slug: 'padma-nodi', type: 'sthan', group: 'nadi', category: 'নদী',
     nameBn: 'পদ্মা', nameEn: 'Padma River', scientificName: '—',
-    otherNames: ['গঙ্গার প্রধান শাখা'],
+    otherNames: ['গঙ্গার প্রধান শাখা', 'পদ্মা নদী'],
+    synonyms: ['padma'],
     taxonomy: { kingdom: '—' },
     summary: 'বাংলাদেশের অন্যতম প্রধান নদী; ইলিশ, নদীভাঙন ও নৌকাবিহারের জীবনরেখা।',
     description: 'পদ্মা গঙ্গার প্রধান ধারা, যা চাঁপাইনবাবগঞ্জ দিয়ে বাংলাদেশে ঢুকে গোয়ালন্দের কাছে যমুনার সাথে মিলিত হয়। এ নদী একদিকে যেমন জীবিকা দেয়, তেমনি ভাঙনে প্রতি বছর হাজার হাজার মানুষের ঘরবাড়ি নিশ্চিহ্ন করে দেয়।',

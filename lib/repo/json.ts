@@ -9,6 +9,8 @@ import { CATEGORIES } from '@/lib/categories'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
+import { pendingSeedSpecies, makeSyncResult } from './seed-sync'
+import type { SpeciesSyncOptions } from './seed-sync'
 
 type DB = {
   species: Species[]
@@ -739,5 +741,35 @@ export const jsonRepo: Repo = {
 
   async reseed() {
     write(seedDb())
+  },
+
+  /**
+   * সিড থেকে অনুপস্থিত প্রজাতি যোগ করা (লোকাল JSON স্টোর)।
+   * কোনো রেকর্ড মুছে ফেলা হয় না; বিদ্যমান রেকর্ড অক্ষত থাকে
+   * (`overwrite: true` দিলে কেবল রিফ্রেশ হয়)।
+   */
+  async syncSpecies(opts: SpeciesSyncOptions = {}) {
+    const db = read()
+    const before = db.species.length
+    const { toAdd, toUpdate } = pendingSeedSpecies(
+      db.species.map((s) => s.slug),
+      !!opts.overwrite,
+    )
+
+    if (opts.dryRun) return makeSyncResult({ before, toAdd, toUpdate, dryRun: true })
+
+    try {
+      for (const s of toAdd) db.species.push({ ...s, views: 0 })
+      for (const s of toUpdate) {
+        const i = db.species.findIndex((x) => x.slug === s.slug)
+        if (i < 0) continue
+        const views = db.species[i].views || 0
+        db.species[i] = { ...db.species[i], ...s, views }
+      }
+      write(db)
+      return makeSyncResult({ before, toAdd, toUpdate })
+    } catch (e: any) {
+      return makeSyncResult({ before, toAdd, toUpdate, error: e?.message || 'সিঙ্ক ব্যর্থ' })
+    }
   },
 }
