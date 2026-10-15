@@ -8,6 +8,8 @@ import { CATEGORIES } from '@/lib/categories'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
+import { pendingSeedSpecies, makeSyncResult, syncSummary, SEED_SPECIES_COUNT } from './seed-sync'
+import type { SpeciesSyncOptions } from './seed-sync'
 
 const J = (v: unknown) => JSON.stringify(v ?? [])
 const P = (v: string | undefined | null): any[] => {
@@ -246,7 +248,7 @@ const asRows = (result: unknown): any[] => {
 /**
  * Neon ডেটাবেজ ফাঁকা থাকলে (কোনো প্রজাতি ও কোনো পোস্ট নেই) একবার সিড ডেটা বসায়।
  *
- * কেন দরকার: GitHub Workflow শুধু টেবিল তৈরি করে (সার্ভার ছাড়াই)। প্রজাতির ৫৮৯টি
+ * কেন দরকার: GitHub Workflow শুধু টেবিল তৈরি করে (সার্ভার ছাড়াই)। প্রজাতির
  * রেকর্ড বসানোর জন্য আলাদা করে /api/admin/setup কল করতে হতো — এখন সাইট প্রথমবার
  * চালু হলেই নিজে থেকেই হয়ে যায়।
  *
@@ -259,12 +261,37 @@ async function seedIfEmptyNeon(repo: any): Promise<void> {
     const s = asRows(await sql`select count(*)::int as c from species`)
     const p = asRows(await sql`select count(*)::int as c from posts`)
     if (Number(s[0]?.c || 0) === 0 && Number(p[0]?.c || 0) === 0) {
-      console.log('[neon] ডেটাবেজ ফাঁকা — ৫৮৯টি প্রজাতি, চ্যানেল, পোস্ট ও খবর বসানো হচ্ছে…')
+      console.log(`[neon] ডেটাবেজ ফাঁকা — ${SEED_SPECIES_COUNT}টি প্রজাতি, চ্যানেল, পোস্ট ও খবর বসানো হচ্ছে…`)
       await repo.reseed()
       console.log('[neon] সিড সম্পন্ন')
     }
   } catch (e) {
     console.error('[neon] সিড যাচাই চলতে সমস্যা:', e)
+  }
+}
+
+/**
+ * সিড বাড়লে সেই নতুন রেকর্ডগুলো ডেটাবেজে নিজে থেকেই যোগ হয়।
+ *
+ * পটভূমি: আগে সিড কেবল ফাঁকা ডেটাবেজে বসতো, তাই পরে যোগ করা ব্যাচগুলো
+ * (more-birds3…9, more-plants3, more-insects2 ইত্যাদি) লাইভ সাইটে কখনো
+ * ঢুকতো না — সাইট পুরোনো সংখ্যা দেখাতে থাকতো। এই ধাপ সেই ফাঁক পূরণ করে।
+ *
+ * নিরাপত্তা: কেবল অনুপস্থিত স্লাগ INSERT হয়। বিদ্যমান রেকর্ড, ইউজারের পোস্ট,
+ * মন্তব্য ও অ্যাকাউন্ট — কিছুতেই হাত দেওয়া হয় না। বন্ধ করতে: `AUTO_SYNC_SPECIES=0`।
+ */
+async function syncSpeciesOnBoot(repo: any): Promise<void> {
+  if ((process.env.AUTO_SYNC_SPECIES || '1') === '0') return
+  try {
+    const check = await repo.syncSpecies({ dryRun: true })
+    if (!check?.missing) return
+    console.log(
+      `[neon] সিডে ${check.missing}টি রেকর্ড বেশি পাওয়া গেছে — ডেটাবেজে যোগ করা হচ্ছে (মুছে ফেলা হচ্ছে না)…`,
+    )
+    const done = await repo.syncSpecies()
+    console.log(`[neon] জ্ঞানভান্ডার সিঙ্ক: ${syncSummary(done)}`)
+  } catch (e) {
+    console.error('[neon] সিড সিঙ্ক চলতে সমস্যা:', e)
   }
 }
 
@@ -276,6 +303,7 @@ export const neonRepo: Repo = {
     await sql`select 1`
     await ensureAdminUser(neonRepo)
     await seedIfEmptyNeon(neonRepo)
+    await syncSpeciesOnBoot(neonRepo)
   },
 
   // ---------- species ----------
@@ -1050,6 +1078,11 @@ export const neonRepo: Repo = {
     return { species, posts, news }
   },
 
+  /**
+   * ⚠️ ধ্বংসাত্মক: species-সহ posts, comments, likes, follows, news সব মুছে
+   * নতুন করে সিড বসায়। ইউজারের তৈরি কনটেন্ট হারিয়ে যায় —
+   * সাধারণ ক্ষেত্রে এর বদলে `syncSpecies()` ব্যবহার করুন।
+   */
   async reseed() {
     const sql = getSql()
     await sql`truncate species, posts, comments, likes, follows, news, jeno, observations, reports, saves, notifications restart identity`
@@ -1060,5 +1093,42 @@ export const neonRepo: Repo = {
     for (const u of SEED_USERS) await this.createUser(u)
     for (const p of SEED_POSTS) await this.createPost(p)
     for (const n of SEED_NEWS) await this.upsertNews(n)
+  },
+
+  /**
+   * সিড (কোড) ↔ Neon ডেটাবেজ সিঙ্ক — **কোনো কিছু মুছে ফেলা হয় না**।
+   *
+   * ডিফল্ট আচরণ: যে রেকর্ডগুলো ডেটাবেজে নেই, কেবল সেগুলো যোগ (INSERT) হয়।
+   * আগে থেকে থাকা রেকর্ড অক্ষত থাকে, ফলে অ্যাডমিনের সম্পাদনা/ছবি/ভিউ নষ্ট হয় না।
+   * `overwrite: true` দিলে বিদ্যমানগুলোও সিড-ভার্সনে রিফ্রেশ হয়।
+   * `dryRun: true` দিলে শুধু হিসাব দেয়, কোনো লেখা হয় না।
+   */
+  async syncSpecies(opts: SpeciesSyncOptions = {}) {
+    try {
+      const sql = getSql()
+      const rows = asRows(await sql`select slug from species`)
+      const before = rows.length
+      const { toAdd, toUpdate } = pendingSeedSpecies(
+        rows.map((r: any) => String(r.slug)),
+        !!opts.overwrite,
+      )
+
+      if (opts.dryRun) return makeSyncResult({ before, toAdd, toUpdate, dryRun: true })
+
+      // ৮টি করে সমান্তরালে — ৬৬০টি রেকর্ডও কয়েক সেকেন্ডেই শেষ হয়
+      const CHUNK = 8
+      const targets = [...toAdd, ...toUpdate]
+      for (let i = 0; i < targets.length; i += CHUNK) {
+        await Promise.all(targets.slice(i, i + CHUNK).map((s) => this.upsertSpecies(s)))
+      }
+      return makeSyncResult({ before, toAdd, toUpdate })
+    } catch (e: any) {
+      return makeSyncResult({
+        before: 0,
+        toAdd: [],
+        toUpdate: [],
+        error: e?.message || 'সিঙ্ক ব্যর্থ',
+      })
+    }
   },
 }

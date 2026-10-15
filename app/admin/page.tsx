@@ -5,12 +5,19 @@ import { storageKindAsync } from '@/lib/storage'
 import { toBn } from '@/lib/utils'
 import { Database, HardDrive, AlertTriangle, CheckCircle2, Sparkles, ExternalLink } from 'lucide-react'
 import SetupButton from '@/components/admin/SetupButton'
+import SpeciesSyncCard from '@/components/admin/SpeciesSyncCard'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
   const repo = getRepo()
-  const [stats, jeno, users] = await Promise.all([repo.stats(), repo.listJeno(), repo.listUsers()])
+  const [stats, jeno, users, sync] = await Promise.all([
+    repo.stats(),
+    repo.listJeno(),
+    repo.listUsers(),
+    // dryRun — কেবল হিসাব, কোনো পরিবর্তন করে না
+    repo.syncSpecies({ dryRun: true }).catch(() => null),
+  ])
 
   const dbOn = hasDb()
   const storage = await storageKindAsync()
@@ -77,6 +84,19 @@ export default async function AdminDashboard() {
           </p>
         </div>
       </div>
+
+      {/* সিড ↔ ডেটাবেজ সিঙ্ক */}
+      {sync && (
+        <SpeciesSyncCard
+          info={{
+            seedCount: sync.seedCount,
+            before: sync.before,
+            after: sync.after,
+            missing: sync.missing,
+            added: 0,
+          }}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

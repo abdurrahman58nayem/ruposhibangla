@@ -27,7 +27,9 @@ export default function PostCard({ post, likedInitially = false, dense = false }
   const [reportDone, setReportDone] = useState(false)
   const [toast, setToast] = useState('')
 
-  const author = post.author || { name: post.authorName, verified: false }
+  // কোনো পুরোনো/অসম্পূর্ণ রেকর্ডে লেখকের নাম না থাকলে ফাঁকা দেখানো হয় — ক্র্যাশ নয়
+  const author = post.author || { name: post.authorName || '', verified: false }
+  const authorName = author.name || post.authorName || 'অজানা'
   const href = `/post/${post.id}`
 
   async function toggleLike(e: React.MouseEvent) {
@@ -142,12 +144,12 @@ export default function PostCard({ post, likedInitially = false, dense = false }
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={author.avatar} alt="" className="h-full w-full object-cover" />
               ) : (
-                author.name.slice(0, 1)
+                authorName.slice(0, 1)
               )}
             </span>
             <span className="min-w-0">
               <span className="flex items-center gap-1 truncate text-[13px] font-semibold text-forest-900">
-                <span className="truncate">{author.name}</span>
+                <span className="truncate">{authorName}</span>
                 {author.verified && (
                   <span title="যাচাইকৃত — প্রকৃতি ও দেশ নিয়ে কাজ করা অংশীদার">
                     <BadgeCheck size={14} className="shrink-0 fill-sky-500 text-white" />

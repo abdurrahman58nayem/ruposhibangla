@@ -4,8 +4,8 @@
 
 Run `node scripts/check-species-images.cjs`.
 
-- 589 deduplicated records: 377 animals, 193 plants/fungi/microbes, 19 other records.
-- All 589 have image paths. All 588 distinct referenced seed image files exist and have readable dimensions (checked with Sharp).
+- 661 deduplicated records: 449 animals, 193 plants/fungi/microbes, 19 other records.
+- All 661 have image paths. All distinct referenced seed image files exist and have readable dimensions (checked with Sharp).
 - All entries in the generated image manifest also point to readable files.
 - Empty/whitespace legacy image values resolve to bundled images; custom images are preserved. Legacy slug aliases are covered.
 - `npx tsc --noEmit` passes.
@@ -15,6 +15,8 @@ Run `node scripts/check-species-images.cjs`.
 `withSeedImages()` enriches the source seed exports only. Neon seeds only when both species and posts are empty. Existing Neon rows therefore do not automatically receive later image additions. Previously `rowToSpecies()` returned an empty image for these rows, triggering the icon placeholder in `SmartImage`. Existing JSON databases likewise did not merge later image additions.
 
 Fix: resolve blank image values against the current bundled seed images on reads in both repositories. This does not reseed, overwrite custom images, or delete database content. Neon stored values are unchanged; its SQL-based coverage report still counts stored blank images rather than resolved images.
+
+Related defect (same root cause, record level, fixed 2026-10-15): species **records** added to the seed after the first deployment never reached the database at all, so the site kept showing the old count. Fixed by `repo.syncSpecies()` — see [`docs/SEED-SYNC.md`](./SEED-SYNC.md).
 
 ## Separate listing limit
 

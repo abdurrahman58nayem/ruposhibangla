@@ -8,6 +8,14 @@ export default function SetupButton() {
   const [msg, setMsg] = useState('')
 
   async function run(mode: 'schema' | 'seed') {
+    if (
+      mode === 'seed' &&
+      !confirm(
+        'সতর্কতা: এটি species-সহ posts, comments, likes, follows, news সব মুছে নতুন করে সিড বসাবে — ইউজারের তৈরি সব কনটেন্ট মুছে যাবে।\n\nকেবল অনুপস্থিত প্রজাতি যোগ করতে "জ্ঞানভান্ডার সিঙ্ক" ব্যবহার করুন।\n\nএগোবেন?',
+      )
+    ) {
+      return
+    }
     setBusy(true)
     setMsg('')
     try {

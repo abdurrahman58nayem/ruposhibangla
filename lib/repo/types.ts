@@ -3,6 +3,7 @@ import type {
   PostCategory, PostKind, AiQuestion, Notification, SavedItem, Report, Observation,
   AuditLog, CoverageRow, GroupId, DataStatus,
 } from '@/lib/types'
+import type { SpeciesSyncOptions, SpeciesSyncResult } from './seed-sync'
 
 export type SpeciesQuery = {
   type?: SpeciesType | 'all'
@@ -131,4 +132,11 @@ export interface Repo {
   stats(): Promise<Stats>
   search(q: string): Promise<{ species: Species[]; posts: Post[]; news: News[] }>
   reseed(): Promise<void>
+  /**
+   * সিড (কোড) থেকে ডেটাবেজে অনুপস্থিত প্রজাতিগুলো যোগ করে —
+   * কোনো কিছু মুছে ফেলা হয় না, বিদ্যমান রেকর্ড অক্ষত থাকে
+   * (`overwrite: true` দিলে কেবল সেগুলো সিড-ভার্সনে রিফ্রেশ হয়)।
+   * `dryRun: true` দিলে শুধু হিসাব দেয়, কিছু লেখে না।
+   */
+  syncSpecies(opts?: SpeciesSyncOptions): Promise<SpeciesSyncResult>
 }
