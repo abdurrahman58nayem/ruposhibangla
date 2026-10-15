@@ -5,7 +5,8 @@ import Feed from '@/components/Feed'
 import { getRepo } from '@/lib/repo'
 import { getSession } from '@/lib/auth'
 import { toBn } from '@/lib/utils'
-import { BadgeCheck, CalendarDays, MapPin } from 'lucide-react'
+import { BadgeCheck, CalendarDays, Camera, MapPin } from 'lucide-react'
+import ProfileControls, { ProfileAvatarButton } from '@/components/ProfileControls'
 import { buildFeedPage } from '@/lib/feed'
 
 export const dynamic = 'force-dynamic'
@@ -34,9 +35,16 @@ export default async function Page({ params }: { params: Promise<{ username: str
   return (
     <div className="container-pb py-6">
       <div className="card overflow-hidden">
-        <div className="h-24 bg-gradient-to-r from-forest-600 via-forest-700 to-forest-900 sm:h-32" />
+        <div className="relative h-24 overflow-hidden bg-gradient-to-r from-forest-600 via-forest-700 to-forest-900 sm:h-32">
+          {user.cover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.cover} alt="" className="h-full w-full object-cover" />
+          ) : null}
+          <ProfileControls isOwn={session?.id === user.id} cover={user.cover} />
+        </div>
         <div className="px-5 pb-5">
           <div className="-mt-10 mb-3 flex items-end gap-4">
+            <div className="relative">
             <span className="grid h-20 w-20 place-items-center overflow-hidden rounded-2xl border-4 border-white bg-forest-100 text-2xl font-bold text-forest-800">
               {user.avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -45,6 +53,8 @@ export default async function Page({ params }: { params: Promise<{ username: str
                 user.name.slice(0, 1)
               )}
             </span>
+              <ProfileAvatarButton isOwn={session?.id === user.id} />
+            </div>
             <div className="mb-1 min-w-0 flex-1">
               <h1 className="flex items-center gap-1.5 text-xl font-bold text-forest-900">
                 <span className="truncate">{user.name}</span>
@@ -54,6 +64,11 @@ export default async function Page({ params }: { params: Promise<{ username: str
             </div>
             {session?.id !== user.id && (
               <FollowBtn userId={user.id} initial={following} loggedIn={!!session} className="mb-1 shrink-0" />
+            )}
+            {session?.id === user.id && (
+              <Link href="/share" className="btn-primary mb-1 shrink-0">
+                <Camera size={15} /> নতুন পোস্ট
+              </Link>
             )}
           </div>
 

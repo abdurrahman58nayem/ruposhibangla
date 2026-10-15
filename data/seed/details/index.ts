@@ -3,29 +3,122 @@ import { DETAILS_PAKHI } from './pakhi'
 import { DETAILS_PAKHI2 } from './pakhi2'
 import { DETAILS_GACHHBON } from './gachhbon'
 import { DETAILS_GACHHBON2 } from './gachhbon2'
+import { DETAILS_GACHHBON3 } from './gachhbon3'
+import { DETAILS_GACHHBON3B } from './gachhbon3b'
+import { DETAILS_GACHHBON3C } from './gachhbon3c'
+import { DETAILS_GACHHBON3D } from './gachhbon3d'
+import { DETAILS_GACHHBON3E } from './gachhbon3e'
+import { DETAILS_GACHHBON3F } from './gachhbon3f'
+import { DETAILS_GACHHBON3G } from './gachhbon3g'
 import { DETAILS_UDABHID } from './udbhidful'
 import { DETAILS_UDABHID2 } from './udbhidful2'
+import { DETAILS_UDABHID3 } from './udbhidful3'
+import { DETAILS_UDABHID3B } from './udbhidful3b'
+import { DETAILS_UDABHID3C } from './udbhidful3c'
+import { DETAILS_UDABHID3D } from './udbhidful3d'
+import { DETAILS_UDABHID3E } from './udbhidful3f'
+import { DETAILS_UDABHID3G } from './udbhidful3g'
+import { DETAILS_UDABHID3H } from './udbhidful3h'
+import { DETAILS_UDABHID3I } from './udbhidful3i'
 import { DETAILS_MACHH } from './machh'
 import { DETAILS_MACHH2 } from './machh2'
+import { DETAILS_MACHH3 } from './machh3'
+import { DETAILS_MACHH3B } from './machh3b'
+import { DETAILS_MACHH3C } from './machh3c'
+import { DETAILS_MACHH3D } from './machh3d'
 import { DETAILS_STANAPAYI } from './stanapayi'
 import { DETAILS_STANAPAYI2 } from './stanapayi2'
+import { DETAILS_STANAPAYI3 } from './stanapayi3'
+import { DETAILS_STANAPAYI3B } from './stanapayi3b'
+import { DETAILS_AMERUDDONDI } from './ameruddondi'
+import { DETAILS_UBHOCHOR } from './ubhochor'
+import { DETAILS_ONUJIB } from './onujib'
+import { DETAILS_CHATRAK } from './chhatrak'
+import { DETAILS_NADI } from './nadi'
+import { DETAILS_SAHITTO } from './sahitto'
+import { DETAILS_PAHAR } from './pahar'
+import { DETAILS_SARISRIP } from './sarisrip'
+import { DETAILS_SARISRIP2 } from './sarisrip2'
+import { DETAILS_SARISRIP3 } from './sarisrip3'
+import { DETAILS_KITPOTONGO } from './kitpotongo'
+import { DETAILS_KITPOTONGO2 } from './kitpotongo2'
+import { DETAILS_KITPOTONGO3 } from './kitpotongo3'
+import { DETAILS_PAKHI3 } from './pakhi3'
+import { DETAILS_PAKHI4 } from './pakhi4'
+import { DETAILS_PAKHI5 } from './pakhi5'
+import { DETAILS_PAKHI6 } from './pakhi6'
+import { DETAILS_PAKHI7 } from './pakhi7'
+import { DETAILS_PAKHI8 } from './pakhi8'
+import { DETAILS_PAKHI9 } from './pakhi9'
 import type { DetailsMap } from './types'
 
 export type { SpeciesDetail, DetailsMap } from './types'
 
 /** সব বিস্তারিত খণ্ড এক জায়গায় */
-export const SPECIES_DETAILS: DetailsMap = {
-  ...DETAILS_PAKHI,
-  ...DETAILS_PAKHI2,
-  ...DETAILS_GACHHBON,
-  ...DETAILS_GACHHBON2,
-  ...DETAILS_UDABHID,
-  ...DETAILS_UDABHID2,
-  ...DETAILS_MACHH,
-  ...DETAILS_MACHH2,
-  ...DETAILS_STANAPAYI,
-  ...DETAILS_STANAPAYI2,
+/** প্রতি প্রজাতিতে ফিল্ড-ভিত্তিক মার্জ — নতুন খণ্ড আগের তথ্য মুছে না দিয়ে শুধু নতুন ফিল্ড যোগ করে */
+const mergeDetails = (...maps: DetailsMap[]): DetailsMap => {
+  const out: DetailsMap = {}
+  for (const m of maps) {
+    for (const [k, v] of Object.entries(m)) {
+      out[k] = out[k] ? { ...out[k], ...v } : v
+    }
+  }
+  return out
 }
+
+export const SPECIES_DETAILS: DetailsMap = mergeDetails(
+  DETAILS_PAKHI,
+  DETAILS_PAKHI2,
+  DETAILS_GACHHBON,
+  DETAILS_GACHHBON2,
+  DETAILS_GACHHBON3,
+  DETAILS_GACHHBON3B,
+  DETAILS_GACHHBON3C,
+  DETAILS_GACHHBON3D,
+  DETAILS_GACHHBON3E,
+  DETAILS_GACHHBON3F,
+  DETAILS_GACHHBON3G,
+  DETAILS_UDABHID,
+  DETAILS_UDABHID2,
+  DETAILS_UDABHID3,
+  DETAILS_UDABHID3B,
+  DETAILS_UDABHID3C,
+  DETAILS_UDABHID3D,
+  DETAILS_UDABHID3E,
+  DETAILS_UDABHID3G,
+  DETAILS_UDABHID3H,
+  DETAILS_UDABHID3I,
+  DETAILS_MACHH,
+  DETAILS_MACHH2,
+  DETAILS_MACHH3,
+  DETAILS_MACHH3B,
+  DETAILS_MACHH3C,
+  DETAILS_MACHH3D,
+  DETAILS_STANAPAYI,
+  DETAILS_STANAPAYI2,
+  DETAILS_STANAPAYI3,
+  DETAILS_STANAPAYI3B,
+  DETAILS_AMERUDDONDI,
+  DETAILS_UBHOCHOR,
+  DETAILS_ONUJIB,
+  DETAILS_CHATRAK,
+  DETAILS_NADI,
+  DETAILS_SAHITTO,
+  DETAILS_PAHAR,
+  DETAILS_SARISRIP,
+  DETAILS_SARISRIP2,
+  DETAILS_SARISRIP3,
+  DETAILS_KITPOTONGO,
+  DETAILS_KITPOTONGO2,
+  DETAILS_KITPOTONGO3,
+  DETAILS_PAKHI3,
+  DETAILS_PAKHI4,
+  DETAILS_PAKHI5,
+  DETAILS_PAKHI6,
+  DETAILS_PAKHI7,
+  DETAILS_PAKHI8,
+  DETAILS_PAKHI9,
+)
 
 export const DETAILS_COUNT = Object.keys(SPECIES_DETAILS).length
 

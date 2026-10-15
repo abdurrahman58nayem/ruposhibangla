@@ -23,14 +23,23 @@ export async function POST(req: Request) {
   const name = String(body?.name || '').trim()
   const username = slugify(String(body?.username || name))
   const password = String(body?.password || '')
+  const email = String(body?.email || '').trim().toLowerCase()
 
   if (name.length < 2) return NextResponse.json({ error: 'নাম দিন' }, { status: 400 })
   if (username.length < 3) return NextResponse.json({ error: 'ব্যবহারনাম কমপক্ষে ৩ অক্ষরের হতে হবে' }, { status: 400 })
   if (password.length < 6) return NextResponse.json({ error: 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে' }, { status: 400 })
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return NextResponse.json({ error: 'সঠিক ইমেইল দিন — এই ইমেইল দিয়েই লগইন করবেন' }, { status: 400 })
+  }
 
   const repo = await getReadyRepo()
   if (await repo.getUserByUsername(username)) {
     return NextResponse.json({ error: 'এই ব্যবহারনাম আগেই নেওয়া হয়েছে' }, { status: 409 })
+  }
+
+  const allUsers = await repo.listUsers()
+  if (allUsers.some((u) => ((u as { email?: string }).email || '').toLowerCase() === email)) {
+    return NextResponse.json({ error: 'এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট খোলা হয়েছে' }, { status: 409 })
   }
 
   const isFirst = (await repo.listUsers()).filter((u) => u.role === 'admin').length === 0
@@ -40,7 +49,7 @@ export async function POST(req: Request) {
     username,
     name,
     passwordHash: hashPassword(password),
-    email: String(body?.email || '').slice(0, 120),
+    email: email.slice(0, 120),
     role: isFirst ? 'admin' : 'user',
     verified: false,
     avatar: '',

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { UploadCloud, X, Loader2, CheckCircle2, Video, ImageIcon, FileText, Film } from 'lucide-react'
+import { UploadCloud, X, Loader2, CheckCircle2, Video, ImageIcon, FileText, Film, Camera } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CATEGORIES } from '@/lib/categories'
 
@@ -175,6 +175,7 @@ export default function ShareForm({
       {kind !== 'note' && (
         <div className="mb-4">
           {!preview ? (
+            <div>
             <label className="grid cursor-pointer place-items-center gap-2 rounded-2xl border-2 border-dashed border-forest-200 bg-forest-50/40 p-8 text-center transition hover:bg-forest-50">
               <UploadCloud size={30} className="text-forest-600" />
               <span className="text-sm font-medium text-forest-900">ছবি বা ভিডিও নির্বাচন করুন</span>
@@ -186,6 +187,17 @@ export default function ShareForm({
                 onChange={(e) => pick(e.target.files?.[0] || null)}
               />
             </label>
+            <label className="mx-auto mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-forest-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-forest-800 transition hover:bg-forest-50">
+              <Camera size={14} /> ক্যামেরা দিয়ে সোজে তুলুন
+              <input
+                type="file"
+                accept={kind === 'video' || kind === 'reel' ? 'video/*' : 'image/*,video/*'}
+                capture={kind === 'video' || kind === 'reel' ? undefined : 'environment'}
+                className="hidden"
+                onChange={(e) => pick(e.target.files?.[0] || null)}
+              />
+            </label>
+            </div>
           ) : (
             <div className="relative overflow-hidden rounded-2xl bg-black">
               {kind === 'video' || kind === 'reel' ? (

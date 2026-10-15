@@ -218,9 +218,6 @@ export default function HeaderClient({
               <Link href="/reels" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
                 রিলস
               </Link>
-              <Link href="/settings" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
-                সেটিংস
-              </Link>
               <Link href="/jeno" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
                 জেনো — তথ্য জানান
               </Link>

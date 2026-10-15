@@ -10,6 +10,7 @@ export default function AuthForm({ mode, next }: { mode: 'login' | 'register'; n
   const isLogin = mode === 'login'
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -22,7 +23,9 @@ export default function AuthForm({ mode, next }: { mode: 'login' | 'register'; n
       const res = await fetch(`/api/auth/${isLogin ? 'login' : 'register'}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(isLogin ? { username, password } : { name, username, password }),
+        body: JSON.stringify(
+          isLogin ? { username, password } : { name, username, password, email: email.trim().toLowerCase() },
+        ),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'সমস্যা হয়েছে')
@@ -55,18 +58,37 @@ export default function AuthForm({ mode, next }: { mode: 'login' | 'register'; n
           </div>
         )}
         <div>
-          <label className="label">ব্যবহারনাম</label>
+          <label className="label">{isLogin ? 'ইমেইল বা ব্যবহারনাম' : 'ব্যবহারনাম'}</label>
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="field"
             required
             minLength={3}
-            maxLength={40}
-            placeholder="লাতিন অক্ষরে, যেমন: rahatbd"
+            maxLength={120}
+            placeholder={isLogin ? 'admin@example.com বা আপনার ইউজারনেম' : 'লাতিন অক্ষরে, যেমন: rahatbd'}
+            autoComplete="username"
           />
           {!isLogin && <p className="mt-1 text-[11px] text-black/40">বাংলা নাম দিলে স্বয়ংক্রিয়ভাবে লাতিনে রূপান্তর হবে</p>}
         </div>
+        {!isLogin && (
+          <div>
+            <label className="label">ইমেইল</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="field"
+              required
+              maxLength={120}
+              placeholder="name@example.com"
+              autoComplete="email"
+            />
+            <p className="mt-1 text-[11px] text-black/40">
+              এই ইমেইল দিয়েই পরে লগইন করবেন — ইউজারনেমও চলবে
+            </p>
+          </div>
+        )}
         <div>
           <label className="label">পাসওয়ার্ড</label>
           <input

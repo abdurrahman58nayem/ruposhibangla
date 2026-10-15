@@ -32,7 +32,11 @@ export default function Page() {
   }
   return (
     <div>
-      <h2 className="mb-4 text-lg font-bold text-forest-900">নতুন প্রজাতি যোগ করুন</h2>
+      <h2 className="mb-1 text-lg font-bold text-forest-900">নতুন প্রজাতি যোগ করুন</h2>
+      <p className="mb-4 text-xs text-black/50">
+        নাম ও প্রধান ছবি দিলেই চলবে — বাকি তথ্য পরে যেকোনো সময় এডিট করা যাবে। “আপলোড” বোতাম ধরে সরাসরি
+        মোবাইল বা কম্পিউটার থেকে ছবি তুলুন।
+      </p>
       <SpeciesForm initial={blank} isNew />
     </div>
   )
