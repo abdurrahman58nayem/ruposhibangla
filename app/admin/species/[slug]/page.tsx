@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ExternalLink } from 'lucide-react'
 import SpeciesForm from '@/components/admin/SpeciesForm'
 import { getRepo } from '@/lib/repo'
 
@@ -10,10 +12,15 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   if (!s) notFound()
   return (
     <div>
-      <h2 className="mb-1 text-lg font-bold text-forest-900">সম্পাদনা: {s.nameBn}</h2>
-      <p className="mb-4 text-xs text-black/45">
-        /{s.type === 'prani' ? 'prani' : 'udbhid'}/{s.slug}
-      </p>
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 className="text-lg font-bold text-forest-900">সম্পাদনা: {s.nameBn}</h2>
+          <p className="text-xs text-black/45">/{s.type}/{s.slug}</p>
+        </div>
+        <Link href={`/${s.type}/${s.slug}`} target="_blank" className="btn-outline text-xs">
+          <ExternalLink size={13} /> সাইটে দেখুন
+        </Link>
+      </div>
       <SpeciesForm initial={s} />
     </div>
   )

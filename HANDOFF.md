@@ -1,107 +1,84 @@
 # HANDOFF — রূপসী বাংলা (Ruposhi Bangla)
 
-> **পরের সেশনের AI এজেন্টের জন্য নির্দেশাবলি।**
-> আগে এই ফাইলটি পড়ুন, তারপর `git log --oneline -20` ও `MASTER-PROMPT.md` দেখুন।
-> শাখা: `arena/3c48228f-ruposhibangla` (সেশন-ফিক্সড — অন্য শাখায় কাজ করবেন না)।
-> কাজ শেষে কমিট করলেই সেভ হয়; পুশ: `git push origin arena/3c48228f-ruposhibangla`।
+> **পরের সেশনের AI এজেন্টের জন্য নির্দেশাবলি।** প্রথমে এই ফাইল, তারপর `git log --oneline -20` ও `MASTER-PROMPT.md` দেখুন।
+> প্রতিটি সেশনের **নিজস্ব ফিক্সড শাখা** থাকে (গত সেশন: `arena/261cc675-ruposhibangla`) — অন্য শাখায় কাজ করবেন না,
+> শুধু `git push origin <নিজের শাখা>`, PR সেই শাখা থেকে `main`-এ। **কখনো `git push --force` বা `git reset --hard` নয়।**
 
 ---
 
 ## ০) এক লাইনে বর্তমান অবস্থা
 
-জ্ঞানভান্ডারে **৫৮৯টি প্রজাতি** (২৯৬টিতে ছবি বাকি)। প্ল্যাটফর্মের প্রায় সব ফিচারের কাঠামো তৈরি।
-এই সেশনে যোগ হয়েছে: **Neon মাইগ্রেশন (GitHub Workflow), প্রথম-অ্যাডমিন bootstrap, অ্যাডমিন প্যানেল থেকে R2 সংযোগ, ও ইমেইল/পাসওয়ার্ড বদল**।
+জ্ঞানভান্ডারে **৫৮৯টি প্রজাতি — ছবি ৫৮৯/৫৮৯ (১০০%, ০ ভাঙা), বিস্তারিত তথ্য ৫৮৯/৫৮৯ (১০০%)** ·
+ভিডিও **০** · অ্যাডমিন-ইমেইল লগইন, প্রোফাইল কভার-অবতার আপলোড, প্রোফাইলে সেটিংস, অ্যাডমিনে প্রজাতি যোগ/এডিট+ছবি-আপলোড সব চালু ও পরীক্ষিত।
 
 ---
 
-## ১) এই সেশনে যা করা হয়েছে (সব লোকালে পরীক্ষিত)
+## ১) গত সেশনে যা হয়েছে (সব লোকালে পরীক্ষিত, tsc ক্লিন)
 
-| কাজ | কোথায় | অবস্থা |
+| কাজ | কোথায় | অবস্থা |
 |---|---|---|
-| Neon টেবিলের স্কিমা আলাদা ফাইলে | `db/schema.sql` (১৬টি টেবিল) | ✅ একমাত্র উৎস |
-| মাইগ্রেশন স্ক্রিপ্ট | `scripts/migrate.mjs` | ✅ `node scripts/migrate.mjs [--reseed]` |
-| GitHub Workflow | `.github/workflows/migrate.yml` | ✅ `workflow_dispatch` + `db/schema.sql` বদললে `main`-এ স্বয়ংক্রিয় |
-| স্কিমা লোডার | `lib/db/client.ts` → `getSchemaSql()` / `schemaStatements()` | ✅ `/api/admin/setup`-এ ব্যবহৃত |
-| গোপন কী (R2) ডেটাবেজে | `Repo.getSecret/setSecret` (json + neon) | ✅ `secret:` প্রিফিক্স; **পাবলিক `/api/settings`-এ আসে না** |
-| R2 অ্যাডমিন প্যানেল থেকে | `/admin/media` → `StorageSettingsForm`, API `app/api/admin/storage/route.ts` | ✅ সেভ + সংযোগ-পরীক্ষা + মুছুন; মান মাস্ক করা |
-| প্রথম অ্যাডমিন তৈরি (bootstrap) | `lib/bootstrap.ts` → `ensureAdminUser()` | ✅ env-এ `ADMIN_PASSWORD` থাকলে |
-| Neon ফাঁকা থাকলে স্বয়ংক্রিয় সিড | `lib/repo/neon-repo.ts` → `seedIfEmptyNeon()` | ✅ species ও posts দুটোই খালি হলে কেবল |
-| সব `getRepo()` কলে init() চালু | `lib/repo/index.ts` → `getRepo()` → `void getReadyRepo()` | ✅ |
-| `init()` কখনো ডাকা হতো না — ঠিক | `lib/repo/index.ts` → `getReadyRepo()` | ✅ লগইন/রেজিস্টার/অ্যাডমিন/সেটআপ-এ |
-| লগইন ইমেইল দিয়েও | `app/api/auth/login/route.ts` | ✅ ব্যবহারনাম **বা** ইমেইল |
-| অ্যাকাউন্ট সম্পাদনা | `/admin/account` + `app/api/admin/account/route.ts` | ✅ নাম/ইমেইল/পাসওয়ার্ড (বর্তমান পাসওয়ার্ড চায়) + অডিট লগ |
-| লোগো অ্যাডমিন প্যানেল থেকে | `/admin/settings` → `UploadField` (logoUrl) | ✅ আগেই ছিল, এন্ড-টু-এন্ড পরীক্ষিত |
-| নেভিগেশনে “আমার অ্যাকাউন্ট” | `components/admin/AdminNav.tsx` | ✅ |
+| ৫০৮/৫০৮ ডিটেইলস-এন্ট্রি লেখা+রেজিস্টার | `data/seed/details/*` (৪০+ ফাইল), `index.ts`-এ `mergeDetails` ফিল্ড-মার্জ **রাখতে হবে** | ✅ অডিট ০ ঘাটতি (কঠোর ও মূল নিয়ম দুটোতেই) |
+| ছবি ৩০০টি আমদানি | `scripts/import-images.py` → `media-images.ts` (৫৫৪ স্লাগ), সব `verified:false` + `লাইসেন্স যাচাই বাকি` | ✅ ৫৮৯/৫৮৯ |
+| রেজিস্টারে ইমেইল বাধ্যতামূলক (ফরম্যাট+ইউনিক) | `components/AuthForm.tsx`, `app/api/auth/register/route.ts` | ✅ ডুপ্লিকেট ৪০৯, ভুল ৪০০ |
+| লগইন ইমেইল বা ইউজারনেম | `app/api/auth/login/route.ts` + AuthForm UI “ইমেইল বা ব্যবহারনাম” | ✅ **প্রথম `role==='admin'` অ্যাকাউন্ট = অ্যাডমিন** (সিডে admin নেই — বর্তমানে ০ জন, ইউজার প্রথম রেজিস্টার করলেই অ্যাডমিন) |
+| প্রোফাইলে কভার+অবতার আপলোড (FB-স্টাইল) | `components/ProfileControls.tsx` → `/u/[username]` (কভার img + “কভার যোগ করুন/বদলান”, অবতার-ক্যামেরা, ⚙️ সেটিংস) | ✅ নিজ প্রোফাইলে কার্নার, অন্যদের নয় |
+| সেটিংস এখন প্রোফাইলের ভেতরে | BottomNav ও হেডার-মেনু থেকে সেটিংস সরানো → প্রোফাইলের ⚙️ | ✅ |
+| পোস্টে “ক্যামেরা দিয়ে সোজে তুলুন” | `components/ShareForm.tsx` (`capture="environment"`) + প্রোফাইলে “নতুন পোস্ট” | ✅ |
+| অ্যাডমিন প্রজাতি-ফর্ম: বিস্তারিত বৈশিষ্ট্য কার্ড | `SpeciesForm.tsx` (physical/behavior/ecologicalRole — আগে ফর্মে ছিল না), `UploadField`-এ প্রিভিউ+✕ সরান | ✅ POST/PUT/DELETE CRUD লাইভ টেস্ট |
+| এডিট-পাতায় “সাইটে দেখুন ↗” | `app/admin/species/[slug]/page.tsx` (পাবলিক পাথ = `/${s.type}/${s.slug}`) | ✅ |
 
-**পরীক্ষা:** `admin` ও `admin@ruposhibangla.org` — দুটোতেই লগইন ✅ · `/admin`, `/admin/account`, `/admin/media`,
-`/admin/settings` → ২০০ ✅ · R2 সেভ/মাস্ক/মুছা ✅ · পাসওয়ার্ড বদল → নতুন পাসওয়ার্ডে লগইন ✅ ·
-পাবলিক `/api/settings`-এ কোনো R2 কী লিক হয়নি ✅ · লোগো আপলোড → হেডারে দেখা গেছে ✅ · `npx tsc --noEmit` ক্লিন ✅
+**পরীক্ষা-লগ:** রেজিস্টার(ইমেইল)→admin ✅ · ইমেইল-লগইন ✅ · `/admin` ২০০ ✅ · আপলোড (local storage) ✅ ·
+avatar/cover PATCH ✅ · স্পিসিস CRUD ✅ · টেস্ট-ইউজার ও টেস্ট-ফাইল মুছে **০ অ্যাডমিন** অবস্থায় ফেরত ✅
 
 ---
 
-## ২) পরিবেশ ভেরিয়েবল (Vercel / `.env.local`)
+## ২) পরিবেশ ভেরিয়েবল (Vercel / `.env.local`)
 
 ```
 DATABASE_URL            Neon pooled connection string — GitHub secret-এও দিন (Workflow-এর জন্য)
 AUTH_SECRET             লম্বা র‍্যান্ডম স্ট্রিং (openssl rand -base64 32)
-ADMIN_USERNAME          admin
-ADMIN_EMAIL             admin@ruposhibangla.org
-ADMIN_PASSWORD          প্রথম অ্যাডমিন তৈরিতে ব্যবহৃত — পরে /admin/account থেকে বদলাবেন
+ADMIN_USERNAME / ADMIN_EMAIL / ADMIN_PASSWORD   প্রথম অ্যাডমিন bootstrap-এ (env থাকলে)
 NEXT_PUBLIC_SITE_URL    https://আপনার-ডোমেইন
-R2_*                    ঐচ্ছিক — /admin/media থেকে বসানো যায় (env থাকলে env-ই কার্যকর)
-AI_PROVIDER / AI_API_KEY   ঐচ্ছিক — না দিলে লোকাল RAG চলবে
+R2_*                    ঐচ্ছিক — /admin/media থেকে বসানো যায়
+AI_PROVIDER / AI_API_KEY   ঐচ্ছিক — না দিলে লোকাল RAG
 ```
-
-> ⚠️ **নিরাপত্তা:** কোনো পাসওয়ার্ড/ক্রেডেনশিয়াল কখনো রিপোজিটরিতে কমিট করবেন না।
-> `.env.local` `.gitignore`-এ আছে। সিক্রেট শুধু Vercel Environment Variables বা GitHub Secrets-এ।
+> ⚠️ পাসওয়ার্ড/ক্রেডেনশিয়াল রিপোজিটরিতে কমিট **কখনো নয়**। `.env.local` gitignored।
 
 ---
 
-## ৩) পরের সেশনে যা করতে হবে — অগ্রাধিকার অনুযায়ী
+## ৩) পরের সেশনে যা করতে হবে (অগ্রাধিকার অনুযায়ী)
 
-> ব্যবহারকারীর স্থায়ী নির্দেশ: **“যতক্ষণ না সব পাখি-প্রাণী-উদ্ভিদ সাইটে আসছে, ততক্ষণ এড করতে থাকো —
-> যতগুলো প্রাণী ও উদ্ভিদ পাওয়া যায় সব।”** তাই **প্রথম কাজ সবসময় তথ্য**। ছবি/পলিশ কেবল ফাঁকা সময়ে।
+> ইউজারের স্থায়ী নির্দেশ (গত সেশনে প্রশ্নের উত্তরে দেওয়া সংখ্যা-হিসাব মেনে):
+> **সাইটে ৫৮৯ যা আছে; দেশে প্রকৃত আনুমান — পাখি ~৭০০–৮২৮, স্তন্যপায়ী ১৩৮, সরীসৃপ ~১৬০–১৬৭,
+> উভচর ~৪৯–৫৬, মিষ্টিজল মাছ ~২৫৩–২৯৩ (+সমুদ্রী শত শত), প্রজাপতি ~৩০৫, সস্যবীজী উদ্ভিদ ~৩,৮১০–৫,১৩১,
+> বাকি পোকা-অণুজীব অগণিত → বাকি ~৫,০০০–৬,৪০০+।** ইউজার **গোষ্ঠী/সীমা ঠিক করে দিলে তবেই নতুন প্রজাতি এড** —
+> না বলা পর্যন্ত অপেক্ষা; প্রথমে তার সিদ্ধান্ত নিন।
 
-### A. প্রজাতি যোগ করা (সবচেয়ে জরুরি)
-লক্ষ্য বনাম বর্তমান: পাখি ৭০০+/১১৮ · মাছ ৪০০+/৭৬ · সরীসৃপ ১৩০+/৪৫ · স্তন্যপায়ী ১১০+/৪৮ ·
-উভচর ৬০+/১৩ · কীট হাজার+/৬৪ · সংবাহী উদ্ভিদ ৫,০০০+/১৭৫ · অমেরুদণ্ডী ১৩ · অণুজীব ১০ · ছত্রাক ৮।
+### A. ভিডিও (সবচেয়ে বড় বাকি কাজ)
+`components/SpeciesVideoEmbed.tsx` প্রস্তুত; `Species.media[]`-এ `{kind:'video', url, credit, license, sourceUrl}` বসালেই
+স্পিসিস পেজে এমবেড (YouTube/Commons iframe বা সরাসরি webm/mp4 `<video>`) — **ডাউনলোড/আপলোড নয়, উৎস থেকে স্ট্রিম**।
+নতুন ফাইল বানাতে হবে (`data/seed/media-videos.ts` + `data/seed/index.ts`-এ `withSeedVideos` — `withSeedImages`-এর পাশে)।
+উৎস: Wikimedia Commons (লাইসেন্স API থেকে যাচাই, ক্রেডিট ছাড়া কখনো নয়), Pexels-স্টাইল হটলিংক। লক্ষ্য ~২০–৩০ চিত্রণযোগ্য প্রজাতি।
 
-**প্রতি ব্যাচের নিয়ম (আগের ভুল থেকে শেখা):**
-1. নতুন সিড ফাইল → `data/seed/more-<group><n>.ts`, `export const MORE_X: Species[]`
-2. **`.replace()` দিয়ে hex রং বানাবেন না** — সবসময় লিটারেল `'#aabbcc'` (৬ বার ভুল হয়েছে)
-3. `Taxonomy`-তে শুধু `{kingdom, phylum, class, order, family, genus, species}` — `clade`/`subfamily` নেই (TS2353)
-4. গাছের ক্লেড (Angiosperms/Tracheophytes) → `phylum`-এ
-5. প্রজাতি-স্তরে নিশ্চিত না হলে `Genus spp.` + `NEEDS_CHECK` সোর্স
-6. কমিটের আগে: `grep -c "replace(" <file>` → ০, `grep -c "slug:" <file>` → প্রত্যাশিত সংখ্যা
-7. স্লাগ/`nameBn`/বাইনোমিয়াল আগের সব রেকর্ডের সাথে মিলিয়ে দেখুন — `dedupe()` `name:<type>:<nameBn>` ও `sci:<binomial>`-এ মার্জ করে
-8. `data/seed/index.ts`-এ `import` + `...MORE_X,` যোগ → `npx tsc --noEmit`
-9. সার্ভার বন্ধ → `rm -f .data/db.json` → সার্ভার চালু → `python3 /tmp/count.py`
-10. **প্রতিটি নতুন `/prani/<slug>` বা `/udbhid/<slug>` কার্ল করে ৪০৪ খুঁজুন** — ৪০৪ মানে সাইলেন্ট মার্জ
-11. বাংলায় কমিট মেসেজ (`git commit -F /tmp/msg.txt`, backtick নয়)
+### B. লোগো ও og-cover
+- `public/brand/og-cover.jpg`-তে **Dreamstime ওয়াটারমার্ক + পুরনো লোগো** আছে — বদলাতে হবে। নিজস্ব `public/seed/village/nouka.jpg`
+  (নৌকা-মানুষ-নদী) ১২০০×৬৩০ করে নতুন কভার বানান (PIL) + বর্তমান লোগো।
+- `logo-mark.svg` ও `logo-mark.png` **আলাদা ডিজাইন** (SVG দুর্বল, PNG ভালো) — এক করতে হবে; ইউজারের চাহিদা:
+  দেশের রং (পতাকা সবুজ `#006A4E` + লাল `#F42A41`), মানুষ (নৌকা), প্রকৃতি, ঐতিহ্য (কাঁথা-বিন্দু)।
+  রেন্ডার: `npm i --no-save sharp` → `sharp('public/brand/logo-mark.svg').resize(512,512).png()`; এরপর favicon-32/64, apple-touch-icon ওগুলো থেকেই।
+- রঙ/ফন্ট পাস কোড-অডিটে ক্লিন (০ gray, ০ font-sans ওভাররাইড; হেরিটেজ-প্যালেট `--rb-*`; আইকনসেট `components/icons/` সম্পন্ন) —
+  শুধু একবার চোখে-দেখা বাকি। ফ্ল্যাগ-রং এখনো প্যালেটে যোগ হয়নি (লোগোর সাথে যোগ করুন)।
 
-### B. ছবি — ২৯৬টি রেকর্ডে নেই
-`scripts/import-images.py` ব্যবহার করে `M` অ্যারেতে সারি যোগ করুন; **`media-images.ts` হাতে সম্পাদনা করবেন না**।
-ছবি আনার নিয়ম: `site:commons.wikimedia.org <binomial>` সবচেয়ে নির্ভরযোগ্য; বাইনোমিয়াল শিরোনামে বা `source_url`-এ
-থাকতে হবে; Brave thumbnail (`-1.jpg`) প্রায়ই ১২০px — **ব্যবহারের আগে `identify` করবেন**;
-`en.bdfish.org`, `bdspecies.org`, `indiabiodiversity.org` কাজ করে; Pexels প্রাণীর জন্য নির্ভরযোগ্য নয়।
+### C. অবকাঠামো
+- কোনো টেস্ট-রানার নেই — Vitest/Playwright যোগ করুন; CI শুধু tsc+lint+build।
+- `app/admin/ai/page.tsx` পাতলা — ৭-স্তর রিভিউ UI।
+- Neon seeding ৫৮৯× `upsertSpecies` — ব্যাচ-ইনসার্টে বদলান।
+- `dataStatus` বেশিরভাগ `partial/review` — দ্বিতীয় সূত্র যাচাই চলতে পারে (ইউজার না বলা পর্যন্ত নতুন প্রজাতি নয়)।
 
-### C. বিবরণ ও যাচাই
-`physical` ১৯৩/৫৮৯ · `behavior` ১৪১ · `reproduction` ২০৭ · `season`/`whereToSee` ১৬২ · `diet` ৩৯১ · `ecologicalRole` ৪৭০।
-`dataStatus`: verified ১ · review ১৯৭ · partial ৩৮৫ → দ্বিতীয় সূত্র যাচাই বাকি।
-
-### D. ভিডিও (§১২)
-সিডে **একটিও ভিডিও নেই** — `components/SpeciesVideoEmbed.tsx` প্রস্তুত; কয়েকটি লাইসেন্সকৃত ভিডিও যোগ করতে হবে।
-
-### E. অবকাঠামো
-- **Automated test** — কোনো টেস্ট-রানার নেই; CI শুধু tsc + lint + build। Vitest/Jest + Playwright যোগ করুন।
-- **§২৫-এর ২৭টি গ্রহণযোগ্যতা পরীক্ষা** একবার পুরোটা চালিয়ে দেখুন।
-- `app/admin/ai/page.tsx` খুব পাতলা — AI প্রশ্নের ৭-স্তর রিভিউ UI সম্পূর্ণ করুন।
-- **Neon-এর `init()`-এর সিডিংয়ের গতি** — বর্তমানে ৫৮৯টি `upsertSpecies` আলাদা কল; বড় হলে ব্যাচ-ইনসার্টে বদলান।
-- AI ভিশন (ছবি-প্রশ্ন) `AI_API_KEY` দিলেই চালু হওয়া উচিত — যাচাই করুন।
-
-### F. নীতিমালা (কখনো ভাঙবেন না)
-কোনো ডেমো/নকল ব্যবহারকারী-ফলোয়ার-এনগেজমেন্ট নয় · ব্লু-টিক শুধু আমরা দেব · AI কখনো যাচাইহীন তথ্য
-জ্ঞানভান্ডারে লিখবে না · অসম্পূর্ণ রেকর্ড চিহ্নিত থাকবে · কপিরাইট-মুক্ত মিডিয়া ছাড়া নয় · পূর্ণ সাহিত্য-পাঠ্য নয়।
+### D. নীতিমালা (কখনো ভাঙবেন নয়)
+কোনো ডেমো/নকল ব্যবহারকারী-ফলোয়ার-এনগেজমেন্ট · ব্লু-টিক শুধু আমরা দেব · AI কখনো যাচাইহীন তথ্য জ্ঞানভান্ডারে লিখবে না ·
+কপিরাইট-মুক্ত মিডিয়া ছাড়া নয়, ভিডিও ডাউনলোড/রি-আপলোড নয় · পূর্ণ সাহিত্য-পাঠ্য নয় · লাইসেন্স অজানা হলে `verified:false` + `যাচাই বাকি` ·
+`media-images.ts` শুধু স্ক্রিপ্ট দিয়ে (import-images.py/add-images.py) · লিটারেল hex (`.replace()` হ্যাক নয়) · কমিট `git commit -F /tmp/msg.txt` (backtick নয়)।
 
 ---
 
@@ -109,30 +86,35 @@ AI_PROVIDER / AI_API_KEY   ঐচ্ছিক — না দিলে লোক�
 
 ```bash
 cd /home/user/ruposhibangla
-npm install --no-audit --no-fund     # node_modules স্ন্যাপশটে থাকে না
-npx tsc --noEmit                     # টাইপ যাচাই
-npm run dev                          # 0.0.0.0:3000 (প্রিভিউ হোস্টের জন্য জরুরি)
-python3 /tmp/count.py                # গ্রুপভিত্তিক সংখ্যা + ফিল্ড-ফিল + কারো ছবি নেই
-rm -f .data/db.json                  # রিসিড করতে — সার্ভার **বন্ধ** থাকতে হবে
-node scripts/migrate.mjs             # Neon-এ টেবিল (DATABASE_URL দরকার)
+npm install --no-audit --no-fund        # node_modules স্ন্যাপশটে থাকে না (ওয়ার্কস্পেস রিসেট হলেও)
+./node_modules/.bin/tsc --noEmit         # npx tsc চালাবেন নয় — ভুল tsc@2.0.4 ইনস্টল করে
+npm run dev                             # 0.0.0.0:3000
+# রিসিড: সার্ভার বন্ধ → rm -f .data/db.json → start → warm: curl "/api/species?limit=1" (db.json স্টার্টআপে লেখা হয়)
+# অডিট: .data/db.json-এ species[] — fields physical,behavior,diet,reproduction,season,whereToSee
+#   মূল নিয়ম: ফাঁকা/'absent' = ঘাটতি, '—' = আছে  ·  কঠোর নিয়ম: '—'ও ঘাটতি (দুটোতে ০ আছে এখন)
 ```
-
-রুট: প্রাণী → `/prani/<slug>` · উদ্ভিদ → `/udbhid/<slug>` · `/gyan/<group>` ৪০৪ — ব্যবহার করুন `/gyan?group=<g>`।
-`/api/species`-এ `limit` সর্বোচ্চ ৩০০।
+রুট: `/prani/<slug>` · `/udbhid/<slug>` · `/sthan/<slug>` · `/sahitto/<slug>` · `/gyan?group=<g>` (এমবেডড ৪০৪ নয়)।
+`/api/species`-এ `limit` সর্বোচ্চ ৩০০। সিড-কী: লগইন-তথ্য সিডে `SEED_USERS` (২টি partner, admin নয়)।
 
 ---
 
-## ৫) যা যা ভুল হয়েছে — আবার করবেন না
+## ৫) যা যা ভুল হয়েছে — আবার করবেন না
 
-- **ভুল `nameBn` দিয়ে দুই প্রজাতি মার্জ হয়ে গিয়েছিল** (`চন্দ্রবোড়া`)। প্রতি রিসিডের পর নতুন সব ডিটেইল পেজ কার্ল করুন।
-- `.replace()` হ্যাক ৬ বার এসেছে — সবসময় লিটারেল hex।
-- `clade:` কী নেই → ৩৬× TS2353।
-- `pkill -f next` দিয়ে DB ক্লিয়ার হয় না → `stop_process` → `rm -f .data/db.json` → `start_process`।
-- `git push` রিজেক্ট (non-fast-forward) → `git fetch origin <branch>` + `git reset --soft FETCH_HEAD`।
-  **কখনো `git push --force` বা `git reset --hard` করবেন না।**
-- `git commit -m` এ backtick → মেসেজ নষ্ট। `-F /tmp/msg.txt` ব্যবহার করুন।
-- ইনলাইন `python3 -c` দিয়ে লম্বা স্ক্রিপ্ট → SyntaxError। ফাইলে লিখুন।
-- অব্যবহৃত import (`IUCN`, `EOFF`) tsc-এ ধরা পড়ে না — কসমেটিক, ব্লকার নয়।
+- **এক ব্লকে একই ফাইলে একাধিক `edit_file` = রেস, শেষটি জিতে** (আগেরটি মুছে যায়)। ক্রমিক করুন: edit → grep → edit → `tsc`।
+- **`edit_file`-এর `old_text`-এ `য়` (U+09DF) থাকলে ম্যাচ হয় না** (Unicode ডিকম্পোজিশন পার্থক্য) — ASCII অ্যাঙ্কর বা python দিয়ে এডিট করুন।
+- পাইপের পর `echo $?` → head-এর ০; tsc-শব্দ কেবল stderr থেকে পড়ুন।
+- Object spread কল-আর্গুমেন্টে অবৈধ (TS2488) — rest-param + সাধারণ আইডেন্টিফায়ার।
+- **`mergeDetails` (details/index.ts) মুছবেন না** — নতুন এন্ট্রি পুরনো ফিল্ড মুছে ফেলে (doyel-এর ঘটনা)।
+- **ওয়ার্কস্পেস রিসেট ৩ দেখা** — node_modules/`.data`/pip/`/tmp` মুছে যায়, গিট-ফাইল থাকে। রিসেট: npm install → সার্ভার → রিসিড → অডিট।
+  PIL না থাকলে `pip install --break-system-packages pillow`। sharp লাগলে `npm i --no-save sharp`।
+- db.json সার্ভার **স্টার্টআপে** লেখে; চালু-সার্ভারে ফাইল এডিট ক্যাশে হারায় — স্টপ→এডিট→স্টার্ট।
+- `UID` bash-এ readonly — ভ্যারিয়েবলে নাম বদলান।
+- ইনলাইন `python3 -c` লম্বা স্ক্রিপ্ট → SyntaxError; heredoc ফাইলে লিখুন।
+- `git commit -m`-এ backtick → মেসেজ নষ্ট; `-F /tmp/msg.txt`। **`git push --force`/`git reset --hard` কখনো নয়।**
+- প্রজাতি-স্লাগ-কী ডিবি-এর সাথে হুবহু মিলতে হবে (`tanguar-haor`, `hakaluki-haor`, `khude-badur`…) — না মিললে সাইলেন্ট মিস।
+- ছবি সার্চে ব্যর্থ প্যাটার্ন: commons `site:`+বাইনোমিয়াল ভুল প্রজাতি, ১২০–৩০০px থাম্ব, dreamstime/istock/kiddle/reddit,
+  মিউজিয়াম-স্পেসিমেন, ডিস্ট্রিবিউশন-ম্যাপ। কাজ করে: `Category:<binomial>`, সাধারণ কোয়েরি, en.wikipedia infobox File:, flickr-গবেষক।
+- **শটস্ক্রিন-পুনরাবৃত্তি-অভিযোগ বন্ধ** — কারণ ছিল এজেন্ট-রেসপন্স গ্লিচ, সাইটের ডেটা নয়; বড় রাইট-ফাইল ১০–১২ স্পিসিসে ভাগ করুন, কখনো প্যাড করবেন না।
 
 ---
 
@@ -140,10 +122,10 @@ node scripts/migrate.mjs             # Neon-এ টেবিল (DATABASE_URL �
 
 ```bash
 cd /home/user/ruposhibangla
+git status                      # পরিবর্তন দেখুন
 git add -A
-git commit -F /tmp/msg.txt
-git push origin arena/3c48228f-ruposhibangla
+git commit -F /tmp/msg.txt      # বাংলা মেসেজ, backtick ছাড়া
+git push origin <এই সেশনের শাখা>
+gh pr create --base main --head <শাখা> --title "…" --body "…"
+gh pr merge <নম্বর> --merge     # মার্জ কমান্ড চেইনের শেষটি হতে হবে
 ```
-
-এই `HANDOFF.md` ও `DEPLOYMENT.md`-এর লাইভ-চেকলিস্ট কমিটে থাকতে হবে।
-`.env.local` **কমিট হবে না** — অ্যাডমিন পাসওয়ার্ড ব্যবহারকারীকে চ্যাটে দেওয়া হয়েছে।

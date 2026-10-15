@@ -136,6 +136,45 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
       </div>
 
       <div className="card p-5">
+        <h3 className="mb-3 text-sm font-bold text-forest-900">বিস্তারিত বৈশিষ্ট্য</h3>
+        <p className="mb-3 text-[11px] text-black/45">
+          শারীরিক গঠন, আচরণ ও পরিবেশে ভূমিকা — প্রজাতির বিস্তারিত পাতায় দেখানো হয়।
+        </p>
+        <div className="space-y-3">
+          <div>
+            <label className="label">শারীরিক বৈশিষ্ট্য</label>
+            <textarea
+              value={s.physical || ''}
+              onChange={(e) => set('physical', e.target.value)}
+              rows={3}
+              className="field resize-none"
+              placeholder="আকার, রং, পশম/পাতা-ছাল, শিং-ডানা…"
+            />
+          </div>
+          <div>
+            <label className="label">আচরণ</label>
+            <textarea
+              value={s.behavior || ''}
+              onChange={(e) => set('behavior', e.target.value)}
+              rows={3}
+              className="field resize-none"
+              placeholder="কখন সক্রিয়, কীভাবে চলাচল ও খাবার খোঁজে…"
+            />
+          </div>
+          <div>
+            <label className="label">পরিবেশে ভূমিকা</label>
+            <textarea
+              value={s.ecologicalRole || ''}
+              onChange={(e) => set('ecologicalRole', e.target.value)}
+              rows={3}
+              className="field resize-none"
+              placeholder="খাদ্যশৃঙ্খলে ভূমিকা, পরাগ-সেবন, মাটি রক্ষা…"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="card p-5">
         <h3 className="mb-3 text-sm font-bold text-forest-900">বাস্তুসংস্থান</h3>
         <div className="grid gap-3 sm:grid-cols-2">
           {(

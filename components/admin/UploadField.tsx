@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { UploadCloud, Loader2 } from 'lucide-react'
+import { UploadCloud, Loader2, X } from 'lucide-react'
 
 export default function UploadField({
   value,
@@ -49,8 +49,19 @@ export default function UploadField({
         </label>
       </div>
       {value && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={value} alt="" className="mt-2 h-24 w-auto rounded-lg border border-black/10 object-cover" />
+        <div className="mt-2 flex items-start gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value} alt="" className="h-28 w-auto max-w-full rounded-lg border border-black/10 object-cover" />
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            aria-label="ছবি সরান"
+            title="ছবি সরান"
+            className="rounded-full border border-black/10 bg-white p-1.5 text-black/50 transition hover:text-red-600"
+          >
+            <X size={13} />
+          </button>
+        </div>
       )}
       {err && <p className="mt-1 text-[11px] text-red-600">{err}</p>}
     </div>
