@@ -18,8 +18,8 @@ Fix: resolve blank image values against the current bundled seed images on reads
 
 ## Separate listing limit
 
-`/gyan` requests only 60 records and currently has no pagination. Records after the first 60 are not rendered at all; this is distinct from a visible card showing an icon instead of its photograph.
+`/gyan` previously stopped at 60 records. It now has filter-preserving previous/next navigation, page-range information, bounded page numbers, and stable sorting. Local production-server checks reached all 377 animals across seven pages without duplicates; plant page 4, oversized/invalid page inputs and empty search also returned HTTP 200.
 
 ## Production limitations
 
-The live Vercel page, production database values and production image-optimizer responses were not inspected: this environment's outbound host allowlist does not include the deployed site. The deployed list of affected slugs and any additional runtime/optimizer failures remain unverified. Deploy this branch's changes and verify the live cards; do not use the destructive reseed operation to repair image values.
+The live Vercel page, production database values and production image-optimizer responses were not inspected: this environment's outbound host allowlist does not include the deployed site. The deployed list of affected slugs and any additional runtime/optimizer failures remain unverified. PR #4 contains the deployment changes. GitHub workflow dispatch was attempted on the working branch but returned HTTP 403 (Resource not accessible by integration). A repository user with Actions permission can run **Migrate (Neon)** with `repair_images=true` and `reseed=false`. The repair fills only blank/whitespace images on existing known species; it never inserts, deletes or reseeds content, and reports any remaining blank slugs. Do not use the destructive reseed operation to repair image values.
