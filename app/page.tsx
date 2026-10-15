@@ -11,6 +11,27 @@ import { toBn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
+const PLACE_HIGHLIGHTS = [
+  {
+    href: '/gyan?type=sthan&group=nadi',
+    image: '/illustrations/landscapes/river-placeholder.jpg',
+    title: 'নদী ও জলাভূমি',
+    note: 'পদ্মা, মেঘনা, হাওর ও বাংলার জলজ জীবন',
+  },
+  {
+    href: '/gyan?type=sthan&group=pahar',
+    image: '/illustrations/landscapes/forest-placeholder.jpg',
+    title: 'বন ও ম্যানগ্রোভ',
+    note: 'সুন্দরবন, রাতারগুল ও দেশের বনাঞ্চল',
+  },
+  {
+    href: '/gyan?type=sthan&group=pahar',
+    image: '/illustrations/landscapes/hills-placeholder.jpg',
+    title: 'পাহাড়ি অঞ্চল',
+    note: 'রাঙামাটি, কাপ্তাই ও পাহাড়ি বাস্তুতন্ত্র',
+  },
+]
+
 const CHIPS = [
   { href: '/prani?cat=পাখি', label: 'পাখি' },
   { href: '/prani?cat=স্তন্যপায়ী', label: 'স্তন্যপায়ী' },
@@ -128,6 +149,44 @@ export default async function HomePage() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {featured.slice(0, 8).map((s) => (
             <SpeciesCard key={s.slug} s={s} />
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- নদী, বন, পাহাড়: অস্থায়ী ধারণামূলক ছবি ---------- */}
+      <section className="container-pb mt-10">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="section-title">নদী, বন ও পাহাড়</h2>
+            <p className="mt-1 text-xs text-black/50">
+              অস্থায়ী AI-তৈরি ধারণামূলক ছবি — নির্দিষ্ট স্থানের নথিভুক্ত ছবি নয়; পরে আপনার বাস্তব ছবি দিয়ে বদলানো যাবে।
+            </p>
+          </div>
+          <Link href="/gyan?type=sthan" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">
+            সব স্থান <ArrowRight size={13} className="inline" />
+          </Link>
+        </div>
+        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
+          {PLACE_HIGHLIGHTS.map((place) => (
+            <Link key={place.title} href={place.href} className="card group w-[78%] shrink-0 overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg sm:w-auto">
+              <SmartImage
+                src={place.image}
+                alt={`${place.title} — অস্থায়ী ধারণামূলক ছবি`}
+                width={720}
+                height={405}
+                unoptimized
+                sizes="(max-width: 640px) 78vw, 33vw"
+                className="aspect-[16/9] w-full"
+                imgClassName="transition duration-500 group-hover:scale-105"
+              />
+              <div className="p-3">
+                <h3 className="text-sm font-bold text-forest-900">{place.title}</h3>
+                <p className="mt-0.5 text-xs text-black/60">{place.note}</p>
+                <span className="mt-2 inline-block rounded-full bg-forest-50 px-2 py-0.5 text-[10px] font-medium text-forest-700">
+                  AI-তৈরি অস্থায়ী ছবি
+                </span>
+              </div>
+            </Link>
           ))}
         </div>
       </section>

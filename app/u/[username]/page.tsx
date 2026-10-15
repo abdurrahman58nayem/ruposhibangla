@@ -8,6 +8,7 @@ import { toBn } from '@/lib/utils'
 import { BadgeCheck, CalendarDays, Camera, MapPin } from 'lucide-react'
 import ProfileControls, { ProfileAvatarButton } from '@/components/ProfileControls'
 import { buildFeedPage } from '@/lib/feed'
+import CuratedReelsShelf from '@/components/CuratedReelsShelf'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,7 +56,7 @@ export default async function Page({ params }: { params: Promise<{ username: str
             </span>
               <ProfileAvatarButton isOwn={session?.id === user.id} />
             </div>
-            <div className="mb-1 min-w-0 flex-1">
+            <div className="mb-1 min-w-0 flex-1 translate-y-2 sm:translate-y-4">
               <h1 className="flex items-center gap-1.5 text-xl font-bold text-forest-900">
                 <span className="truncate">{user.name}</span>
                 {user.verified && <BadgeCheck size={18} className="shrink-0 text-sky-500" />}
@@ -97,6 +98,8 @@ export default async function Page({ params }: { params: Promise<{ username: str
           </div>
         </div>
       </div>
+
+      {(user.username === 'ruposhibangla' || user.id === 'user-ruposhibangla') && <CuratedReelsShelf />}
 
       <h2 className="mb-3 mt-6 section-title">{user.name} এর শেয়ার</h2>
       <Feed

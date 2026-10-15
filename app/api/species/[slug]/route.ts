@@ -14,7 +14,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
 
 export async function PUT(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const session = await getSession()
-  if (!session || session.role !== 'admin') return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  if (!session || !['admin', 'super_admin', 'editor'].includes(session.role)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
   const { slug } = await params
   const body = (await req.json().catch(() => null)) as Partial<Species> | null
   if (!body) return NextResponse.json({ error: 'invalid' }, { status: 400 })

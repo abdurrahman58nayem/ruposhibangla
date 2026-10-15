@@ -5,19 +5,21 @@ import { licenseFor } from '@/data/seed/media-licenses'
 import PostCard from './PostCard'
 import SpeciesCard from './SpeciesCard'
 import { getRepo } from '@/lib/repo'
+import { getSession } from '@/lib/auth'
 import { IUCN, toBn, bnDate } from '@/lib/utils'
 import { speciesPath, typeLabel } from '@/lib/categories'
 import SpeciesActions from '@/components/SpeciesActions'
 import SpeciesSections from '@/components/SpeciesSections'
 import SpeciesVideoEmbed, { type VideoEmbed } from '@/components/SpeciesVideoEmbed'
 import { DATA_STATUS_LABEL } from '@/lib/i18n'
-import { MapPin, Utensils, Ruler, CalendarDays, Trees, BookOpen, Quote, Camera, Info, ExternalLink } from 'lucide-react'
+import { MapPin, Utensils, Ruler, CalendarDays, Trees, BookOpen, Quote, Camera, Info, ExternalLink, Pencil } from 'lucide-react'
 import type { Species, SpeciesType } from '@/lib/types'
 
 export default async function SpeciesDetail({ slug, type }: { slug: string; type: SpeciesType }) {
   const repo = getRepo()
-  const s = await repo.getSpecies(slug)
+  const [s, session] = await Promise.all([repo.getSpecies(slug), getSession()])
   if (!s || (type && s.type !== type)) notFound()
+  const canEdit = !!session && ['admin', 'super_admin', 'editor'].includes(session.role)
 
   try {
     await repo.bumpSpeciesViews(slug)
@@ -138,7 +140,18 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
         <div className="lg:col-span-2">
           <span className="rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-800">{s.category}</span>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-forest-900 sm:text-4xl">{s.nameBn}</h1>
-          <p className="mt-1 text-sm italic text-black/55">{s.scientificName}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <p className="text-sm italic text-black/55">{s.scientificName}</p>
+            {canEdit && (
+              <Link
+                href={`/admin/species/${s.slug}`}
+                className="btn-outline shrink-0 px-2.5 py-1 text-[11px]"
+                aria-label={`${s.nameBn} প্রজাতির তথ্য সম্পাদনা`}
+              >
+                <Pencil size={12} /> সম্পাদনা
+              </Link>
+            )}
+          </div>
           {s.nameEn && <p className="text-xs text-black/45">ইংরেজি: {s.nameEn}</p>}
           {!!s.otherNames?.length && (
             <p className="mt-1 text-xs text-black/45">অন্যান্য নাম: {s.otherNames.join(', ')}</p>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { createPortal } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Menu, Search, X, User, LayoutDashboard, Bell, Languages } from 'lucide-react'
@@ -30,9 +31,28 @@ export default function HeaderClient({
   const router = useRouter()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [q, setQ] = useState('')
   const [unread, setUnread] = useState(0)
   const { lang, setLang } = useApp()
+
+  useEffect(() => setMounted(true), [])
+
+  // Render the drawer at body level: .glass uses backdrop-filter, which can
+  // otherwise trap position:fixed overlays inside the short header.
+  useEffect(() => {
+    if (!open) return
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [open])
 
   // অপঠিত নোটিফিকেশনের সংখ্যা (লগইন করা বা অতিথি — দুজনেরই)
   useEffect(() => {
@@ -63,15 +83,7 @@ export default function HeaderClient({
 
   return (
     <>
-      <button
-        aria-label="মেনু"
-        onClick={() => setOpen(true)}
-        className="rounded-full p-2 text-forest-800 hover:bg-forest-50 md:hidden"
-      >
-        <Menu size={22} />
-      </button>
-
-      <Link href="/" className="flex min-w-0 items-center gap-2">
+      <Link href="/" aria-label="রূপসী বাংলা — প্রথম পৃষ্ঠা" className="flex min-w-0 items-center gap-2">
         <span className="relative grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5 sm:h-10 sm:w-10">
           {settings.logoUrl ? (
             <Image src={settings.logoUrl} alt={settings.siteName} width={40} height={40} className="h-full w-full object-contain" />
@@ -104,7 +116,7 @@ export default function HeaderClient({
       </nav>
 
       <div className="ml-auto flex items-center gap-1.5">
-        <form onSubmit={submit} className="hidden items-center sm:flex">
+        <form onSubmit={submit} className="hidden items-center md:flex">
           <div className="relative">
             <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/35" />
             <input
@@ -116,14 +128,14 @@ export default function HeaderClient({
           </div>
         </form>
 
-        <Link href="/share" className="btn-primary hidden px-3 py-2 text-xs sm:inline-flex sm:text-sm">
+        <Link href="/share" className="btn-primary hidden px-3 py-2 text-xs md:inline-flex md:text-sm">
           শেয়ার করুন
         </Link>
 
         <Link
           href="/notifications"
           aria-label="নোটিফিকেশন"
-          className="relative hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 sm:block"
+          className="relative hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 md:block"
         >
           <Bell size={20} />
           {unread > 0 && (
@@ -137,7 +149,7 @@ export default function HeaderClient({
           onClick={() => setLang(lang === 'bn' ? 'en' : 'bn')}
           aria-label="ভাষা পরিবর্তন"
           title={lang === 'bn' ? 'English' : 'বাংলা'}
-          className="hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 sm:block"
+          className="hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 md:block"
         >
           <Languages size={20} />
         </button>
@@ -146,7 +158,7 @@ export default function HeaderClient({
           <Link
             href={`/u/${user.username}`}
             title={user.name}
-            className="grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-forest-100 text-sm font-bold text-forest-800"
+            className="hidden h-9 w-9 place-items-center overflow-hidden rounded-full bg-forest-100 text-sm font-bold text-forest-800 md:grid"
           >
             {user.avatar ? (
               <Image src={user.avatar} alt={user.name} width={36} height={36} className="h-full w-full object-cover" />
@@ -155,43 +167,76 @@ export default function HeaderClient({
             )}
           </Link>
         ) : (
-          <Link href="/login" className="btn-outline px-3 py-2 text-xs sm:text-sm">
+          <Link href="/login" className="btn-outline hidden px-3 py-2 text-xs md:inline-flex md:text-sm">
             <User size={16} /> লগইন
           </Link>
         )}
 
         {user?.role === 'admin' && (
-          <Link href="/admin" aria-label="অ্যাডমিন" className="hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 sm:block">
+          <Link href="/admin" aria-label="অ্যাডমিন" className="hidden rounded-full p-2 text-forest-800 hover:bg-forest-50 md:block">
             <LayoutDashboard size={20} />
           </Link>
         )}
+
+        <button
+          type="button"
+          aria-label="ক্যাটাগরি ও মেনু খুলুন"
+          aria-controls="mobile-site-menu"
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+          className="rounded-full border border-black/10 bg-white/70 p-2 text-forest-800 shadow-sm transition hover:bg-forest-50 md:hidden"
+        >
+          <Menu size={21} />
+        </button>
       </div>
 
-      {/* Mobile drawer */}
-      {open && (
-        <div className="fixed inset-0 z-[60] md:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-[82%] max-w-sm bg-white p-4 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <span className="text-lg font-bold text-forest-900">{settings.siteName}</span>
-              <button onClick={() => setOpen(false)} className="rounded-full p-2 hover:bg-black/5" aria-label="বন্ধ করুন">
+      {mounted && open && createPortal(
+        <div className="fixed inset-0 z-[100] md:hidden">
+          <button
+            type="button"
+            aria-label="মেনু বন্ধ করুন"
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 h-full w-full bg-black/55"
+          />
+          <aside
+            id="mobile-site-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="প্রধান নেভিগেশন"
+            className="absolute left-0 top-0 h-dvh w-[86%] max-w-sm overflow-y-auto bg-white px-4 pb-6 pt-[calc(env(safe-area-inset-top)+1rem)] text-forest-900 shadow-2xl dark:bg-[#102017]"
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <Link href="/" onClick={() => setOpen(false)} className="min-w-0 truncate text-lg font-bold text-forest-900">
+                {settings.siteName}
+              </Link>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="shrink-0 rounded-full p-2 text-forest-800 transition hover:bg-forest-50"
+                aria-label="বন্ধ করুন"
+              >
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={submit} className="mb-4 sm:hidden">
+
+            <form onSubmit={submit} className="mb-4 md:hidden">
               <div className="relative">
-                <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/35" />
+                <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/45" />
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="খুঁজুন…"
+                  placeholder="প্রজাতি, নদী, বন খুঁজুন…"
                   className="field w-full pl-9"
                 />
               </div>
             </form>
+
             <nav className="flex flex-col gap-1">
               <Link href="/" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
                 হোম
+              </Link>
+              <Link href="/categories" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
+                সব ক্যাটাগরি
               </Link>
               {NAV.map((n) => (
                 <Link
@@ -206,11 +251,11 @@ export default function HeaderClient({
                   {n.label}
                 </Link>
               ))}
-              <Link href="/share" onClick={() => setOpen(false)} className="rounded-xl bg-forest-700 px-3 py-2.5 text-[15px] font-medium text-white">
+              <Link href="/share" onClick={() => setOpen(false)} className="mt-1 rounded-xl bg-forest-700 px-3 py-2.5 text-[15px] font-medium text-white hover:bg-forest-800">
                 ছবি/ভিডিও শেয়ার করুন
               </Link>
               <Link href="/notifications" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
-                নোটিফিকেশন
+                নোটিফিকেশন {unread > 0 ? `(${unread > 9 ? '9+' : unread})` : ''}
               </Link>
               <Link href="/saved" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
                 সংরক্ষিত
@@ -240,9 +285,10 @@ export default function HeaderClient({
                 </Link>
               )}
             </nav>
-            <p className="mt-6 text-xs text-black/40">{settings.tagline}</p>
-          </div>
-        </div>
+            <p className="mt-6 text-xs text-black/50">{settings.tagline}</p>
+          </aside>
+        </div>,
+        document.body,
       )}
     </>
   )

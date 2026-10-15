@@ -45,7 +45,16 @@ export default function UploadField({
         <input value={value} onChange={(e) => onChange(e.target.value)} className="field flex-1" placeholder="/seed/prani/doyel.jpg বা https://…" />
         <label className="btn-outline shrink-0 cursor-pointer text-xs">
           {busy ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />} আপলোড
-          <input type="file" accept={accept} className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
+          <input
+            type="file"
+            accept={accept}
+            className="hidden"
+            onChange={(e) => {
+              const file = e.currentTarget.files?.[0]
+              e.currentTarget.value = ''
+              void upload(file)
+            }}
+          />
         </label>
       </div>
       {value && (
