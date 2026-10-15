@@ -20,6 +20,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Audit species images
+        run: node scripts/check-species-images.cjs
+
       - name: Type check
         run: npx tsc --noEmit
 

@@ -1,4 +1,5 @@
 import { getSql } from '@/lib/db/client'
+import { resolveSpeciesImage } from '@/lib/species-image'
 import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
@@ -70,7 +71,7 @@ function rowToSpecies(r: SpeciesRow): Species {
     conservation: r.conservation || 'NE',
     conservationBn: r.conservation_bn || '',
     colorTags: P(r.color_tags),
-    image: r.image || '',
+    image: resolveSpeciesImage(r.slug, r.image),
     gallery: P(r.gallery),
     poetViews: P(r.poet_views),
     sources: P(r.sources),
@@ -302,7 +303,7 @@ export const neonRepo: Repo = {
               category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'')
             ) like ${term})
         and (${!!q.featured}::boolean = false or featured = true)
-      order by featured desc, name_bn asc
+      order by featured desc, name_bn asc, slug asc
       limit ${limit} offset ${offset}
     `
     return asRows(rows).map(rowToSpecies)

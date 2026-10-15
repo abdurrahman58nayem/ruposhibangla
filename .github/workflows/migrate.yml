@@ -12,6 +12,10 @@ name: Migrate (Neon)
 on:
   workflow_dispatch:
     inputs:
+      repair_images:
+        description: 'শুধু বিদ্যমান প্রজাতির ফাঁকা ছবির ঘর পূরণ করুন (কোনো ডেটা মুছবে না)'
+        type: boolean
+        default: false
       reseed:
         description: 'টেবিল তৈরির পর সিড ডেটা বসানো হবে?'
         type: boolean
@@ -75,6 +79,14 @@ jobs:
             exit 0
           fi
           node scripts/migrate.mjs --reseed
+
+      - name: Verify bundled species images
+        if: inputs.repair_images == true
+        run: node scripts/check-species-images.cjs
+
+      - name: Repair blank species images (non-destructive)
+        if: inputs.repair_images == true
+        run: node scripts/repair-species-images.cjs
 
       - name: সারাংশ
         if: always()
