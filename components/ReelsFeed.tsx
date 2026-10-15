@@ -120,7 +120,7 @@ export default function ReelsFeed({ items }: { items: ReelPost[] }) {
           const credit = p.curatedAttribution
           const authorHref = p.authorHref || (p.author?.username ? `/u/${p.author.username}` : `/u/${p.authorId || 'guest'}`)
           return (
-            <section key={p.id} id={p.id} className="relative h-full w-full snap-start">
+            <section key={p.id} id={p.id} className="relative mx-auto h-full w-full max-w-md snap-start">
               <video
                 ref={(el) => {
                   videoRefs.current[p.id] = el
@@ -180,12 +180,12 @@ export default function ReelsFeed({ items }: { items: ReelPost[] }) {
                     </p>
                   )}
 
-                  {!credit && p.speciesSlug && (
+                  {p.speciesSlug && (
                     <Link
-                      href={`/search?q=${encodeURIComponent(p.speciesSlug)}`}
+                      href={p.speciesHref || `/search?q=${encodeURIComponent(p.speciesSlug)}`}
                       className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur"
                     >
-                      <BadgeCheck size={11} /> প্রজাতির তথ্য দেখুন
+                      <ExternalLink size={11} /> প্রজাতির তথ্য দেখুন
                     </Link>
                   )}
                 </div>

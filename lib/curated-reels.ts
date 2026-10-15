@@ -1,4 +1,4 @@
-import type { Post } from '@/lib/types'
+import type { Post, Species } from '@/lib/types'
 
 export type CuratedAttribution = {
   credit: string
@@ -49,6 +49,8 @@ export const CURATED_REELS: ReelPost[] = [
       'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/004_Pied_kingfisher_at_Queen_Elizabeth_National_Park_Video_by_Giles_Laurent.webm/960px--004_Pied_kingfisher_at_Queen_Elizabeth_National_Park_Video_by_Giles_Laurent.webm.jpg',
     mediaType: 'video',
     location: 'Queen Elizabeth National Park, Uganda',
+    speciesSlug: 'mete-machranga',
+    speciesHref: '/prani/mete-machranga',
     tags: ['মাছরাঙা', 'পাখি', 'জলাভূমি', 'মুক্ত ভিডিও'],
     status: 'approved',
     likes: 0,
@@ -77,6 +79,7 @@ export const CURATED_REELS: ReelPost[] = [
     mediaType: 'video',
     location: 'Slovakia',
     speciesSlug: 'machranga',
+    speciesHref: '/prani/machranga',
     tags: ['মাছরাঙা', 'Alcedo atthis', 'পাখি', 'মুক্ত ভিডিও'],
     status: 'approved',
     likes: 0,
@@ -168,3 +171,49 @@ export const CURATED_REELS: ReelPost[] = [
     },
   }),
 ]
+
+/** Convert explicitly licensed seed species videos into vertical editorial reels. */
+export function speciesMediaReels(species: Species[]): ReelPost[] {
+  const directVideo = /\.(webm|mp4|ogv|ogg|mov|m4v)(\?.*)?$/i
+  return species.flatMap((s) => {
+    const kind = s.type === 'prani' || s.type === 'udbhid' ? s.type : null
+    if (!kind) return []
+    const eligible = (s.media || []).filter(
+      (m) =>
+        m.kind === 'video' &&
+        directVideo.test(m.url) &&
+        !!m.credit &&
+        !!m.license &&
+        m.license !== 'যাচাই বাকি' &&
+        !!m.licenseUrl &&
+        !!m.sourceUrl,
+    )
+    return eligible.map((m, index) =>
+      channelPost({
+        id: `reel-species-${s.slug}-${index}`,
+        kind: 'reel',
+        category: kind,
+        group: s.group,
+        title: `${s.nameBn} — ${s.nameEn}`,
+        body: m.caption || `${s.scientificName} · মুক্ত লাইসেন্সের প্রজাতি-ভিডিও।`,
+        mediaUrl: m.url,
+        thumbUrl: s.image || undefined,
+        mediaType: 'video',
+        speciesSlug: s.slug,
+        speciesHref: `/${kind}/${s.slug}`,
+        tags: [s.nameBn, s.scientificName, 'প্রজাতি', 'মুক্ত ভিডিও'],
+        status: 'approved',
+        likes: 0,
+        comments: 0,
+        createdAt: '2026-10-15T00:00:00.000Z',
+        curatedAttribution: {
+          credit: m.credit!,
+          license: m.license!,
+          licenseUrl: m.licenseUrl!,
+          sourceUrl: m.sourceUrl!,
+          changesMade: 'মূল ভিডিও অপরিবর্তিত',
+        },
+      }),
+    )
+  })
+}

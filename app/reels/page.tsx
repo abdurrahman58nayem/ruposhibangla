@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import ReelsFeed from '@/components/ReelsFeed'
-import { CURATED_REELS, type ReelPost } from '@/lib/curated-reels'
+import { SPECIES } from '@/data/seed'
+import { CURATED_REELS, speciesMediaReels, type ReelPost } from '@/lib/curated-reels'
 import { getRepo } from '@/lib/repo'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +20,10 @@ export default async function Page() {
     return true
   })
 
-  // The curated clips are virtual editorial entries; no post or user data is
-  // inserted into the database. Real community uploads follow them when present.
-  return <ReelsFeed items={[...CURATED_REELS, ...communityVideos]} />
+  // Curated clips and verified species videos are virtual editorial entries;
+  // no post, author, or engagement is inserted into the database. Avoid showing
+  // a video twice when it already has a dedicated Commons editorial reel.
+  const curatedUrls = new Set(CURATED_REELS.map((item) => item.mediaUrl).filter(Boolean))
+  const speciesVideos = speciesMediaReels(SPECIES).filter((item) => !curatedUrls.has(item.mediaUrl || ''))
+  return <ReelsFeed items={[...CURATED_REELS, ...speciesVideos, ...communityVideos]} />
 }
