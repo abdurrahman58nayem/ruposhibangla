@@ -32,6 +32,7 @@ html {
 
 body {
   font-family:
+    'RB Digits',
     'Hind Siliguri',
     'Noto Sans Bengali',
     'Inter',
@@ -53,11 +54,38 @@ body {
 }
 
 /* শিরোনাম — প্রিমিয়াম বাংলা সেরিফ */
+/* ------------------------------------------------------------------ */
+/* sankhya - text Hind Siliguri-i thake, onk alada spashTo font-e      */
+/* ------------------------------------------------------------------ */
+/* 'RB Digits' shudhu onk (0-9) render kore - baki okkhor pore jay     */
+/* porer font-e. Local Inter/Noto thakle sheitai byohrito hoy.        */
+@font-face {
+  font-family: 'RB Digits';
+  src:
+    local('Inter'),
+    local('Noto Sans Bengali'),
+    local('Noto Sans'),
+    local('Segoe UI'),
+    local('Roboto'),
+    local('Helvetica Neue'),
+    local('Arial');
+  unicode-range: U+0030-0039, U+09E6-09EF, U+0025, U+002B, U+002D, U+002C, U+002E;
+  font-display: swap;
+}
+
+/* boro sankhya/statistics - Inter + tabular onk */
+.num,
+.stat-num {
+  font-family: 'Inter', 'RB Digits', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
 h1,
 h2,
 h3,
 .font-display {
-  font-family: 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
+  font-family: 'RB Digits', 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
   letter-spacing: -0.01em;
   line-height: 1.45;
   font-weight: 700;
@@ -134,7 +162,7 @@ small,
 
   .section-title {
     @apply text-[1.2rem] font-bold leading-snug text-forest-900 sm:text-[1.4rem];
-    font-family: 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
+    font-family: 'RB Digits', 'Noto Serif Bengali', 'Hind Siliguri', SolaimanLipi, Georgia, serif;
   }
 
   .prose-bn {

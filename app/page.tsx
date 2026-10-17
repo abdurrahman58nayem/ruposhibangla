@@ -106,7 +106,7 @@ export default async function HomePage() {
             ].map((s) => (
               <div key={s.label} className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
                 <dt className="text-[11px] text-white/70">{s.label}</dt>
-                <dd className="text-2xl font-bold">{toBn(s.value)}</dd>
+                <dd className="num text-2xl font-bold">{toBn(s.value)}</dd>
               </div>
             ))}
           </dl>
