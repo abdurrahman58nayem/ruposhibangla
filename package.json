@@ -8,7 +8,8 @@
     "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "next lint",
     "seed": "node --experimental-strip-types scripts/seed.mjs",
-    "test": "node scripts/check-species-images.cjs && node scripts/check-smart-image.cjs && node scripts/check-seed-media.cjs"
+    "test": "node scripts/check-species-images.cjs && node scripts/check-smart-image.cjs && node scripts/check-seed-media.cjs",
+    "audit:images": "node scripts/audit-species-images.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.700.0",

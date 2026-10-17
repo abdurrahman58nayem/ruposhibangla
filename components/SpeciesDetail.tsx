@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import SmartImage from './SmartImage'
 import { licenseFor } from '@/data/seed/media-licenses'
+import { imageGapFor } from '@/data/seed/image-gaps'
 import PostCard from './PostCard'
 import SpeciesCard from './SpeciesCard'
 import { getRepo } from '@/lib/repo'
@@ -36,6 +37,8 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
   ])
   const relatedSpecies = related.filter((x) => x.slug !== s.slug).slice(0, 4)
   const lic = licenseFor(s.image)
+  /** §12 — নথিভুক্ত ফাঁক: ছবি পাওয়া যায়নি এমন প্রজাতির কারণ স্পষ্ট করে বলা */
+  const gap = s.image ? undefined : imageGapFor(s.slug)
   const status = iucnInfo(s.conservation)
   const extraConsNote = extraConservationNote(s.conservation, s.conservationBn)
   const showIucn = type === 'prani' || type === 'udbhid' || s.conservation !== 'NE'
@@ -132,6 +135,15 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
                   </a>
                 </>
               )}
+            </p>
+          )}
+          {!s.image && gap && (
+            <p className="mt-1.5 text-[11px] leading-relaxed text-black/50">
+              <span className="font-semibold text-black/70">কোনো মুক্ত-লাইসেন্স ছবি পাওয়া যায়নি:</span>{' '}
+              {gap.reason}{' '}
+              <a href="/share" className="text-forest-700 hover:underline">
+                আপনার কাছে ছবি থাকলে শেয়ার করুন
+              </a>
             </p>
           )}
           {!!s.gallery?.length && (
