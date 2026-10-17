@@ -184,7 +184,7 @@ export const MORE_BIRDS37: Species[] = [
     origin: 'native', conservation: 'LC', conservationBn: 'বিশ্ব IUCN: ন্যূনতম বিপদগ্রস্ত (LC)।',
     threats: 'জলাভূমি কমা, বিষ, শিকার, তারে ধরা।',
     conservationActions: 'জলাভূমি রক্ষা, বিষ বন্ধ, শিকার নিষিদ্ধ।',
-    colorTags: ['ধূসর', 'কালো', 'লাল', 'সাদা'], image: 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Common_crane_grus_grus.jpg',
+    colorTags: ['ধূসর', 'কালো', 'লাল', 'সাদা'], image: 'https://upload.wikimedia.org/wikipedia/commons/3/32/Two_cranes_%28Grus_grus%29_flying_in_the_early_morning_sun.jpg',
     sources: [BD_BIRD_LIST, { title: 'ছবির মূল ফাইল — Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Common_crane_grus_grus.jpg' }],
     dataStatus: 'review', lastVerifiedAt: '2026-10-17',
   },
