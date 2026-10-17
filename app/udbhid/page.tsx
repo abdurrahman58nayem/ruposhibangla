@@ -10,7 +10,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/udbhid' },
 }
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string; page?: string }> }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ cat?: string; iucn?: string; q?: string; page?: string }>
+}) {
   const sp = await searchParams
   return (
     <SpeciesBrowser
@@ -18,6 +22,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
       title="বাংলাদেশের উদ্ভিদ"
       subtitle="বন, ফল, ফুল, ঔষধি, জলজ, ম্যানগ্রোভ আর ফসল — বাংলার সবুজের তালিকা"
       cat={sp.cat}
+      iucn={sp.iucn}
       q={sp.q}
       page={Number(sp.page || 1)}
     />

@@ -11,6 +11,7 @@ export async function GET(req: Request) {
   const rows = await getRepo().listSpecies({
     type: (url.searchParams.get('type') as any) || undefined,
     group: (url.searchParams.get('group') as any) || undefined,
+    conservation: (url.searchParams.get('conservation') as any) || undefined,
     dataStatus: (url.searchParams.get('dataStatus') as any) || undefined,
     category: url.searchParams.get('category') || undefined,
     q: url.searchParams.get('q') || undefined,

@@ -5,8 +5,10 @@ import type {
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
 import { CATEGORIES } from '@/lib/categories'
+import { normalizeConservationBn } from '@/lib/utils'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
+import { verifySpeciesRecord } from '@/data/seed/verification'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
 import { pendingSeedSpecies, makeSyncResult, syncSummary, SEED_SPECIES_COUNT } from './seed-sync'
 import type { SpeciesSyncOptions } from './seed-sync'
@@ -53,7 +55,7 @@ function inferGroup(s: { type?: string; category?: string }): any {
 }
 
 function rowToSpecies(r: SpeciesRow): Species {
-  return {
+  return verifySpeciesRecord({
     slug: r.slug,
     type: r.type,
     group: r.group || inferGroup({ type: r.type, category: r.category }),
@@ -71,7 +73,7 @@ function rowToSpecies(r: SpeciesRow): Species {
     whereToSee: r.where_to_see || '',
     reproduction: r.reproduction || '',
     conservation: r.conservation || 'NE',
-    conservationBn: r.conservation_bn || '',
+    conservationBn: r.conservation_bn ? normalizeConservationBn(r.conservation || 'NE', r.conservation_bn) : '',
     colorTags: P(r.color_tags),
     image: resolveSpeciesImage(r.slug, r.image),
     gallery: P(r.gallery),
@@ -96,7 +98,7 @@ function rowToSpecies(r: SpeciesRow): Species {
     views: Number(r.views || 0),
     createdAt: new Date(r.created_at).toISOString(),
     updatedAt: new Date(r.updated_at).toISOString(),
-  }
+  })
 }
 
 function rowToAiQuestion(r: Record<string, any>): AiQuestion {
@@ -316,19 +318,21 @@ export const neonRepo: Repo = {
     const umbrella = q.group === 'pranijogot'
     const grpFilter = umbrella ? null : grp
     const typeFilter = umbrella ? 'prani' : type
+    const cons = q.conservation && q.conservation !== 'all' ? q.conservation : null
     const st = q.dataStatus && q.dataStatus !== 'all' ? q.dataStatus : null
     const term = q.q ? `%${q.q.trim().toLowerCase()}%` : null
-    const limit = q.limit ?? 500
+    const limit = q.limit ?? 5000
     const offset = q.offset ?? 0
     const rows = await sql`
       select * from species
       where (${typeFilter}::text is null or type = ${typeFilter})
         and (${cat}::text is null or category = ${cat})
         and (${grpFilter}::text is null or "group" = ${grpFilter})
+        and (${cons}::text is null or conservation = ${cons})
         and (${st}::text is null or data_status = ${st})
         and (${term}::text is null or lower(
               name_bn || ' ' || coalesce(name_en,'') || ' ' || coalesce(scientific_name,'') || ' ' ||
-              category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'')
+              category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'') || ' ' || coalesce(conservation,'') || ' ' || coalesce(conservation_bn,'')
             ) like ${term})
         and (${!!q.featured}::boolean = false or featured = true)
         and (${!q.hasVideo}::boolean = true or media like '%"kind":"video"%' or media like '%"kind": "video"%')
@@ -342,6 +346,7 @@ export const neonRepo: Repo = {
     const sql = getSql()
     const type = q.type && q.type !== 'all' ? q.type : null
     const cat = q.category && q.category !== 'all' ? q.category : null
+    const cons = q.conservation && q.conservation !== 'all' ? q.conservation : null
     const term = q.q ? `%${q.q.trim().toLowerCase()}%` : null
     const rows = await sql`
       select count(*)::int as c from species
@@ -349,10 +354,11 @@ export const neonRepo: Repo = {
         and (${cat}::text is null or category = ${cat})
         and (${q.group === 'pranijogot' ? null : (q.group && q.group !== 'all' ? q.group : null)}::text is null or "group" = ${q.group === 'pranijogot' ? null : (q.group && q.group !== 'all' ? q.group : null)})
         and (${q.group === 'pranijogot' ? 'prani' : null}::text is null or type = ${q.group === 'pranijogot' ? 'prani' : null})
+        and (${cons}::text is null or conservation = ${cons})
         and (${(q.dataStatus && q.dataStatus !== 'all' ? q.dataStatus : null)}::text is null or data_status = ${(q.dataStatus && q.dataStatus !== 'all' ? q.dataStatus : null)})
         and (${term}::text is null or lower(
               name_bn || ' ' || coalesce(name_en,'') || ' ' || coalesce(scientific_name,'') || ' ' ||
-              category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'')
+              category || ' ' || coalesce(summary,'') || ' ' || coalesce(habitat,'') || ' ' || coalesce(other_names,'') || ' ' || coalesce(conservation,'') || ' ' || coalesce(conservation_bn,'')
             ) like ${term})
     `
     return Number(asRows(rows)[0]?.c || 0)
