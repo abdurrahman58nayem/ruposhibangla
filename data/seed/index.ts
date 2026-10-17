@@ -19,6 +19,7 @@ import { MORE_BIRDS } from './more-birds'
 import { MORE_FISH } from './more-fish'
 import { MORE_HERPS } from './more-herps'
 import { MORE_MAMMALS } from './more-mammals'
+import { MORE_MAMMALS2 } from './more-mammals2'
 import { MORE_PLANTS2 } from './more-plants2'
 import { MORE_INSECTS } from './more-insects'
 import { MORE_BIRDS2 } from './more-birds2'
@@ -68,6 +69,7 @@ import { MORE_PLANTS3 } from './more-plants3'
 import { MORE_INSECTS2 } from './more-insects2'
 import { SEED_IMAGE_BY_SLUG } from './media-images'
 import { SEED_VIDEOS } from './media-videos'
+import { WEB_VIDEOS } from './media-web-videos'
 import { withDetails, DETAILS_COUNT } from './details'
 
 /**
@@ -173,7 +175,7 @@ function dedupe(list: Species[]): Species[] {
 const ALL_SPECIES_SEED: Species[] = [
   ...BIRDS, ...ANIMALS, ...PLANTS, ...FISH, ...REPTILES, ...AMPHIBIANS,
   ...INSECTS, ...INVERTEBRATES, ...FUNGI_ALGAE, ...MICROBES, ...PLACES, ...LITERATURE,
-  ...EXTRA_SPECIES, ...MORE_PLANTS, ...MORE_ANIMALS, ...MORE_BIRDS, ...MORE_FISH, ...MORE_HERPS, ...MORE_MAMMALS, ...MORE_PLANTS2, ...MORE_INSECTS, ...MORE_BIRDS2, ...MORE_BIRDS3, ...MORE_BIRDS4, ...MORE_BIRDS5, ...MORE_BIRDS6, ...MORE_BIRDS7, ...MORE_BIRDS8, ...MORE_BIRDS9, ...MORE_BIRDS10, ...MORE_BIRDS11, ...MORE_BIRDS12, ...MORE_BIRDS13, ...MORE_BIRDS14, ...MORE_BIRDS15, ...MORE_BIRDS16, ...MORE_BIRDS17, ...MORE_BIRDS18, ...MORE_BIRDS19, ...MORE_BIRDS20, ...MORE_BIRDS21, ...MORE_BIRDS22, ...MORE_BIRDS23, ...MORE_BIRDS24, ...MORE_BIRDS25, ...MORE_BIRDS26, ...MORE_BIRDS27, ...MORE_BIRDS28, ...MORE_BIRDS29, ...MORE_BIRDS30, ...MORE_BIRDS31, ...MORE_BIRDS32, ...MORE_BIRDS33, ...MORE_BIRDS34, ...MORE_BIRDS35, ...MORE_BIRDS36, ...MORE_BIRDS37, ...MORE_BIRDS38, ...MORE_BIRDS39, ...MORE_BIRDS40, ...MORE_BIRDS41, ...MORE_BIRDS42, ...MORE_BIRDS43, ...MORE_BIRDS44, ...MORE_PLANTS3, ...MORE_INSECTS2,
+  ...EXTRA_SPECIES, ...MORE_PLANTS, ...MORE_ANIMALS, ...MORE_BIRDS, ...MORE_FISH, ...MORE_HERPS, ...MORE_MAMMALS, ...MORE_MAMMALS2, ...MORE_PLANTS2, ...MORE_INSECTS, ...MORE_BIRDS2, ...MORE_BIRDS3, ...MORE_BIRDS4, ...MORE_BIRDS5, ...MORE_BIRDS6, ...MORE_BIRDS7, ...MORE_BIRDS8, ...MORE_BIRDS9, ...MORE_BIRDS10, ...MORE_BIRDS11, ...MORE_BIRDS12, ...MORE_BIRDS13, ...MORE_BIRDS14, ...MORE_BIRDS15, ...MORE_BIRDS16, ...MORE_BIRDS17, ...MORE_BIRDS18, ...MORE_BIRDS19, ...MORE_BIRDS20, ...MORE_BIRDS21, ...MORE_BIRDS22, ...MORE_BIRDS23, ...MORE_BIRDS24, ...MORE_BIRDS25, ...MORE_BIRDS26, ...MORE_BIRDS27, ...MORE_BIRDS28, ...MORE_BIRDS29, ...MORE_BIRDS30, ...MORE_BIRDS31, ...MORE_BIRDS32, ...MORE_BIRDS33, ...MORE_BIRDS34, ...MORE_BIRDS35, ...MORE_BIRDS36, ...MORE_BIRDS37, ...MORE_BIRDS38, ...MORE_BIRDS39, ...MORE_BIRDS40, ...MORE_BIRDS41, ...MORE_BIRDS42, ...MORE_BIRDS43, ...MORE_BIRDS44, ...MORE_PLANTS3, ...MORE_INSECTS2,
 ].map(normalize)
 
 /** §12 — স্ক্রিপ্টে সংগৃহীত ছবি (data/seed/media-images.ts) যুক্ত করা */
@@ -188,8 +190,8 @@ function withSeedImages(list: Species[]): Species[] {
 /** Commons-এর যাচাইকৃত মুক্ত ভিডিও প্রজাতির media[]-তে যোগ করা হয়; একই URL দুবার নয়। */
 function withSeedVideos(list: Species[]): Species[] {
   return list.map((s) => {
-    const videos = SEED_VIDEOS[s.slug]
-    if (!videos?.length) return s
+    const videos = [...(SEED_VIDEOS[s.slug] || []), ...(WEB_VIDEOS[s.slug] || [])]
+    if (!videos.length) return s
     const current = s.media || []
     const urls = new Set(current.map((m) => m.url))
     const additions = videos.filter((m) => m.kind === 'video' && m.url && !urls.has(m.url))

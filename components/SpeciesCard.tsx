@@ -2,7 +2,6 @@ import Link from 'next/link'
 import SmartImage from './SmartImage'
 import { iucnInfo } from '@/lib/utils'
 import { speciesPath, categoryLabel } from '@/lib/categories'
-import { UNVERIFIED_REASONS } from '@/data/seed/verification'
 import type { Species } from '@/lib/types'
 import CategoryIcon, { toneOf } from '@/components/icons/CategoryIcon'
 
@@ -11,9 +10,11 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
   const href = speciesPath(s)
   const tone = toneOf(s.group)
   const showIucn = s.type === 'prani' || s.type === 'udbhid' || s.conservation !== 'NE'
-  const isVerified = (s.dataStatus || 'partial') === 'verified'
-  const unverifiedMeta = UNVERIFIED_REASONS[s.slug]
-  const unverifiedReason = s.conflictingInfo || unverifiedMeta?.reason || 'তথ্য যাচাই প্রক্রিয়াধীন'
+  /** IUCN স্ট্যাটাস যেন কার্ডে একবারই দেখায় — ঝুঁকিপূর্ণ প্রজাতির জন্য ছবির উপরে ব্যাজ,
+   *  বাকিদের জন্য নিচের চিপ; দুই জায়গায় একসাথে কখনও নয়। */
+  const overlayIucn =
+    showIucn && (status.threatened || status.code === 'EW' || status.code === 'EX')
+  const chipIucn = showIucn && !overlayIucn
 
   return (
     <Link
@@ -40,7 +41,7 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
           <CategoryIcon id={s.group} size={12} variant="mono" strokeWidth={2.1} />
           {s.category || categoryLabel(s.group)}
         </span>
-        {showIucn && (status.threatened || status.code === 'EW' || status.code === 'EX') && (
+        {overlayIucn && (
           <span
             className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm ${status.color}`}
             title={`${status.code} — ${status.en}: ${status.meaning}`}
@@ -56,7 +57,7 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
         <p className="mt-0.5 truncate text-[11.5px] italic text-black/50">{s.scientificName}</p>
         {!compact && <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-black/65">{s.summary}</p>}
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          {showIucn && (
+          {chipIucn && (
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${status.color}`}
               title={`${status.code} — ${status.en}: ${status.meaning}`}
@@ -66,27 +67,7 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
               <span>{status.meaning}</span>
             </span>
           )}
-          {isVerified ? (
-            <span
-              className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800"
-              title="বৈজ্ঞানিক নাম, IUCN সংরক্ষণ অবস্থা ও তথ্যসূত্র যাচাইকৃত"
-            >
-              যাচাইকৃত ✓
-            </span>
-          ) : (
-            <span
-              className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900"
-              title={`কেন যাচাই করা যায়নি: ${unverifiedReason}`}
-            >
-              যাচাই করা যায়নি · {unverifiedMeta?.category || 'কারণ দেখুন'}
-            </span>
-          )}
         </div>
-        {!compact && !isVerified && (
-          <p className="mt-1.5 line-clamp-2 rounded-lg bg-amber-50/90 px-2 py-1 text-[11px] leading-snug text-amber-950 ring-1 ring-amber-200/80">
-            <b>কারণ:</b> {unverifiedReason}
-          </p>
-        )}
       </div>
     </Link>
   )

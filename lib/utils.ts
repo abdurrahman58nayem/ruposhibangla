@@ -6,9 +6,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * সংখ্যা রূপান্তর — সংখ্যা যেন স্পষ্টভাবে পড়া যায় (UI):
+ * লেখা বাংলায় থাকে, কিন্তু সংখ্যা ল্যাটিন অঙ্কে (0–9) দেখানো হয়,
+ * আর globals.css-এর `.num` / 'RB Digits' ফন্ট অঙ্কগুলোকে আরও স্পষ্ট করে।
+ * পুরনো বাংলা অঙ্ক (০–৯) চাইলে `toBnBengali` ব্যবহার করা যাবে।
+ */
 const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
 
 export function toBn(n: number | string): string {
+  return String(n)
+}
+
+/** ঐচ্ছিক — পুরনো আচরণ: সংখ্যাকে বাংলা অঙ্কে দেখানো */
+export function toBnBengali(n: number | string): string {
   return String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)])
 }
 
@@ -72,8 +83,8 @@ export function excerpt(text: string, len = 140): string {
 /**
  * উৎস: IUCN Red List Categories and Criteria, Version 3.1 (IUCN SSC, 2001)
  *       https://www.iucnredlist.org/resources/categories-and-criteria
- * রঙ:  IUCN Red List Threat Category colour chart (আনুষ্ঠানিক)
- *       https://nc.iucnredlist.org/redlist/resources/files/1646067752-FINAL_IUCN_Red_List_colour_chart.pdf
+ * রঙ:  IUCN-এর আনুষ্ঠানিক রঙের ধারণা রেখে, রূপসী বাংলার থিম (forest/earth/mati/kantha) অনুযায়ী
+ *       প্রিমিয়াম-ভাইবে সাজানো হয়েছে — যেন ব্যাজগুলো সাইটের সাথে সামঞ্জস্যপূর্ণ দেখায়।
  *
  * ইংরেজি শ্রেণি, সংক্ষিপ্ত চিহ্ন (EX–NE) ও রঙ — IUCN-এর আনুষ্ঠানিক মানদণ্ড অনুযায়ী যাচাইকৃত।
  * মূল্যায়নটি বৈশ্বিক: প্রজাতির সারা পৃথিবীর অবস্থা ধরে হয় (বাংলাদেশের আঞ্চলিক অবস্থা আলাদা হতে পারে)।
@@ -115,9 +126,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Extinct',
     detailBn: 'সন্দেহাতীতভাবে প্রমাণিত যে পৃথিবীতে প্রজাতিটির শেষ জীবিত সদস্যটিও মারা গেছে।',
     enDesc: 'No reasonable doubt that the last individual has died.',
-    hex: '#000000',
+    hex: '#2b2733',
     on: 'light',
-    color: 'bg-black text-white',
+    color: 'bg-[#2b2733] text-white',
     threatened: false,
   },
   EW: {
@@ -128,9 +139,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Extinct in the Wild',
     detailBn: 'প্রাকৃতিক বা বন্য আবাসে আর টিকে নেই; কেবল চাষাবাদে, বন্দিদশায় বা ঐতিহাসিক আবাসের বাইরে টিকে আছে।',
     enDesc: 'Survives only in cultivation, in captivity or as a naturalized population well outside its past range.',
-    hex: '#542344',
+    hex: '#4a2b3a',
     on: 'light',
-    color: 'bg-[#542344] text-white',
+    color: 'bg-[#4a2b3a] text-white',
     threatened: false,
   },
   CR: {
@@ -141,9 +152,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Critically Endangered',
     detailBn: 'বন্য পরিবেশে বিলুপ্ত হওয়ার চরম ও অতি উচ্চ ঝুঁকির মুখে রয়েছে (IUCN মানদণ্ড A–E)।',
     enDesc: 'Facing an extremely high risk of extinction in the wild.',
-    hex: '#D81E05',
+    hex: '#8f2d2d',
     on: 'light',
-    color: 'bg-[#D81E05] text-white',
+    color: 'bg-[#8f2d2d] text-white',
     threatened: true,
   },
   EN: {
@@ -154,9 +165,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Endangered',
     detailBn: 'বন্য পরিবেশে বিলুপ্ত হওয়ার খুব উচ্চ ঝুঁকির মুখে রয়েছে (IUCN মানদণ্ড A–E)।',
     enDesc: 'Facing a very high risk of extinction in the wild.',
-    hex: '#FC7F3F',
-    on: 'dark',
-    color: 'bg-[#FC7F3F] text-[#2b1100]',
+    hex: '#b45f2c',
+    on: 'light',
+    color: 'bg-[#b45f2c] text-white',
     threatened: true,
   },
   VU: {
@@ -167,9 +178,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Vulnerable',
     detailBn: 'বন্য পরিবেশে বিলুপ্ত হওয়ার উচ্চ ঝুঁকির মুখে রয়েছে (IUCN মানদণ্ড A–E)।',
     enDesc: 'Facing a high risk of extinction in the wild.',
-    hex: '#F9E814',
+    hex: '#c69334',
     on: 'dark',
-    color: 'bg-[#F9E814] text-[#2b2500]',
+    color: 'bg-[#c69334] text-[#2c2208]',
     threatened: true,
   },
   NT: {
@@ -180,9 +191,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Near Threatened',
     detailBn: 'এখনই CR, EN বা VU শ্রেণিতে না পড়লেও খুব কাছাকাছি আছে এবং নিকট ভবিষ্যতে বিপন্ন শ্রেণিতে পড়ার আশঙ্কা রয়েছে।',
     enDesc: 'Close to qualifying for, or likely to qualify for, a threatened category in the near future.',
-    hex: '#CCE226',
-    on: 'dark',
-    color: 'bg-[#CCE226] text-[#1f2600]',
+    hex: '#7c8648',
+    on: 'light',
+    color: 'bg-[#7c8648] text-white',
     threatened: false,
   },
   LC: {
@@ -193,9 +204,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Least Concern',
     detailBn: 'মূল্যায়নে বিপন্ন বা ঝুঁকির কাছাকাছি শ্রেণিতে পড়েনি; বিস্তৃত ও প্রাচুর্যময় প্রজাতি এই শ্রেণিভুক্ত।',
     enDesc: 'Does not qualify as threatened; widespread and abundant taxa are included in this category.',
-    hex: '#60C659',
-    on: 'dark',
-    color: 'bg-[#60C659] text-[#082406]',
+    hex: '#2f7d52',
+    on: 'light',
+    color: 'bg-[#2f7d52] text-white',
     threatened: false,
   },
   DD: {
@@ -206,9 +217,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Data Deficient',
     detailBn: 'বিস্তৃতি বা সংখ্যা সম্পর্কে পর্যাপ্ত তথ্যের অভাবে বিলুপ্তির ঝুঁকি সরাসরি বা পরোক্ষভাবে নির্ধারণ করা যায়নি।',
     enDesc: 'Inadequate information to make a direct or indirect assessment of extinction risk.',
-    hex: '#D1D1C6',
+    hex: '#d5cec1',
     on: 'dark',
-    color: 'bg-[#D1D1C6] text-[#1f1f1b]',
+    color: 'bg-[#d5cec1] text-[#3a3428] ring-1 ring-black/10',
     threatened: false,
   },
   NE: {
@@ -219,9 +230,9 @@ export const IUCN: Record<string, IUCNInfo> = {
     en: 'Not Evaluated',
     detailBn: 'IUCN-এর মানদণ্ড অনুযায়ী এখনো এই প্রজাতিটির সংরক্ষণ অবস্থা মূল্যায়ন করা হয়নি।',
     enDesc: 'Has not yet been evaluated against the criteria.',
-    hex: '#FFFFFF',
+    hex: '#f2ede2',
     on: 'dark',
-    color: 'bg-white text-[#14261d] ring-1 ring-black/15',
+    color: 'bg-[#f2ede2] text-[#2c2a22] ring-1 ring-black/10',
     threatened: false,
   },
 }

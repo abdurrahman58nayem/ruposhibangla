@@ -188,22 +188,6 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
             {showIucn && extraConsNote && (
               <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-black/65">{extraConsNote}</span>
             )}
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                (s.dataStatus || 'partial') === 'verified'
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : (s.dataStatus || 'partial') === 'identity_uncertain'
-                    ? 'bg-red-100 text-red-700'
-                    : (s.dataStatus || 'partial') === 'needs_correction'
-                      ? 'bg-orange-100 text-orange-800'
-                      : 'bg-amber-100 text-amber-800'
-              }`}
-              title={s.conflictingInfo || undefined}
-            >
-              {(s.dataStatus || 'partial') === 'verified'
-                ? 'তথ্য: যাচাইকৃত ✓'
-                : `তথ্য: যাচাই করা যায়নি (${UNVERIFIED_REASONS[s.slug]?.category || DATA_STATUS_LABEL[s.dataStatus || 'partial']?.bn})`}
-            </span>
           </div>
 
           <p className="mt-4 text-[15px] leading-relaxed text-black/80">{s.summary}</p>

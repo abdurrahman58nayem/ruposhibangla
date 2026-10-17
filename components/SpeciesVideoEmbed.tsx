@@ -21,6 +21,12 @@ export type VideoEmbed = {
 }
 
 const YT_RE = /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/
+/** ল্যান্ডস্কেপ ভিডিও (YouTube watch / সরাসরি ফাইল) — 16:9; শর্টস ও রিলস 9:16 */
+function isLandscape(url: string, yt: RegExpMatchArray | null): boolean {
+  if (/\/shorts\//.test(url)) return false
+  if (yt) return !/\/shorts\//.test(url)
+  return /\.(mp4|webm|ogv|ogg|mov|m4v)(\?.*)?$/i.test(url)
+}
 /** Wikimedia Commons এর embed প্লেয়ার */
 const COMMONS_EMBED_RE = /^https?:\/\/commons\.wikimedia\.org\/wiki\/(File:.+)$/
 
@@ -54,7 +60,11 @@ export default function SpeciesVideoEmbed({ videos }: { videos: VideoEmbed[] }) 
 
           return (
             <figure key={i} className="overflow-hidden rounded-xl bg-black/95">
-              <div className="relative mx-auto aspect-[9/16] w-full max-w-sm bg-black">
+              <div
+                className={`relative mx-auto bg-black ${
+                  isLandscape(v.url, yt) ? 'aspect-video w-full' : 'aspect-[9/16] w-full max-w-sm'
+                }`}
+              >
                 {asDirectVideo(v.url) ? (
                   <video
                     className="h-full w-full object-contain"
