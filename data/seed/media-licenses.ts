@@ -8489,6 +8489,30 @@ export const MEDIA_LICENSES: MediaLicense[] = [
     verified: true,
     note: 'Wikimedia Commons API (extmetadata) দিয়ে লেখক ও লাইসেন্স যাচাই করা হয়েছে (ব্যাচ ৪৩)।',
   },
+  {
+    file: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Asian_fairy_bluebird_male_marayoor.jpg',
+    subject: 'এশীয় নীলপরী (Asian Fairy-bluebird)',
+    slug: 'eshio-nilpori',
+    kind: 'image',
+    credit: 'Jishnu Narayanan',
+    source: 'https://commons.wikimedia.org/wiki/File:Asian_fairy_bluebird_male_marayoor.jpg',
+    license: 'CC BY-SA 4.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+    verified: true,
+    note: 'Wikimedia Commons API (extmetadata) দিয়ে লেখক ও লাইসেন্স যাচাই করা হয়েছে (ব্যাচ ৪৪)।',
+  },
+  {
+    file: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Pitta_cyanea_1_-_Khao_Yai.jpg',
+    subject: 'নীল পিট্টা (Blue Pitta)',
+    slug: 'nil-pitta',
+    kind: 'image',
+    credit: 'JJ Harrison',
+    source: 'https://commons.wikimedia.org/wiki/File:Pitta_cyanea_1_-_Khao_Yai.jpg',
+    license: 'CC BY 3.0',
+    licenseUrl: 'https://creativecommons.org/licenses/by/3.0/',
+    verified: true,
+    note: 'Wikimedia Commons API (extmetadata) দিয়ে লেখক ও লাইসেন্স যাচাই করা হয়েছে (ব্যাচ ৪৪)।',
+  },
 ]
 
 export function licenseFor(file: string): MediaLicense | undefined {
