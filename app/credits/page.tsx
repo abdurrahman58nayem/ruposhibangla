@@ -9,8 +9,10 @@ export const metadata: Metadata = {
 }
 
 export default function CreditsPage() {
-  const entries = Object.entries(MEDIA_LICENSES)
-  const verified = entries.filter(([, m]) => m.verified).length
+  // MEDIA_LICENSES একটি অ্যারে — Object.entries() ব্যবহার করলে “ফাইল” কলামে
+  // ফাইলের নামের বদলে ক্রমিক নম্বর চলে আসত (আগের বাগ)। সরাসরি অ্যারেই ব্যবহার করছি।
+  const entries = MEDIA_LICENSES
+  const verified = entries.filter((m) => m.verified).length
   const pending = entries.length - verified
 
   return (
@@ -39,7 +41,8 @@ export default function CreditsPage() {
           <table className="w-full text-left text-xs">
             <thead className="border-b border-black/10 bg-forest-50/70 text-[11px] font-semibold uppercase tracking-wide text-forest-900">
               <tr>
-                <th className="px-3 py-2.5">ফাইল</th>
+                <th className="px-3 py-2.5">ফাইল (ক্লিক করে যাচাই করুন)</th>
+                <th className="px-3 py-2.5">বিষয়</th>
                 <th className="px-3 py-2.5">ক্রেডিট / ফটোগ্রাফার</th>
                 <th className="px-3 py-2.5">লাইসেন্স</th>
                 <th className="px-3 py-2.5">যাচাই অবস্থা</th>
@@ -48,9 +51,20 @@ export default function CreditsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5">
-              {entries.map(([path, m]) => (
-                <tr key={path} className="align-top hover:bg-forest-50/30">
-                  <td className="px-3 py-2 font-mono text-[11px] text-black/75 whitespace-nowrap">{path}</td>
+              {entries.map((m) => (
+                <tr key={m.file} className="align-top hover:bg-forest-50/30">
+                  <td className="max-w-[22rem] px-3 py-2 font-mono text-[11px] text-black/75">
+                    <a
+                      href={m.file}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={m.file}
+                      className="break-all text-forest-700 hover:underline"
+                    >
+                      {m.file.split('/').slice(-2).join('/')}
+                    </a>
+                  </td>
+                  <td className="px-3 py-2 text-black/70">{m.subject || '—'}</td>
                   <td className="px-3 py-2 text-black/70">{m.credit || '—'}</td>
                   <td className="px-3 py-2 text-black/70 whitespace-nowrap">{m.license}</td>
                   <td className="px-3 py-2 whitespace-nowrap">
