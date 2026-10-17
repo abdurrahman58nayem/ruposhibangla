@@ -39,4 +39,26 @@ export const SEED_VIDEOS: Record<string, SpeciesMedia[]> = {
       sourceUrl: 'https://commons.wikimedia.org/wiki/File:Birds_of_Sahyadri_-Asian_Paradise_Flycatcher_-.webm',
     },
   ],
+  'kalo-baza': [
+    {
+      kind: 'video',
+      url: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Black_Baza_-_Video-1.webm',
+      caption: 'Black Baza (Aviceda leuphotes) — Karnataka, India; ফুটেজটি বাংলাদেশের নয়।',
+      credit: 'Forestowlet',
+      license: 'CC0',
+      licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Black_Baza_-_Video-1.webm',
+    },
+  ],
+  'komla-matha-dama': [
+    {
+      kind: 'video',
+      url: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Orange-headed_Thrush_in_Rabindra_Sarobar_October_2025_by_Tisha_Mukherjee_01.webm',
+      caption: 'Orange-headed Thrush (Geokichla citrina) — Rabindra Sarobar, West Bengal, India; ফুটেজটি বাংলাদেশের নয়।',
+      credit: 'Tisha Mukherjee',
+      license: 'CC BY-SA 4.0',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Orange-headed_Thrush_in_Rabindra_Sarobar_October_2025_by_Tisha_Mukherjee_01.webm',
+    },
+  ],
 }
