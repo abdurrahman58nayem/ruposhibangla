@@ -1,15 +1,17 @@
 import Link from 'next/link'
 import SpeciesCard from './SpeciesCard'
 import SearchBar from './SearchBar'
+import { IucnFilterBar } from './IucnGuide'
 import { getRepo } from '@/lib/repo'
-import { toBn } from '@/lib/utils'
-import type { SpeciesType } from '@/lib/types'
+import { IUCN, IUCN_ORDER, toBn } from '@/lib/utils'
+import type { Conservation, SpeciesType } from '@/lib/types'
 
 export default async function SpeciesBrowser({
   type,
   title,
   subtitle,
   cat,
+  iucn,
   q,
   page = 1,
   perPage = 24,
@@ -18,28 +20,41 @@ export default async function SpeciesBrowser({
   title: string
   subtitle: string
   cat?: string
+  iucn?: string
   q?: string
   page?: number
   perPage?: number
 }) {
   const repo = getRepo()
   const base = type === 'prani' ? '/prani' : '/udbhid'
-  const categories = await repo.listCategories(type)
-  const total = await repo.countSpecies({ type, category: cat, q })
+  const validIucn = (iucn && IUCN[iucn] ? (iucn as Conservation) : undefined)
+  const [categories, allForCounts, total] = await Promise.all([
+    repo.listCategories(type),
+    repo.listSpecies({ type, category: cat, q, limit: 5000 }),
+    repo.countSpecies({ type, category: cat, conservation: validIucn, q }),
+  ])
   const rows = await repo.listSpecies({
     type,
     category: cat,
+    conservation: validIucn,
     q,
     limit: perPage,
     offset: (page - 1) * perPage,
   })
   const pages = Math.max(1, Math.ceil(total / perPage))
 
-  const buildHref = (p: number) => {
+  const iucnCounts: Partial<Record<Conservation, number>> = {}
+  for (const code of IUCN_ORDER) iucnCounts[code] = 0
+  for (const s of allForCounts) {
+    iucnCounts[s.conservation] = (iucnCounts[s.conservation] || 0) + 1
+  }
+
+  const buildHref = (opts: { cat?: string; iucn?: Conservation; page?: number }) => {
     const params = new URLSearchParams()
-    if (cat) params.set('cat', cat)
+    if (opts.cat) params.set('cat', opts.cat)
+    if (opts.iucn) params.set('iucn', opts.iucn)
     if (q) params.set('q', q)
-    if (p > 1) params.set('page', String(p))
+    if (opts.page && opts.page > 1) params.set('page', String(opts.page))
     const qs = params.toString()
     return qs ? `${base}?${qs}` : base
   }
@@ -54,25 +69,32 @@ export default async function SpeciesBrowser({
         </div>
       </header>
 
-      <nav className="no-scrollbar -mx-4 mb-5 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-        <Link href={buildHref(1).replace(/cat=[^&]*/, '').replace('?&', '?')} className={`chip ${!cat ? 'chip-active' : ''}`}>
-          সব <span className="opacity-70">({toBn(total)})</span>
+      <nav className="no-scrollbar -mx-4 mb-3 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+        <Link href={buildHref({ cat: undefined, iucn: validIucn, page: 1 })} className={`chip ${!cat ? 'chip-active' : ''}`}>
+          সব <span className="opacity-70">({toBn(allForCounts.length)})</span>
         </Link>
-        {categories.map((c) => {
-          const params = new URLSearchParams()
-          params.set('cat', c.name)
-          if (q) params.set('q', q)
-          return (
-            <Link key={c.name} href={`${base}?${params.toString()}`} className={`chip ${cat === c.name ? 'chip-active' : ''}`}>
-              {c.name} <span className="opacity-70">({toBn(c.count)})</span>
-            </Link>
-          )
-        })}
+        {categories.map((c) => (
+          <Link
+            key={c.name}
+            href={buildHref({ cat: c.name, iucn: validIucn, page: 1 })}
+            className={`chip ${cat === c.name ? 'chip-active' : ''}`}
+          >
+            {c.name} <span className="opacity-70">({toBn(c.count)})</span>
+          </Link>
+        ))}
       </nav>
+
+      <div className="mb-5">
+        <IucnFilterBar
+          active={validIucn || 'all'}
+          counts={iucnCounts}
+          buildHref={(code) => buildHref({ cat, iucn: code, page: 1 })}
+        />
+      </div>
 
       {rows.length === 0 ? (
         <div className="card p-10 text-center text-sm text-black/50">
-          এই ফিল্টারে কিছু পাওয়া যায়নি। অন্য নাম দিয়ে চেষ্টা করুন।
+          এই ফিল্টারে কিছু পাওয়া যায়নি। অন্য নাম বা সংরক্ষণ অবস্থা দিয়ে চেষ্টা করুন।
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -85,7 +107,7 @@ export default async function SpeciesBrowser({
       {pages > 1 && (
         <nav className="mt-8 flex items-center justify-center gap-2">
           {page > 1 && (
-            <Link href={buildHref(page - 1)} className="btn-outline">
+            <Link href={buildHref({ cat, iucn: validIucn, page: page - 1 })} className="btn-outline">
               ← আগে
             </Link>
           )}
@@ -93,7 +115,7 @@ export default async function SpeciesBrowser({
             পাতা {toBn(page)} / {toBn(pages)}
           </span>
           {page < pages && (
-            <Link href={buildHref(page + 1)} className="btn-outline">
+            <Link href={buildHref({ cat, iucn: validIucn, page: page + 1 })} className="btn-outline">
               পরে →
             </Link>
           )}

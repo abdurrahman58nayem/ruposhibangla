@@ -1,4 +1,5 @@
 import type { Species, News, Post, SiteSettings } from '@/lib/types'
+import { IUCN, IUCN_ORDER, iucnInfo } from '@/lib/utils'
 import { paletteToBnColors } from './colors'
 
 export type Doc = {
@@ -30,6 +31,7 @@ export function buildDocs(species: Species[], news: News[], posts: Post[], setti
   const docs: Doc[] = []
 
   species.forEach((s) => {
+    const info = iucnInfo(s.conservation)
     docs.push({
       id: `species:${s.slug}`,
       type: 'species',
@@ -44,13 +46,17 @@ export function buildDocs(species: Species[], news: News[], posts: Post[], setti
         s.sizeOrHeight ? `আকার: ${s.sizeOrHeight}` : '',
         s.season ? `মৌসুম: ${s.season}` : '',
         s.whereToSee ? `কোথায় দেখা যায়: ${s.whereToSee}` : '',
-        `সংরক্ষণ অবস্থা: ${s.conservationBn || s.conservation}`,
+        `সংরক্ষণ অবস্থা (IUCN): ${info.code} — ${info.en} (${info.meaning})${s.conservationBn ? ` · ${s.conservationBn}` : ''}`,
         (s.otherNames || []).length ? `অন্যান্য নাম: ${(s.otherNames || []).join(', ')}` : '',
         `রং: ${(s.colorTags || []).join(', ')}`,
       ]
         .filter(Boolean)
         .join('। '),
-      keywords: [s.nameBn, s.nameEn, s.scientificName, s.category, ...(s.otherNames || []), ...(s.colorTags || [])]
+      keywords: [
+        s.nameBn, s.nameEn, s.scientificName, s.category,
+        info.code, info.en, info.meaning,
+        ...(s.otherNames || []), ...(s.colorTags || []),
+      ]
         .filter(Boolean)
         .join(' '),
       href: s.type === 'prani' ? `/prani/${s.slug}` : `/udbhid/${s.slug}`,
@@ -96,6 +102,18 @@ export function buildDocs(species: Species[], news: News[], posts: Post[], setti
     text: `${settings.about} এই সাইটে আছে প্রাণী ও উদ্ভিদের তথ্যভাণ্ডার, গ্রামবাংলার ছবি, কবির চোখে প্রকৃতি, খবর, এবং ছবি-ভিডিও শেয়ারের জায়গা।`,
     keywords: 'সাইট সম্পর্কে পরিচয় কী এই সাইট প্রকৃতি বাংলা রূপসী বাংলা',
     href: '/about',
+  })
+
+  docs.push({
+    id: 'static:iucn',
+    type: 'static',
+    title: 'IUCN রেড লিস্টের শ্রেণিবিভাগ — কোন চিহ্নের অর্থ কী?',
+    text:
+      'IUCN Red List Categories and Criteria (Version 3.1) অনুযায়ী ৯টি শ্রেণি ও অর্থ: ' +
+      IUCN_ORDER.map((c) => `${IUCN[c].code} — ${IUCN[c].en}: ${IUCN[c].meaning} (${IUCN[c].detailBn})`).join(' | '),
+    keywords:
+      'IUCN আইইউসিএন রেড লিস্ট শ্রেণিবিভাগ চিহ্ন অর্থ সংরক্ষণ অবস্থা EX EW CR EN VU NT LC DD NE Extinct Critically Endangered Vulnerable Near Threatened Least Concern Data Deficient Not Evaluated বিলুপ্ত সংকটাপন্ন বিপন্ন ঝুঁকিপূর্ণ',
+    href: '/songrokkhon#iucn',
   })
 
   return docs

@@ -66,8 +66,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
                   <td className="p-3 text-xs text-black/60">{s.category}</td>
                   <td className="p-3 text-xs italic text-black/60">{s.scientificName}</td>
                   <td className="p-3">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${(IUCN[s.conservation] || IUCN.NE).color}`}>
-                      {(IUCN[s.conservation] || IUCN.NE).short}
+                    <span
+                      title={`${(IUCN[s.conservation] || IUCN.NE).code} — ${(IUCN[s.conservation] || IUCN.NE).en}: ${(IUCN[s.conservation] || IUCN.NE).meaning}`}
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${(IUCN[s.conservation] || IUCN.NE).color}`}
+                    >
+                      <span className="font-extrabold">{(IUCN[s.conservation] || IUCN.NE).short}</span>
+                      <span>·</span>
+                      <span>{(IUCN[s.conservation] || IUCN.NE).meaning}</span>
                     </span>
                   </td>
                   <td className="p-3 text-xs text-black/60">{s.poetViews?.length || 0}</td>

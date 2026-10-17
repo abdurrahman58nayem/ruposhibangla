@@ -197,14 +197,11 @@ function mergeMedia(existing: Species['media'], incoming: Species['media']) {
  * দুটোই মিললে আগের লেখা `stubArchive`-এ সংরক্ষিত হয় — কোনো তথ্য হারায় না,
  * প্রশাসক চাইলে আগের সংস্করণ দেখতে পারবেন।
  */
-const MIN_UPGRADE_CHARS = 120
-const UPGRADE_RATIO = 2.5
-
 function isUpgrade(cur: unknown, incoming: unknown) {
   if (typeof cur !== 'string' || typeof incoming !== 'string') return false
   const oldLen = cur.trim().length
   if (!oldLen) return true
-  return incoming.trim().length >= MIN_UPGRADE_CHARS && incoming.trim().length >= oldLen * UPGRADE_RATIO
+  return incoming.trim().length > oldLen
 }
 
 /**

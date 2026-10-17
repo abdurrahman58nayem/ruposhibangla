@@ -176,8 +176,13 @@ export const CURATED_REELS: ReelPost[] = [
 export function speciesMediaReels(species: Species[]): ReelPost[] {
   const directVideo = /\.(webm|mp4|ogv|ogg|mov|m4v)(\?.*)?$/i
   return species.flatMap((s) => {
-    const kind = s.type === 'prani' || s.type === 'udbhid' ? s.type : null
-    if (!kind) return []
+    const category =
+      s.type === 'prani' || s.type === 'udbhid'
+        ? s.type
+        : s.type === 'sthan'
+          ? 'grambangla'
+          : null
+    if (!category) return []
     const eligible = (s.media || []).filter(
       (m) =>
         m.kind === 'video' &&
@@ -192,7 +197,7 @@ export function speciesMediaReels(species: Species[]): ReelPost[] {
       channelPost({
         id: `reel-species-${s.slug}-${index}`,
         kind: 'reel',
-        category: kind,
+        category,
         group: s.group,
         title: `${s.nameBn} — ${s.nameEn}`,
         body: m.caption || `${s.scientificName} · মুক্ত লাইসেন্সের প্রজাতি-ভিডিও।`,
@@ -200,7 +205,7 @@ export function speciesMediaReels(species: Species[]): ReelPost[] {
         thumbUrl: s.image || undefined,
         mediaType: 'video',
         speciesSlug: s.slug,
-        speciesHref: `/${kind}/${s.slug}`,
+        speciesHref: `/${s.type}/${s.slug}`,
         tags: [s.nameBn, s.scientificName, 'প্রজাতি', 'মুক্ত ভিডিও'],
         status: 'approved',
         likes: 0,

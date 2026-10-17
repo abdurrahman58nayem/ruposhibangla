@@ -6,10 +6,12 @@ import PostCard from './PostCard'
 import SpeciesCard from './SpeciesCard'
 import { getRepo } from '@/lib/repo'
 import { getSession } from '@/lib/auth'
-import { IUCN, toBn, bnDate } from '@/lib/utils'
+import { iucnInfo, extraConservationNote, toBn, bnDate } from '@/lib/utils'
 import { speciesPath, typeLabel } from '@/lib/categories'
 import SpeciesActions from '@/components/SpeciesActions'
 import SpeciesSections from '@/components/SpeciesSections'
+import { IucnSpeciesCard } from '@/components/IucnGuide'
+import { UNVERIFIED_REASONS } from '@/data/seed/verification'
 import SpeciesVideoEmbed, { type VideoEmbed } from '@/components/SpeciesVideoEmbed'
 import { DATA_STATUS_LABEL } from '@/lib/i18n'
 import { MapPin, Utensils, Ruler, CalendarDays, Trees, BookOpen, Quote, Camera, Info, ExternalLink, Pencil } from 'lucide-react'
@@ -34,7 +36,9 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
   ])
   const relatedSpecies = related.filter((x) => x.slug !== s.slug).slice(0, 4)
   const lic = licenseFor(s.image)
-  const status = IUCN[s.conservation] || IUCN.NE
+  const status = iucnInfo(s.conservation)
+  const extraConsNote = extraConservationNote(s.conservation, s.conservationBn)
+  const showIucn = type === 'prani' || type === 'udbhid' || s.conservation !== 'NE'
   /** §12 — কপিরাইট-মুক্ত ভিডিও: ডাউনলোড না করে সরাসরি এম্বেড */
   const videos: VideoEmbed[] = (s.media || [])
     .filter((m) => m.kind === 'video' && m.url)
@@ -98,24 +102,34 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
             className="aspect-[3/2] w-full rounded-2xl"
           />
           {lic && (
-            <p className="mt-1.5 text-[11px] leading-relaxed text-black/45">
+            <p className="mt-1.5 text-[11px] leading-relaxed text-black/50">
               {lic.verified ? (
                 <>
-                  ছবির ক্রেডিট: {lic.credit || 'অজানা'}{' '}
+                  <span className="font-semibold text-emerald-800">ছবির লাইসেন্স যাচাইকৃত ✓</span> · ক্রেডিট:{' '}
+                  {lic.credit || 'অজানা'}{' '}
                   {lic.source ? (
                     <a href={lic.source} target="_blank" rel="noreferrer" className="text-forest-700 hover:underline">
-                      উৎস
+                      (উৎস)
                     </a>
                   ) : null}{' '}
                   · লাইসেন্স: {lic.license}
                 </>
               ) : (
                 <>
-                  এই ছবির উৎস ও লাইসেন্স যাচাই করা বাকি —{' '}
+                  <span className="font-semibold text-amber-800">ছবির লাইসেন্স যাচাই বাকি:</span>{' '}
+                  {lic.note || 'মূল ফটোগ্রাফারের নাম ও সুনির্দিষ্ট লাইসেন্স যাচাই প্রক্রিয়াধীন'}{' '}
+                  {lic.source ? (
+                    <>
+                      ·{' '}
+                      <a href={lic.source} target="_blank" rel="noreferrer" className="text-forest-700 hover:underline">
+                        সংগ্রহ-উৎস দেখুন
+                      </a>
+                    </>
+                  ) : null}{' '}
+                  ·{' '}
                   <a href="/credits" className="text-forest-700 hover:underline">
                     মিডিয়া ক্রেডিট তালিকা
-                  </a>{' '}
-                  দেখুন
+                  </a>
                 </>
               )}
             </p>
@@ -159,11 +173,20 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
           )}
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${status.color}`}>
-              সংরক্ষণ: {status.label} ({status.short})
-            </span>
-            {s.conservationBn && (
-              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-black/60">{s.conservationBn}</span>
+            {showIucn && (
+              <a
+                href="#iucn-status"
+                title={`${status.code} — ${status.en}: ${status.detailBn}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition hover:opacity-90 ${status.color}`}
+              >
+                <span className="font-extrabold">IUCN: {status.code}</span>
+                <span>—</span>
+                <span>{status.meaning}</span>
+                <span className="opacity-75">({status.en})</span>
+              </a>
+            )}
+            {showIucn && extraConsNote && (
+              <span className="rounded-full bg-black/5 px-3 py-1 text-xs text-black/65">{extraConsNote}</span>
             )}
             <span
               className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -177,7 +200,9 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
               }`}
               title={s.conflictingInfo || undefined}
             >
-              তথ্য: {DATA_STATUS_LABEL[s.dataStatus || 'partial']?.bn}
+              {(s.dataStatus || 'partial') === 'verified'
+                ? 'তথ্য: যাচাইকৃত ✓'
+                : `তথ্য: যাচাই করা যায়নি (${UNVERIFIED_REASONS[s.slug]?.category || DATA_STATUS_LABEL[s.dataStatus || 'partial']?.bn})`}
             </span>
           </div>
 
@@ -199,12 +224,22 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
             <SpeciesActions slug={s.slug} title={s.nameBn} />
           </div>
 
-          {/* তথ্য অসম্পূর্ণ হলে স্পষ্টভাবে জানানো */}
-          {(s.dataStatus || 'partial') !== 'verified' && (
-            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-[11px] leading-relaxed text-amber-900">
-              <b>এই রেকর্ডের তথ্য এখনো অসম্পূর্ণ।</b>{' '}
-              {s.conflictingInfo || 'আরও নির্ভরযোগ্য উৎস যোগ করে ধাপে ধাপে পূর্ণ করা হবে।'} আপনার কাছে তথ্য
-              থাকলে <b>জেনো</b>-তে পাঠিয়ে দিন।
+          {/* তথ্যের যাচাই অবস্থা — যাচাইকৃত হলে সবুজ নিশ্চিতকরণ, আর যাচাই করা না গেলে সুনির্দিষ্ট কারণ */}
+          {(s.dataStatus || 'partial') === 'verified' ? (
+            <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-[11.5px] leading-relaxed text-emerald-950">
+              <b>যাচাইকৃত রেকর্ড ✓</b> — বৈজ্ঞানিক নাম, শনাক্তকরণ বৈশিষ্ট্য, IUCN সংরক্ষণ অবস্থা ও প্রামাণ্য তথ্যসূত্র যাচাই করা হয়েছে
+              {s.lastVerifiedAt ? ` (${bnDate(s.lastVerifiedAt)})` : ''}।
+            </div>
+          ) : (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-[11.5px] leading-relaxed text-amber-950">
+              <b>
+                কেন এই রেকর্ডটি একক প্রজাতি হিসেবে যাচাই করা যায়নি
+                {UNVERIFIED_REASONS[s.slug]?.category ? ` (${UNVERIFIED_REASONS[s.slug].category})` : ''}:
+              </b>{' '}
+              {s.conflictingInfo ||
+                UNVERIFIED_REASONS[s.slug]?.reason ||
+                'নির্দিষ্ট দ্বিপদ বৈজ্ঞানিক নাম বা মাঠপর্যায়ের নিশ্চিত উপাত্তের অভাবে চূড়ান্ত যাচাই সম্পন্ন করা যায়নি।'}{' '}
+              আপনার কাছে প্রামাণ্য তথ্য থাকলে <b>জেনো</b>-তে পাঠিয়ে দিন।
             </div>
           )}
         </div>
@@ -305,6 +340,39 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
               )}
             </dl>
           </section>
+
+          {s.taxonomy && Object.values(s.taxonomy).some(Boolean) && (
+            <section className="card mt-4 p-5">
+              <h2 className="mb-3 text-base font-bold text-forest-900">বৈজ্ঞানিক শ্রেণিবিন্যাস</h2>
+              <dl className="divide-y divide-black/5 text-xs">
+                {[
+                  { label: 'রাজ্য (Kingdom)', val: s.taxonomy.kingdom },
+                  { label: 'পর্ব (Phylum)', val: s.taxonomy.phylum },
+                  { label: 'শ্রেণি (Class)', val: s.taxonomy.class },
+                  { label: 'বর্গ (Order)', val: s.taxonomy.order },
+                  { label: 'গোত্র (Family)', val: s.taxonomy.family },
+                  { label: 'গণ (Genus)', val: s.taxonomy.genus, italic: true },
+                  { label: 'প্রজাতি (Species)', val: s.taxonomy.species, italic: true },
+                ]
+                  .filter((r) => r.val)
+                  .map((r) => (
+                    <div key={r.label} className="flex items-center justify-between gap-2 py-1.5">
+                      <dt className="text-black/55">{r.label}</dt>
+                      <dd className={`font-semibold text-forest-900 ${r.italic ? 'italic' : ''}`}>{r.val}</dd>
+                    </div>
+                  ))}
+              </dl>
+            </section>
+          )}
+
+          {(type === 'prani' || type === 'udbhid') && (
+            <IucnSpeciesCard
+              s={s}
+              conservation={s.conservation}
+              conservationBn={s.conservationBn}
+              type={type}
+            />
+          )}
 
           {relatedSpecies.length > 0 && (
             <section className="card mt-4 p-5">

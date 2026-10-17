@@ -1,177 +1,102 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MEDIA_LICENSES } from '@/data/seed/media-licenses'
-import { SEED_IMAGES } from '@/data/seed/media-images'
-import { ShieldCheck, AlertTriangle, Sparkles } from 'lucide-react'
-
-export const dynamic = 'force-dynamic'
+import { toBn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'মিডিয়া ক্রেডিট ও লাইসেন্স',
-  description:
-    'রূপসী বাংলায় ব্যবহৃত প্রতিটি ছবি ও ভিডিওর উৎস, লেখক ও লাইসেন্সের তালিকা — যাচাই না করা মিডিয়া স্পষ্টভাবে চিহ্নিত।',
-  alternates: { canonical: '/credits' },
+  description: 'রূপসী বাংলা প্ল্যাটফর্মে ব্যবহৃত ছবি ও মিডিয়ার উৎস, ফটোগ্রাফার, লাইসেন্স ও যাচাইয়ের কারণ।',
 }
 
-type Row = {
-  key: string
-  subject: string
-  slug: string
-  file: string
-  credit: string
-  source: string
-  license: string
-  verified: boolean
-  confidence: 'high' | 'medium' | 'low' | null
-  lowRes: boolean
-  note: string
-}
-
-export default function Page() {
-  const rows: Row[] = [
-    ...SEED_IMAGES.map((i) => ({
-      key: i.file,
-      subject: i.subject,
-      slug: i.slug,
-      file: i.file,
-      credit: i.site,
-      source: i.source,
-      license: i.license,
-      verified: i.verified,
-      confidence: i.confidence,
-      lowRes: i.lowRes,
-      note: i.note,
-    })),
-    ...MEDIA_LICENSES.map((m) => ({
-      key: m.file,
-      subject: m.subject,
-      slug: m.slug,
-      file: m.file,
-      credit: m.credit,
-      source: m.source,
-      license: m.license,
-      verified: m.verified,
-      confidence: null,
-      lowRes: false,
-      note: m.note,
-    })),
-  ]
-
-  const total = rows.length
-  const verified = rows.filter((m) => m.verified).length
-  const pending = total - verified
-  const collected = SEED_IMAGES.length
+export default function CreditsPage() {
+  const entries = Object.entries(MEDIA_LICENSES)
+  const verified = entries.filter(([, m]) => m.verified).length
+  const pending = entries.length - verified
 
   return (
     <div className="container-pb py-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-forest-900 sm:text-3xl">মিডিয়া ক্রেডিট ও লাইসেন্স</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-black/60">
-          রূপসী বাংলায় প্রকাশিত প্রতিটি ছবি ও ভিডিওর উৎস, ফটোগ্রাফার/লেখক এবং লাইসেন্স এখানে থাকবে। আমাদের নীতি: কোনো
-          মিডিয়ার ক্রেডিট বা লাইসেন্স অনুমান করে লেখা হবে না — যাচাই না হওয়া মিডিয়া “যাচাই বাকি” হিসেবেই দেখানো হবে এবং
-          প্রকাশের আগে সেটি প্রতিস্থাপন করতে হবে।
+      <div className="mx-auto max-w-5xl">
+        <h1 className="font-display text-2xl font-bold text-forest-900">মিডিয়া ক্রেডিট ও লাইসেন্স</h1>
+        <p className="mt-2 text-sm leading-relaxed text-black/65">
+          রূপসী বাংলায় ব্যবহৃত প্রতিটি ছবির ফটোগ্রাফার, উৎস ও লাইসেন্স স্বচ্ছভাবে নথিভুক্ত করা হচ্ছে। যেসব ছবির
+          চূড়ান্ত লাইসেন্স ও মূল ফটোগ্রাফারের নাম এখনো যাচাই করা সম্ভব হয়নি, সেগুলোকে কল্পিত ক্রেডিট না দিয়ে{' '}
+          <span className="font-semibold text-amber-800">“যাচাই বাকি”</span> এবং কী কারণে যাচাই বাকি তা স্পষ্টভাবে দেখানো হয়েছে।
         </p>
-      </header>
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-4">
-        <div className="card p-4">
-          <p className="text-xs text-black/50">মোট মিডিয়া</p>
-          <p className="text-2xl font-bold text-forest-900">{total}</p>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full bg-forest-50 px-3 py-1 font-medium text-forest-900">
+            মোট নথিভুক্ত ছবি: {toBn(entries.length)}
+          </span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 font-medium text-emerald-800">
+            লাইসেন্স যাচাইকৃত ✓: {toBn(verified)}
+          </span>
+          <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-800">
+            যাচাই বাকি (কারণসহ): {toBn(pending)}
+          </span>
         </div>
-        <div className="card p-4">
-          <p className="flex items-center gap-1 text-xs text-black/50">
-            <Sparkles size={13} className="text-sky-600" /> উন্মুক্ত উৎস থেকে সংগৃহীত
-          </p>
-          <p className="text-2xl font-bold text-sky-700">{collected}</p>
-        </div>
-        <div className="card p-4">
-          <p className="flex items-center gap-1 text-xs text-black/50">
-            <ShieldCheck size={13} className="text-emerald-600" /> উৎস ও লাইসেন্স যাচাইকৃত
-          </p>
-          <p className="text-2xl font-bold text-emerald-700">{verified}</p>
-        </div>
-        <div className="card p-4">
-          <p className="flex items-center gap-1 text-xs text-black/50">
-            <AlertTriangle size={13} className="text-amber-600" /> যাচাই বাকি
-          </p>
-          <p className="text-2xl font-bold text-amber-700">{pending}</p>
-        </div>
-      </div>
 
-      {pending > 0 && (
-        <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
-          <b>সতর্কতা:</b> বর্তমানে {pending}টি মিডিয়ার লেখকের নাম ও সুনির্দিষ্ট লাইসেন্স যাচাই করা হয়নি। এর মধ্যে{' '}
-          {collected}টি ছবি সরাসরি উইকিমিডিয়া কমন্স / পেক্সেলস থেকে নেওয়া (প্রতিটির উৎস-লিংক নিচের টেবিলে আছে), বাকিগুলো
-          ডেভেলপমেন্টের সময় স্থানধারক (placeholder) হিসেবে রাখা হয়েছে। কোনো মিডিয়ার জন্য কখনোই অনুমাননির্ভর ক্রেডিট লেখা
-          হয়নি — প্রোডাকশনে যাওয়ার আগে প্রতিটি ফাইলের লেখক ও লাইসেন্স যোগ করতে হবে, অথবা ফাইলটি বদলাতে হবে।
-        </div>
-      )}
-
-      <div className="card overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="border-b border-black/10 text-xs uppercase text-black/50">
-            <tr>
-              <th className="p-3">ফাইল / বিষয়</th>
-              <th className="p-3">উৎস-সাইট / ক্রেডিট</th>
-              <th className="p-3">উৎস</th>
-              <th className="p-3">লাইসেন্স</th>
-              <th className="p-3">অবস্থা</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((m) => (
-              <tr key={m.key} className="border-b border-black/5 last:border-0">
-                <td className="p-3">
-                  <p className="font-medium text-forest-900">{m.subject}</p>
-                  {m.slug ? (
-                    <Link href={`/prani/${m.slug}`} className="text-[11px] text-forest-700 hover:underline">
-                      {m.file}
-                    </Link>
-                  ) : (
-                    <p className="text-[11px] text-black/40">{m.file}</p>
-                  )}
-                  {m.lowRes && (
-                    <p className="mt-1 text-[11px] text-amber-700">ছবিটি ছোট — বড় ছবি দিয়ে বদলাতে হবে</p>
-                  )}
-                  {m.confidence === 'low' && (
-                    <p className="mt-1 text-[11px] text-rose-700">প্রজাতি শনাক্তকরণ নিশ্চিত নয় — বিশেষজ্ঞ-যাচাই প্রয়োজন</p>
-                  )}
-                </td>
-                <td className="p-3 text-black/70">{m.credit || '—'}</td>
-                <td className="p-3">
-                  {m.source ? (
-                    <a href={m.source} target="_blank" rel="noreferrer" className="text-forest-700 hover:underline">
-                      লিংক
-                    </a>
-                  ) : (
-                    '—'
-                  )}
-                </td>
-                <td className="p-3 text-black/70">{m.license}</td>
-                <td className="p-3">
-                  {m.verified ? (
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800">
-                      যাচাইকৃত
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
-                      যাচাই বাকি
-                    </span>
-                  )}
-                </td>
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-black/10 bg-white">
+          <table className="w-full text-left text-xs">
+            <thead className="border-b border-black/10 bg-forest-50/70 text-[11px] font-semibold uppercase tracking-wide text-forest-900">
+              <tr>
+                <th className="px-3 py-2.5">ফাইল</th>
+                <th className="px-3 py-2.5">ক্রেডিট / ফটোগ্রাফার</th>
+                <th className="px-3 py-2.5">লাইসেন্স</th>
+                <th className="px-3 py-2.5">যাচাই অবস্থা</th>
+                <th className="px-3 py-2.5">যাচাইয়ের বিবরণ / কেন যাচাই বাকি</th>
+                <th className="px-3 py-2.5">উৎস</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {entries.map(([path, m]) => (
+                <tr key={path} className="align-top hover:bg-forest-50/30">
+                  <td className="px-3 py-2 font-mono text-[11px] text-black/75 whitespace-nowrap">{path}</td>
+                  <td className="px-3 py-2 text-black/70">{m.credit || '—'}</td>
+                  <td className="px-3 py-2 text-black/70 whitespace-nowrap">{m.license}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {m.verified ? (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                        যাচাইকৃত ✓
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                        যাচাই বাকি
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 leading-relaxed text-black/70">
+                    {m.verified
+                      ? m.note || 'মূল ফটোগ্রাফার ও ওপেন লাইসেন্স যাচাইকৃত।'
+                      : m.note || 'মূল ফটোগ্রাফারের নাম ও সুনির্দিষ্ট ক্রিয়েটিভ কমন্স লাইসেন্স সংস্করণ চূড়ান্তভাবে মিলিয়ে দেখা বাকি।'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {m.source ? (
+                      <a
+                        href={m.source}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-forest-700 hover:underline"
+                      >
+                        উৎস দেখুন
+                      </a>
+                    ) : (
+                      <span className="text-black/35">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <p className="mt-4 text-xs text-black/45">
-        কোনো ছবির ক্রেডিট ভুল বা অনুপস্থিত থাকলে অনুগ্রহ করে{' '}
-        <Link href="/jeno" className="text-forest-700 hover:underline">
-          জেনো
-        </Link>{' '}
-        পেজ বা রিপোর্ট বাটন ব্যবহার করে জানান — আমরা সংশোধন করব।
-      </p>
+        <p className="mt-4 text-xs text-black/55">
+          কোনো ছবির সঠিক ফটোগ্রাফার বা লাইসেন্স আপনার জানা থাকলে অথবা কপিরাইট বিষয়ে জানাতে চাইলে{' '}
+          <Link href="/jeno" className="font-semibold text-forest-700 hover:underline">
+            জেনো পাতায় জানান
+          </Link>
+          ।
+        </p>
+      </div>
     </div>
   )
 }

@@ -6,8 +6,10 @@ import type {
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
 import { CATEGORIES } from '@/lib/categories'
+import { iucnInfo, normalizeConservationBn } from '@/lib/utils'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
+import { verifySpeciesRecord } from '@/data/seed/verification'
 import type { Repo, SpeciesQuery, PostQuery, PostPage } from './types'
 import { pendingSeedSpecies, makeSyncResult } from './seed-sync'
 import type { SpeciesSyncOptions } from './seed-sync'
@@ -162,11 +164,13 @@ function read(): DB {
 
 /** পুরোনো .data/db.json-এ নতুন কালেকশন না থাকলে যোগ করে নেয় */
 function migrate(db: DB): DB {
-  db.species = (db.species || []).map((s) => ({
-    ...s,
-    image: resolveSpeciesImage(s.slug, s.image),
-    media: resolveSpeciesMedia(s.slug, s.media),
-  }))
+  db.species = (db.species || []).map((s) =>
+    verifySpeciesRecord({
+      ...s,
+      image: resolveSpeciesImage(s.slug, s.image),
+      media: resolveSpeciesMedia(s.slug, s.media),
+    }),
+  )
   db.posts ||= []
   db.comments ||= []
   db.likes ||= []
@@ -199,8 +203,10 @@ function write(db: DB) {
 function matchesSpecies(s: Species, q: string): boolean {
   const needle = q.trim().toLowerCase()
   if (!needle) return true
+  const iucn = iucnInfo(s.conservation)
   const hay = [
     s.nameBn, s.nameEn, s.scientificName, s.category, s.summary, s.habitat,
+    s.conservation, iucn.en, iucn.meaning, s.conservationBn || '',
     (s.otherNames || []).join(' '), (s.synonyms || []).join(' '), s.group || '',
     (s.poetViews || []).map((p) => `${p.poet} ${p.work || ''} ${p.note}`).join(' '),
   ]
@@ -228,7 +234,12 @@ export const jsonRepo: Repo = {
       if (q.type && q.type !== 'all' && s.type !== q.type) return false
       if (!groupMatches(s, q.group)) return false
       if (q.category && q.category !== 'all' && s.category !== q.category) return false
-      if (q.dataStatus && q.dataStatus !== 'all' && (s.dataStatus || 'partial') !== q.dataStatus) return false
+      if (q.conservation && q.conservation !== 'all' && s.conservation !== q.conservation) return false
+      if (q.dataStatus === 'unverified') {
+        if ((s.dataStatus || 'partial') === 'verified') return false
+      } else if (q.dataStatus && q.dataStatus !== 'all' && (s.dataStatus || 'partial') !== q.dataStatus) {
+        return false
+      }
       if (q.featured && !s.featured) return false
       if (q.hasVideo && !(s.media || []).some((m) => m.kind === 'video' && m.url)) return false
       if (q.q && !matchesSpecies(s, q.q)) return false
@@ -249,7 +260,12 @@ export const jsonRepo: Repo = {
       if (q.type && q.type !== 'all' && s.type !== q.type) return false
       if (!groupMatches(s, q.group)) return false
       if (q.category && q.category !== 'all' && s.category !== q.category) return false
-      if (q.dataStatus && q.dataStatus !== 'all' && (s.dataStatus || 'partial') !== q.dataStatus) return false
+      if (q.conservation && q.conservation !== 'all' && s.conservation !== q.conservation) return false
+      if (q.dataStatus === 'unverified') {
+        if ((s.dataStatus || 'partial') === 'verified') return false
+      } else if (q.dataStatus && q.dataStatus !== 'all' && (s.dataStatus || 'partial') !== q.dataStatus) {
+        return false
+      }
       if (q.featured && !s.featured) return false
       if (q.q && !matchesSpecies(s, q.q)) return false
       return true

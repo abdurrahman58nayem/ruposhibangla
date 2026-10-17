@@ -1,7 +1,7 @@
 import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats, SpeciesType,
   PostCategory, PostKind, AiQuestion, Notification, SavedItem, Report, Observation,
-  AuditLog, CoverageRow, GroupId, DataStatus,
+  AuditLog, CoverageRow, GroupId, DataStatus, Conservation,
 } from '@/lib/types'
 import type { SpeciesSyncOptions, SpeciesSyncResult } from './seed-sync'
 
@@ -9,8 +9,9 @@ export type SpeciesQuery = {
   type?: SpeciesType | 'all'
   group?: GroupId | 'all'
   category?: string
+  conservation?: Conservation | 'all'
   q?: string
-  dataStatus?: DataStatus | 'all'
+  dataStatus?: DataStatus | 'unverified' | 'all'
   featured?: boolean
   /** true হলে শুধু ভিডিও-আছে এমন প্রজাতি (রিলস ফিডের জন্য) */
   hasVideo?: boolean

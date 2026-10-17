@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, Plus, Trash2 } from 'lucide-react'
 import UploadField from './UploadField'
-import type { Species, SpeciesMedia, DataStatus, GroupId } from '@/lib/types'
+import type { Species, SpeciesMedia, DataStatus, GroupId, Conservation } from '@/lib/types'
 import { CATEGORIES } from '@/lib/categories'
+import { IUCN } from '@/lib/utils'
 
 const CONSERVATION = ['LC', 'NT', 'VU', 'EN', 'CR', 'EW', 'EX', 'DD', 'NE']
 const MEDIA_LICENSES = [
@@ -220,18 +221,42 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
             </div>
           ))}
           <div>
-            <label className="label">সংরক্ষণ অবস্থা (কোড)</label>
-            <select value={s.conservation} onChange={(e) => set('conservation', e.target.value as any)} className="field">
-              {CONSERVATION.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
+            <label className="label">সংরক্ষণ অবস্থা (IUCN কোড ও অর্থ)</label>
+            <select
+              value={s.conservation}
+              onChange={(e) => {
+                const nextCode = e.target.value as Conservation
+                const prevMeaning = IUCN[s.conservation]?.meaning || ''
+                const nextMeaning = IUCN[nextCode]?.meaning || ''
+                setS((prev) => ({
+                  ...prev,
+                  conservation: nextCode,
+                  conservationBn:
+                    !prev.conservationBn || prev.conservationBn === prevMeaning
+                      ? nextMeaning
+                      : prev.conservationBn,
+                }))
+              }}
+              className="field"
+            >
+              {CONSERVATION.map((c) => {
+                const info = IUCN[c]
+                return (
+                  <option key={c} value={c}>
+                    {c} — {info ? `${info.en} (${info.meaning})` : c}
+                  </option>
+                )
+              })}
             </select>
           </div>
           <div>
-            <label className="label">সংরক্ষণ — বাংলায়</label>
-            <input value={s.conservationBn || ''} onChange={(e) => set('conservationBn', e.target.value)} className="field" />
+            <label className="label">সংরক্ষণ — বাংলায় / আঞ্চলিক টীকা</label>
+            <input
+              value={s.conservationBn || ''}
+              onChange={(e) => set('conservationBn', e.target.value)}
+              placeholder={IUCN[s.conservation]?.meaning || 'যেমন: তুলনামূলক কম ঝুঁকিতে; বাংলাদেশে বিরল'}
+              className="field"
+            />
           </div>
           <div>
             <label className="label">তথ্যের অবস্থা</label>

@@ -10,7 +10,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/prani' },
 }
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string; page?: string }> }) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ cat?: string; iucn?: string; q?: string; page?: string }>
+}) {
   const sp = await searchParams
   return (
     <SpeciesBrowser
@@ -18,6 +22,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
       title="বাংলাদেশের প্রাণী"
       subtitle="পাখি, স্তন্যপায়ী, সরীসৃপ, উভচর, মাছ ও পতঙ্গ — বাংলাদেশের যা কিছু প্রাণ আছে"
       cat={sp.cat}
+      iucn={sp.iucn}
       q={sp.q}
       page={Number(sp.page || 1)}
     />

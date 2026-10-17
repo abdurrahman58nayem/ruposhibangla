@@ -1,4 +1,5 @@
 import type { Species, SpeciesSeed, News, Post, UserRecord, SiteSettings, GroupId } from '@/lib/types'
+import { verifySpeciesRecord } from './verification'
 import { BIRDS } from './birds'
 import { ANIMALS } from './animals'
 import { PLANTS } from './plants'
@@ -196,7 +197,9 @@ function withSeedVideos(list: Species[]): Species[] {
   })
 }
 
-export const SPECIES: Species[] = withDetails(withSeedVideos(withSeedImages(dedupe(ALL_SPECIES_SEED))))
+export const SPECIES: Species[] = withDetails(withSeedVideos(withSeedImages(dedupe(ALL_SPECIES_SEED)))).map(
+  verifySpeciesRecord,
+)
 
 /** কতগুলো রেকর্ড ডুপ্লিকেট হিসেবে এক করা হয়েছে (স্বচ্ছতার জন্য) */
 export const SPECIES_STATS = {
