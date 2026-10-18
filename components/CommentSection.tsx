@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Send, Trash2, BadgeCheck, Sparkles, Users, HelpCircle } from 'lucide-react'
 import type { Comment } from '@/lib/types'
-import { timeAgoBn, cn } from '@/lib/utils'
+import { timeAgoBn, cn, toBn } from '@/lib/utils'
 
 type Suggestion = Comment & { _label: string }
 
@@ -168,7 +168,7 @@ export default function CommentSection({
         </div>
       )}
 
-      <h2 className="mb-3 text-lg font-bold text-forest-900">মন্তব্য ({items.length})</h2>
+      <h2 className="mb-3 text-lg font-bold text-forest-900">মন্তব্য ({toBn(items.length)})</h2>
 
       <div className="space-y-3">
         {items.map((c) => (

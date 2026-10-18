@@ -5,10 +5,13 @@ import Image from 'next/image'
 import { createPortal } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Menu, Search, X, User, LayoutDashboard, Bell, Languages } from 'lucide-react'
+import { Menu, Search, X, User, LayoutDashboard, Bell, Languages, LayoutGrid } from 'lucide-react'
 import type { SiteSettings, UserRole } from '@/lib/types'
-import { cn } from '@/lib/utils'
+import { cn, toBn } from '@/lib/utils'
 import { useApp } from '@/components/Providers'
+import { PORTAL_CATEGORIES } from '@/lib/portal-categories'
+import CategoryIcon, { toneOf } from '@/components/icons/CategoryIcon'
+import { TOGGLE_CATEGORIES_EVENT, TOGGLE_SEARCH_EVENT } from '@/components/CategoryTopBarClient'
 
 const NAV = [
   { href: '/gyan', label: 'জ্ঞানভান্ডার' },
@@ -140,7 +143,7 @@ export default function HeaderClient({
           <Bell size={20} />
           {unread > 0 && (
             <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-              {unread > 9 ? '9+' : unread}
+              {unread > 9 ? '৯+' : toBn(unread)}
             </span>
           )}
         </Link>
@@ -177,6 +180,28 @@ export default function HeaderClient({
             <LayoutDashboard size={20} />
           </Link>
         )}
+
+        {/* মোবাইলে হেডারেই সার্চ আইকন — স্ট্রিপের সার্চ প্যানেল খোলে */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event(TOGGLE_SEARCH_EVENT))}
+          aria-label="খুঁজুন"
+          className="rounded-full p-2 text-forest-800 transition hover:bg-forest-50 md:hidden"
+        >
+          <Search size={20} />
+        </button>
+
+        {/* ক্যাটাগরি আইকন — প্রধান ক্যাটাগরিগুলোর প্যানেল খোলে */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event(TOGGLE_CATEGORIES_EVENT))}
+          aria-label="সব ক্যাটাগরি"
+          aria-haspopup="true"
+          title="সব ক্যাটাগরি"
+          className="rounded-full p-2 text-forest-800 transition hover:bg-forest-50"
+        >
+          <LayoutGrid size={20} />
+        </button>
 
         <button
           type="button"
@@ -231,6 +256,28 @@ export default function HeaderClient({
               </div>
             </form>
 
+            <div className="mb-4">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-black/45">প্রধান ক্যাটাগরি</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {PORTAL_CATEGORIES.map((c) => {
+                  const tone = toneOf(c.iconGroup)
+                  return (
+                    <Link
+                      key={c.id}
+                      href={c.href}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-xl border border-black/5 px-2.5 py-2 text-[13px] font-medium transition hover:bg-forest-50 dark:border-white/10"
+                    >
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg" style={{ backgroundColor: tone.soft }}>
+                        <CategoryIcon id={c.iconGroup} size={16} />
+                      </span>
+                      <span className="min-w-0 truncate">{c.shortLabel}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
             <nav className="flex flex-col gap-1">
               <Link href="/" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
                 হোম
@@ -255,7 +302,7 @@ export default function HeaderClient({
                 ছবি/ভিডিও শেয়ার করুন
               </Link>
               <Link href="/notifications" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
-                নোটিফিকেশন {unread > 0 ? `(${unread > 9 ? '9+' : unread})` : ''}
+                নোটিফিকেশন {unread > 0 ? `(${unread > 9 ? '৯+' : toBn(unread)})` : ''}
               </Link>
               <Link href="/saved" onClick={() => setOpen(false)} className="rounded-xl px-3 py-2.5 text-[15px] font-medium hover:bg-forest-50">
                 সংরক্ষিত

@@ -5,7 +5,7 @@ import PostCard from '@/components/PostCard'
 import SpeciesCard from '@/components/SpeciesCard'
 import SearchBar from '@/components/SearchBar'
 import { getRepo } from '@/lib/repo'
-import { bnDate } from '@/lib/utils'
+import { bnDate, toBn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
@@ -30,10 +30,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
     <div className="mb-6 max-w-2xl"><SearchBar /></div>
 
     {!q.trim() ? <p className="text-sm text-black/55">যেমন “দোয়েল”, “Royal Bengal Tiger”, “সুন্দরবন”, “কাপ্তাই” বা “বসন্ত” লিখে খুঁজুন।</p> : <>
-      <p className="mb-5 text-sm text-black/55">“{q}” — {total}টি ফলাফল পাওয়া গেছে</p>
+      <p className="mb-5 text-sm text-black/55">“{q}” — {toBn(total)}টি ফলাফল পাওয়া গেছে</p>
 
       {!!results.species.length && <section className="mb-8">
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-bold text-forest-900">প্রাণী, উদ্ভিদ ও প্রাকৃতিক স্থান</h2><span className="text-xs text-black/45">{results.species.length}টি</span></div>
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-bold text-forest-900">প্রাণী, উদ্ভিদ ও প্রাকৃতিক স্থান</h2><span className="text-xs text-black/45">{toBn(results.species.length)}টি</span></div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{results.species.map((item) => <SpeciesCard key={item.slug} s={item}/>)}</div>
       </section>}
 

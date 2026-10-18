@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { CheckCircle2, Eye } from 'lucide-react'
 import type { Report } from '@/lib/types'
-import { timeAgoBn } from '@/lib/utils'
+import { timeAgoBn, toBn } from '@/lib/utils'
 
 export default function ReportsList({ initial }: { initial: Report[] }) {
   const [items, setItems] = useState(initial)
@@ -24,7 +24,7 @@ export default function ReportsList({ initial }: { initial: Report[] }) {
     <div>
       <h2 className="text-lg font-bold text-forest-900">রিপোর্ট পর্যালোচনা</h2>
       <p className="mb-4 text-xs text-black/50">
-        সম্প্রদায়ের পাঠানো রিপোর্ট — খোলা {open.length} টি, মোট {items.length} টি।
+        সম্প্রদায়ের পাঠানো রিপোর্ট — খোলা {toBn(open.length)}টি, মোট {toBn(items.length)}টি।
       </p>
 
       <div className="space-y-2">

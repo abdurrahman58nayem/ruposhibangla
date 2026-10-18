@@ -33,7 +33,7 @@ export default function UsersTable({ initial }: { initial: Omit<UserRecord, 'pas
 
   return (
     <div>
-      <h2 className="mb-1 text-lg font-bold text-forest-900">ব্যবহারকারী ({items.length})</h2>
+      <h2 className="mb-1 text-lg font-bold text-forest-900">ব্যবহারকারী ({toBn(items.length)})</h2>
       <p className="mb-4 text-xs text-black/50">
         ব্লু টিক দিন দেশ ও প্রকৃতি নিয়ে কাজ করা পার্টনারদের — এরা সাইটে যাচাইকৃত হিসেবে দেখাবে
       </p>

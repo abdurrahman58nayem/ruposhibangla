@@ -1,6 +1,7 @@
 import Link from 'next/link'
+import { Images } from 'lucide-react'
 import SmartImage from './SmartImage'
-import { iucnInfo } from '@/lib/utils'
+import { iucnInfo, toBn } from '@/lib/utils'
 import { speciesPath, categoryLabel } from '@/lib/categories'
 import type { Species } from '@/lib/types'
 import CategoryIcon, { toneOf } from '@/components/icons/CategoryIcon'
@@ -15,6 +16,16 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
   const overlayIucn =
     showIucn && (status.threatened || status.code === 'EW' || status.code === 'EX')
   const chipIucn = showIucn && !overlayIucn
+  /** মোট ছবি — প্রধান + গ্যালারি + যাচাইকৃত মিডিয়া (ডুপ্লিকেট বাদ) */
+  const photoUrls = new Set<string>()
+  if (s.image) photoUrls.add(s.image)
+  for (const g of s.gallery || []) if (g) photoUrls.add(g)
+  for (const m of s.media || []) {
+    if (m.kind === 'image' && m.verificationStatus === 'verified' && (m.directMediaUrl || m.url)) {
+      photoUrls.add(m.directMediaUrl || m.url)
+    }
+  }
+  const photoCount = photoUrls.size
 
   return (
     <Link
@@ -44,6 +55,11 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
         {s.type === 'sthan' && s.image?.startsWith('/illustrations/landscapes/') && (
           <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-medium text-white backdrop-blur">
             প্রতিনিধিত্বমূলক ইলাস্ট্রেশন
+          </span>
+        )}
+        {photoCount > 1 && (
+          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+            <Images size={11} /> {toBn(photoCount)}টি ছবি
           </span>
         )}
         {overlayIucn && (

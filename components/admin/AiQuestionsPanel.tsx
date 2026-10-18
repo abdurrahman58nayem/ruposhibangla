@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Send, CheckCircle2, Trash2 } from 'lucide-react'
 import type { AiQuestion } from '@/lib/types'
-import { timeAgoBn } from '@/lib/utils'
+import { timeAgoBn, toBn } from '@/lib/utils'
 
 const STATUS: { id: AiQuestion['status']; label: string }[] = [
   { id: 'new', label: 'নতুন প্রশ্ন' },
@@ -47,7 +47,7 @@ export default function AiQuestionsPanel({ initial }: { initial: AiQuestion[] })
       <h2 className="text-lg font-bold text-forest-900">এআই প্রশ্ন পর্যালোচনা</h2>
       <p className="mb-4 text-xs text-black/50">
         এআই যে প্রশ্নের নির্ভরযোগ্য উত্তর দিতে পারেনি — সেগুলো এখানে। উত্তর প্রকাশ করলে প্রশ্নকারী
-        নোটিফিকেশন ও ট্র্যাকিং লিংক পাবেন। ({pending.length} টি অপেক্ষমান / মোট {items.length})
+        নোটিফিকেশন ও ট্র্যাকিং লিংক পাবেন। ({toBn(pending.length)}টি অপেক্ষমান / মোট {toBn(items.length)})
       </p>
 
       <div className="space-y-3">

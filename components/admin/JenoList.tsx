@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 import type { Jeno } from '@/lib/types'
-import { timeAgoBn } from '@/lib/utils'
+import { timeAgoBn, toBn } from '@/lib/utils'
 
 export default function JenoList({ initial }: { initial: Jeno[] }) {
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function JenoList({ initial }: { initial: Jeno[] }) {
 
   return (
     <div>
-      <h2 className="mb-1 text-lg font-bold text-forest-900">জেনো — পাঠানো তথ্য ({items.length})</h2>
+      <h2 className="mb-1 text-lg font-bold text-forest-900">জেনো — পাঠানো তথ্য ({toBn(items.length)})</h2>
       <p className="mb-4 text-xs text-black/50">দর্শকদের পাঠানো তথ্য, ভুল সংশোধন ও পরামর্ষ</p>
 
       <div className="space-y-3">

@@ -7,25 +7,27 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * সংখ্যা রূপান্তর — সংখ্যা যেন স্পষ্টভাবে পড়া যায় (UI):
- * লেখা বাংলায় থাকে, কিন্তু সংখ্যা ল্যাটিন অঙ্কে (0–9) দেখানো হয়,
- * আর globals.css-এর `.num` / 'RB Digits' ফন্ট অঙ্কগুলোকে আরও স্পষ্ট করে।
- * পুরনো বাংলা অঙ্ক (০–৯) চাইলে `toBnBengali` ব্যবহার করা যাবে।
+ * সংখ্যা রূপান্তর — সাইট জুড়ে সব সংখ্যা বাংলা অঙ্কে (০–৯) দেখানো হয়।
+ * রূপসী বাংলা বাংলাদেশ নিয়ে কাজ করে, তাই ইন্টারফেসের সংখ্যায় বাংলাই প্রাধান্য পায়।
+ * globals.css-এর `.num` / 'RB Digits' ফন্ট বাংলা অঙ্কগুলোকে স্পষ্ট ফন্টে রেন্ডার করে।
+ * ল্যাটিন অঙ্ক একান্ত দরকার হলে (যেমন মেশিন-পাঠ্য মান) সরাসরি `String(n)` ব্যবহার করুন।
  */
 const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
 
 export function toBn(n: number | string): string {
-  return String(n)
-}
-
-/** ঐচ্ছিক — পুরনো আচরণ: সংখ্যাকে বাংলা অঙ্কে দেখানো */
-export function toBnBengali(n: number | string): string {
   return String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)])
 }
 
+/** সামঞ্জস্যের জন্য — `toBn`-এর সমার্থক */
+export function toBnBengali(n: number | string): string {
+  return toBn(n)
+}
+
 export function compactBn(n: number): string {
-  if (n >= 100000) return toBn(Math.round(n / 1000)) + 'K'
-  if (n >= 1000) return toBn((n / 1000).toFixed(1).replace('.0', '')) + 'K'
+  const trim = (v: number) => toBn(v.toFixed(1).replace(/\.0$/, ''))
+  if (n >= 10000000) return trim(n / 10000000) + ' কোটি'
+  if (n >= 100000) return trim(n / 100000) + ' লক্ষ'
+  if (n >= 1000) return trim(n / 1000) + ' হাজার'
   return toBn(n)
 }
 

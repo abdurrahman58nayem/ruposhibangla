@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { PORTAL_CATEGORIES } from '@/lib/portal-categories'
 import CategoryIcon, { toneOf } from '@/components/icons/CategoryIcon'
+import { toBn } from '@/lib/utils'
 
 export default function PortalCategoryGrid({ compact = false }: { compact?: boolean }) {
   return <div className={compact ? 'grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5' : 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3'}>
@@ -22,7 +23,7 @@ export default function PortalCategoryGrid({ compact = false }: { compact?: bool
         <div className={`mt-2 flex flex-wrap gap-1 ${compact ? 'max-h-10 overflow-hidden' : ''}`}>
           {(compact ? category.subcategories.slice(0, 3) : category.subcategories).map((subcategory) => <Link key={`${subcategory.label}-${subcategory.href}`} href={subcategory.href}
             className={`rounded-full bg-stone-50 text-black/65 transition hover:bg-forest-50 hover:text-forest-900 ${compact ? 'px-1.5 py-1 text-[9px] leading-tight' : 'px-2.5 py-1.5 text-[11px]'}`}>{subcategory.label}</Link>)}
-          {compact && category.subcategories.length > 3 && <Link href="/categories" className="rounded-full bg-forest-50 px-1.5 py-1 text-[9px] font-semibold text-forest-800">আরও +{category.subcategories.length - 3}</Link>}
+          {compact && category.subcategories.length > 3 && <Link href="/categories" className="rounded-full bg-forest-50 px-1.5 py-1 text-[9px] font-semibold text-forest-800">আরও +{toBn(category.subcategories.length - 3)}</Link>}
         </div>
       </section>
     })}

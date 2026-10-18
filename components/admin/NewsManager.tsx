@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Trash2, Save } from 'lucide-react'
 import UploadField from './UploadField'
 import type { News } from '@/lib/types'
-import { uid, slugify } from '@/lib/utils'
+import { uid, slugify, toBn } from '@/lib/utils'
 
 const blank = (): News => ({
   id: uid('news'),
@@ -71,7 +71,7 @@ export default function NewsManager({ initial }: { initial: News[] }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-forest-900">খবর ({items.length})</h2>
+          <h2 className="text-lg font-bold text-forest-900">খবর ({toBn(items.length)})</h2>
           <p className="text-xs text-black/50">প্রাণী ও উদ্ভিদ নিয়ে নতুন খবর প্রকাশ করুন</p>
         </div>
         <button onClick={() => setDraft(blank())} className="btn-primary text-sm">

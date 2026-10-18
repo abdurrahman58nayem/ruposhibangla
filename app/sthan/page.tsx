@@ -4,6 +4,7 @@ import { ArrowRight, Mountain, Trees, Waves } from 'lucide-react'
 import SpeciesCard from '@/components/SpeciesCard'
 import SearchBar from '@/components/SearchBar'
 import { getRepo } from '@/lib/repo'
+import { toBn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
@@ -48,9 +49,9 @@ export default async function LandscapesPage({ searchParams }: { searchParams: P
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/80">পাহাড়, সংরক্ষিত বন, ম্যানগ্রোভ, নদী, হাওর, দ্বীপ ও প্রাকৃতিক পর্যটনকেন্দ্র—একই স্থানের মূল রেকর্ড অক্ষুণ্ণ রেখে আবাসস্থল ও ভ্রমণ-ধরন ধরে খুঁজুন।</p>
       <div className="mt-5 max-w-xl"><SearchBar compact placeholder="সুন্দরবন, কাপ্তাই, রাতারগুল…"/></div>
       <div className="mt-5 flex flex-wrap gap-2 text-xs sm:text-sm">
-        <Link href="/sthan" className={`rounded-full px-3 py-2 ${!cat && !topic ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>সব স্থান ({places.length})</Link>
-        <Link href="/sthan?cat=পাহাড়" className={`rounded-full px-3 py-2 ${cat === 'পাহাড়' ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>পাহাড় ({hills.length})</Link>
-        <Link href="/sthan?cat=বনাঞ্চল" className={`rounded-full px-3 py-2 ${cat === 'বনাঞ্চল' ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>বন ও উদ্যান ({forests.length})</Link>
+        <Link href="/sthan" className={`rounded-full px-3 py-2 ${!cat && !topic ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>সব স্থান ({toBn(places.length)})</Link>
+        <Link href="/sthan?cat=পাহাড়" className={`rounded-full px-3 py-2 ${cat === 'পাহাড়' ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>পাহাড় ({toBn(hills.length)})</Link>
+        <Link href="/sthan?cat=বনাঞ্চল" className={`rounded-full px-3 py-2 ${cat === 'বনাঞ্চল' ? 'bg-white text-forest-900' : 'bg-white/15 hover:bg-white/25'}`}>বন ও উদ্যান ({toBn(forests.length)})</Link>
       </div>
     </header>
 
@@ -64,7 +65,7 @@ export default async function LandscapesPage({ searchParams }: { searchParams: P
       {TOPICS.map((item) => <Link key={item.id} href={`/sthan?topic=${item.id}`} className={`chip whitespace-nowrap ${topic === item.id ? 'chip-active' : ''}`}>{item.label}</Link>)}
     </nav>
 
-    <div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="text-xl font-bold text-forest-900">{sectionTitle}</h2><p className="mt-1 text-xs text-black/50">{selected.length}টি স্থান · বিস্তারিত পাতায় ছবি, উৎস ও পাওয়া গেলে ভিডিও</p></div><Link href="/gyan?type=sthan" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">জ্ঞানভান্ডার <ArrowRight size={13} className="ml-1 inline"/></Link></div>
+    <div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="text-xl font-bold text-forest-900">{sectionTitle}</h2><p className="mt-1 text-xs text-black/50">{toBn(selected.length)}টি স্থান · বিস্তারিত পাতায় ছবি, উৎস ও পাওয়া গেলে ভিডিও</p></div><Link href="/gyan?type=sthan" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">জ্ঞানভান্ডার <ArrowRight size={13} className="ml-1 inline"/></Link></div>
     {selected.length ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{selected.map((place) => <SpeciesCard key={place.slug} s={place}/>)}</div> : <p className="card p-8 text-center text-sm text-black/55">এই ফিল্টারে স্থান পাওয়া যায়নি। <Link href="/sthan" className="ml-1 font-semibold text-forest-700 hover:underline">সব স্থান দেখুন</Link></p>}
 
     <p className="mt-6 rounded-xl bg-stone-50 p-4 text-xs leading-relaxed text-black/55">এই তালিকায় জাতীয় উদ্যান, গুরুত্বপূর্ণ সংরক্ষিত বন ও পরিচিত প্রাকৃতিক স্থান আছে। এটি প্রতিটি স্থানীয় টিলা বা বনখণ্ডের ভূমি-জরিপ নয়; কিছু রেকর্ড পর্যালোচনাধীন। ভ্রমণের আগে বন অধিদপ্তর ও স্থানীয় কর্তৃপক্ষের হালনাগাদ নির্দেশনা যাচাই করুন।</p>

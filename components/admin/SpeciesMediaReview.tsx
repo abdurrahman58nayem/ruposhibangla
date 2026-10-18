@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Check, ExternalLink, Image as ImageIcon, Loader2, RefreshCw, Search, ShieldCheck, Trash2, Video } from 'lucide-react'
 import type { SpeciesMedia, SpeciesMediaVerification } from '@/lib/types'
+import { toBn } from '@/lib/utils'
 
 type SpeciesHit = { slug: string; type: string; nameBn: string; nameEn: string; scientificName: string }
 type Candidate = SpeciesMedia & { token: string; eligibleLicense: boolean }
@@ -124,7 +125,7 @@ export default function SpeciesMediaReview() {
     </section>
 
     {!!candidates.length && <section>
-      <div className="mb-2 flex flex-wrap items-end justify-between gap-2"><div><h3 className="text-sm font-bold text-forest-900">অনুসন্ধানের ফল ({candidates.length})</h3><p className="text-[10px] text-black/45">সব ফল আগে Needs review/Restricted-এ যায়; অনুমোদনের আগে public species page-এ দেখাবে না।</p></div>
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-2"><div><h3 className="text-sm font-bold text-forest-900">অনুসন্ধানের ফল ({toBn(candidates.length)})</h3><p className="text-[10px] text-black/45">সব ফল আগে Needs review/Restricted-এ যায়; অনুমোদনের আগে public species page-এ দেখাবে না।</p></div>
         {source === 'pexels' && <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-forest-700 underline">Photos and videos provided by Pexels ↗</a>}
       </div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">

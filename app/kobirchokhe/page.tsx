@@ -3,6 +3,7 @@ import Link from 'next/link'
 import SmartImage from '@/components/SmartImage'
 import { getRepo } from '@/lib/repo'
 import { Quote } from 'lucide-react'
+import { toBn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,7 +59,7 @@ export default async function Page() {
                 </span>
                 <div>
                   <h2 className="text-xl font-bold text-forest-900">{poet}</h2>
-                  <p className="text-xs text-black/50">{list.length} টি প্রজাতিতে এই কবির দৃষ্টি</p>
+                  <p className="text-xs text-black/50">{toBn(list.length)}টি প্রজাতিতে এই কবির দৃষ্টি</p>
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

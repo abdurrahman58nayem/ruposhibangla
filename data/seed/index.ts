@@ -69,7 +69,7 @@ import { MORE_BIRDS43 } from './more-birds43'
 import { MORE_BIRDS44 } from './more-birds44'
 import { MORE_PLANTS3 } from './more-plants3'
 import { MORE_INSECTS2 } from './more-insects2'
-import { SEED_IMAGE_BY_SLUG } from './media-images'
+import { SEED_IMAGE_BY_SLUG, SEED_IMAGES } from './media-images'
 import { SEED_VIDEOS } from './media-videos'
 import { WEB_VIDEOS } from './media-web-videos'
 import { withDetails, DETAILS_COUNT } from './details'
@@ -131,6 +131,8 @@ function fillFrom(target: Species, src: Species) {
   const f = src as unknown as Record<string, unknown>
   for (const k of Object.keys(f)) {
     if (k === 'slug' || k === 'synonyms') continue
+    // ছবি/গ্যালারি/মিডিয়া নিচে আলাদা করে এক করা হয় — কোনো ছবি হারাবে না
+    if (k === 'image' || k === 'gallery' || k === 'media') continue
     const v = f[k]
     const cur = t[k]
     const empty = (x: unknown) => x === undefined || x === null || x === '' || (Array.isArray(x) && x.length === 0)
@@ -147,6 +149,20 @@ function fillFrom(target: Species, src: Species) {
       t[k] = v
     }
   }
+  // একাধিক ছবি সংরক্ষণ: প্রধান ছবি প্রথম রেকর্ডেরটাই থাকে,
+  // ডুপ্লিকেট রেকর্ডের আলাদা প্রধান ছবি ও গ্যালারি এক হয়ে গ্যালারিতে যায় —
+  // যাতে প্রজাতির পাতায় একাধিক ছবি দেখানো যায়।
+  if (!target.image && src.image) target.image = src.image
+  const gallery = new Set<string>([...(target.gallery || []), ...(src.gallery || [])])
+  if (src.image && src.image !== target.image) gallery.add(src.image)
+  if (target.image) gallery.delete(target.image)
+  if (gallery.size) target.gallery = [...gallery].slice(0, 8)
+  if (src.media?.length) {
+    const urls = new Set((target.media || []).map((m) => m.url))
+    const additions = src.media.filter((m) => m.url && !urls.has(m.url))
+    if (additions.length) target.media = [...(target.media || []), ...additions]
+  }
+
   if (src.slug !== target.slug) {
     target.synonyms = [...new Set([...(target.synonyms || []), src.slug])]
   }
@@ -183,12 +199,23 @@ const ALL_SPECIES_SEED: Species[] = [
   ...EXTRA_SPECIES, ...MORE_PLANTS, ...MORE_ANIMALS, ...MORE_BIRDS, ...MORE_FISH, ...MORE_HERPS, ...MORE_MAMMALS, ...MORE_MAMMALS2, ...MORE_PLANTS2, ...MORE_INSECTS, ...MORE_BIRDS2, ...MORE_BIRDS3, ...MORE_BIRDS4, ...MORE_BIRDS5, ...MORE_BIRDS6, ...MORE_BIRDS7, ...MORE_BIRDS8, ...MORE_BIRDS9, ...MORE_BIRDS10, ...MORE_BIRDS11, ...MORE_BIRDS12, ...MORE_BIRDS13, ...MORE_BIRDS14, ...MORE_BIRDS15, ...MORE_BIRDS16, ...MORE_BIRDS17, ...MORE_BIRDS18, ...MORE_BIRDS19, ...MORE_BIRDS20, ...MORE_BIRDS21, ...MORE_BIRDS22, ...MORE_BIRDS23, ...MORE_BIRDS24, ...MORE_BIRDS25, ...MORE_BIRDS26, ...MORE_BIRDS27, ...MORE_BIRDS28, ...MORE_BIRDS29, ...MORE_BIRDS30, ...MORE_BIRDS31, ...MORE_BIRDS32, ...MORE_BIRDS33, ...MORE_BIRDS34, ...MORE_BIRDS35, ...MORE_BIRDS36, ...MORE_BIRDS37, ...MORE_BIRDS38, ...MORE_BIRDS39, ...MORE_BIRDS40, ...MORE_BIRDS41, ...MORE_BIRDS42, ...MORE_BIRDS43, ...MORE_BIRDS44, ...MORE_PLANTS3, ...MORE_INSECTS2,
 ].map(normalize)
 
+/** আস্থা কম (low) এমন সিড-ছবি গ্যালারিতে অতিরিক্ত হিসেবে বসানো হয় না */
+const LOW_CONFIDENCE_SEED_SLUGS = new Set(
+  SEED_IMAGES.filter((i) => i.confidence === 'low').map((i) => i.slug),
+)
+
 /** §12 — স্ক্রিপ্টে সংগৃহীত ছবি (data/seed/media-images.ts) যুক্ত করা */
 function withSeedImages(list: Species[]): Species[] {
   return list.map((s) => {
     const file = SEED_IMAGE_BY_SLUG[s.slug]
-    if (!file || s.image) return s
-    return { ...s, image: file }
+    if (!file) return s
+    if (!s.image) return { ...s, image: file }
+    // প্রধান ছবি অন্য (যেমন Wikimedia) URL হলে সংগৃহীত স্থানীয় ছবিটি ফেলে না দিয়ে
+    // গ্যালারিতে দ্বিতীয় ছবি হিসেবে রাখা হয় — প্রজাতি চিনতে বাড়তি সুবিধা।
+    if (file !== s.image && !LOW_CONFIDENCE_SEED_SLUGS.has(s.slug) && !(s.gallery || []).includes(file)) {
+      return { ...s, gallery: [...(s.gallery || []), file].slice(0, 8) }
+    }
+    return s
   })
 }
 
