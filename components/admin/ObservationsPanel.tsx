@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { CheckCircle2, X } from 'lucide-react'
 import type { Observation } from '@/lib/types'
-import { bnDate, timeAgoBn } from '@/lib/utils'
+import { bnDate, timeAgoBn, toBn } from '@/lib/utils'
 
 export default function ObservationsPanel({ initial }: { initial: Observation[] }) {
   const [items, setItems] = useState(initial)
@@ -24,7 +24,7 @@ export default function ObservationsPanel({ initial }: { initial: Observation[] 
       <h2 className="text-lg font-bold text-forest-900">পর্যবেক্ষণ যাচাই</h2>
       <p className="mb-4 text-xs text-black/50">
         সম্প্রদায়ের পাঠানো পর্যবেক্ষণ। শনাক্ত করার পরও এটি “সাধারণ পোস্ট” নয় — যাচাইকৃত পর্যবেক্ষণ হিসেবে
-        আলাদাভাবে চিহ্নিত হবে। ({pending.length} টি অপেক্ষমান)
+        আলাদাভাবে চিহ্নিত হবে। ({toBn(pending.length)}টি অপেক্ষমান)
       </p>
 
       <div className="space-y-3">

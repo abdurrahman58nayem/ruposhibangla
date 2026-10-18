@@ -38,10 +38,7 @@ export default async function SpeciesBrowser({
   const normCat = cat ? normalizeCategoryName(cat) : undefined
   const isMammalCat = normCat === 'স্তন্যপায়ী'
 
-  const [categories, allForCounts] = await Promise.all([
-    repo.listCategories(type),
-    repo.listSpecies({ type, category: normCat, q, limit: 5000 }),
-  ])
+  const allForCounts = await repo.listSpecies({ type, category: normCat, q, limit: 5000 })
 
   // স্তন্যপায়ীর ভেতরের উপ-বিভাগ (তিমি-শুশুক, বাঘ ও শিকারি, হরিণ, বাদুড় ইত্যাদি) ফিল্টার
   const subFiltered =
@@ -88,24 +85,7 @@ export default async function SpeciesBrowser({
         </div>
       </header>
 
-      {/* প্রধান ক্যাটাগরি চিপস — পরিষ্কার ও দ্বিরুক্তিমুক্ত */}
-      <nav className="no-scrollbar -mx-4 mb-3 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-        <Link href={buildHref({ cat: undefined, sub: undefined, iucn: validIucn, page: 1 })} className={`chip ${!cat ? 'chip-active' : ''}`}>
-          সব <span className="opacity-70">({toBn(categories.reduce((acc, c) => acc + c.count, 0))})</span>
-        </Link>
-        {categories.map((c) => {
-          const isActive = normCat === c.name
-          return (
-            <Link
-              key={c.name}
-              href={buildHref({ cat: c.name, sub: undefined, iucn: validIucn, page: 1 })}
-              className={`chip ${isActive ? 'chip-active' : ''}`}
-            >
-              {c.name} <span className="opacity-70">({toBn(c.count)})</span>
-            </Link>
-          )
-        })}
-      </nav>
+      {/* উপ-ক্যাটাগরি চিপস এখন হেডারের স্ট্রিপে (CategoryTopBar) — এই বিভাগে ঢুকলেই ওপরে দেখায় */}
 
       {/* স্তন্যপায়ী ক্যাটাগরি নির্বাচিত থাকলে উপ-বিভাগ চিপস */}
       {isMammalCat && (

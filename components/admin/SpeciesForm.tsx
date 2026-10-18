@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, Plus, Trash2 } from 'lucide-react'
 import UploadField from './UploadField'
+import GalleryField from './GalleryField'
 import type { Species, SpeciesMedia, DataStatus, GroupId, Conservation } from '@/lib/types'
 import { CATEGORIES } from '@/lib/categories'
 import { IUCN } from '@/lib/utils'
@@ -24,6 +25,14 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
   const [msg, setMsg] = useState('')
 
   const set = <K extends keyof Species>(k: K, v: Species[K]) => setS((prev) => ({ ...prev, [k]: v }))
+
+  /** গ্যালারির ছবিকে প্রধান ছবি করা — আগের প্রধান ছবিটি গ্যালারির শুরুতে চলে যায় */
+  const setGalleryMain = (url: string) =>
+    setS((prev) => {
+      const rest = (prev.gallery || []).filter((g) => g !== url)
+      const nextGallery = prev.image && prev.image !== url ? [prev.image, ...rest] : rest
+      return { ...prev, image: url, gallery: nextGallery }
+    })
   const cats = s.type === 'udbhid' ? CATEGORIES_UDBHID : CATEGORIES_PRANI
 
   const poetViews = s.poetViews || []
@@ -311,15 +320,12 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
       <div className="card p-5">
         <h3 className="mb-3 text-sm font-bold text-forest-900">ছবি ও গ্যালারি</h3>
         <UploadField value={s.image || ''} onChange={(url) => set('image', url)} label="প্রধান ছবি" />
-        <div className="mt-3">
-          <label className="label">গ্যালারি (প্রতি লাইনে একটি URL)</label>
-          <textarea
-            value={(s.gallery || []).join('\n')}
-            onChange={(e) => set('gallery', e.target.value.split('\n').map((x) => x.trim()).filter(Boolean))}
-            rows={3}
-            className="field resize-none"
-          />
-        </div>
+        <GalleryField
+          gallery={s.gallery || []}
+          mainImage={s.image || ''}
+          onChange={(next) => set('gallery', next)}
+          onSetMain={setGalleryMain}
+        />
       </div>
 
       <div className="card p-5">

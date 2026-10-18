@@ -3,7 +3,7 @@ import { getRepo } from '@/lib/repo'
 import SpeciesRowActions from '@/components/admin/SpeciesRowActions'
 import ImportExport from '@/components/admin/ImportExport'
 import { Plus, Eye } from 'lucide-react'
-import { IUCN } from '@/lib/utils'
+import { IUCN, toBn } from '@/lib/utils'
 import { speciesPath } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +21,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ q
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-forest-900">প্রজাতি ({rows.length})</h2>
+          <h2 className="text-lg font-bold text-forest-900">প্রজাতি ({toBn(rows.length)})</h2>
           <p className="text-xs text-black/50">নতুন প্রাণী বা উদ্ভিদ যোগ করুন, তথ্য হালনাগাদ করুন</p>
         </div>
         <Link href="/admin/species/new" className="btn-primary text-sm">

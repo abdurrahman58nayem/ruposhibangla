@@ -14,7 +14,7 @@ import SpeciesSections from '@/components/SpeciesSections'
 import { IucnSpeciesCard } from '@/components/IucnGuide'
 import { UNVERIFIED_REASONS } from '@/data/seed/verification'
 import SpeciesVideoEmbed, { type VideoEmbed } from '@/components/SpeciesVideoEmbed'
-import SpeciesMediaGallery from '@/components/SpeciesMediaGallery'
+import SpeciesGallery, { type GalleryItem } from '@/components/SpeciesGallery'
 import CommonsPlaceMedia from '@/components/CommonsPlaceMedia'
 import { DATA_STATUS_LABEL } from '@/lib/i18n'
 import { MapPin, Utensils, Ruler, CalendarDays, Trees, BookOpen, Quote, Camera, Info, ExternalLink, Pencil } from 'lucide-react'
@@ -70,6 +70,55 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
     s.reproduction && { icon: Info, label: 'প্রজনন', value: s.reproduction },
   ].filter(Boolean) as { icon: any; label: string; value: string }[]
 
+  /* একীভূত গ্যালারি — প্রধান ছবি + গ্যালারির ছবি + যাচাইকৃত মিডিয়া ছবি (সূত্রসহ), ডুপ্লিকেট বাদ */
+  const galleryItems: GalleryItem[] = []
+  {
+    const seen = new Set<string>()
+    const push = (item: GalleryItem) => {
+      const key = (item.src || '').trim()
+      if (!key || seen.has(key)) return
+      seen.add(key)
+      galleryItems.push(item)
+    }
+    if (s.image) {
+      const isIllustration = type === 'sthan' && s.image.startsWith('/illustrations/landscapes/')
+      push({
+        src: s.image,
+        credit: lic?.credit || undefined,
+        license: lic?.verified ? lic.license : undefined,
+        licenseUrl: lic?.licenseUrl,
+        sourceUrl: lic?.source || undefined,
+        licenseVerified: !!lic?.verified,
+        note: isIllustration
+          ? 'প্রতিনিধিত্বমূলক ইলাস্ট্রেশন—এই স্থানের নির্দিষ্ট ছবি নিচের Commons গ্যালারিতে দেখুন।'
+          : lic && !lic.verified
+            ? lic.note || 'মূল ফটোগ্রাফারের নাম ও সুনির্দিষ্ট লাইসেন্স যাচাই প্রক্রিয়াধীন'
+            : undefined,
+        noteTone: lic && !lic.verified && !isIllustration ? 'amber' : 'plain',
+        creditsLink: !!(lic && !lic.verified),
+      })
+    }
+    for (const g of s.gallery || []) push({ src: g })
+    for (const m of s.media || []) {
+      if (m.kind !== 'image' || m.verificationStatus !== 'verified') continue
+      const src = m.directMediaUrl || m.url
+      if (!src || !m.sourceUrl || !m.license || !m.licenseUrl) continue
+      push({
+        src,
+        caption: m.title || m.caption,
+        credit: m.creator || m.credit,
+        creditUrl: m.creatorUrl,
+        license: m.license,
+        licenseUrl: m.licenseUrl,
+        sourceUrl: m.sourceUrl,
+        licenseVerified: true,
+        pexels: m.sourcePlatform === 'pexels',
+      })
+    }
+  }
+  const gallery = galleryItems.slice(0, 12)
+
+  const allImages = gallery.map((g) => g.src)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': type === 'prani' ? 'Animal' : 'Plant',
@@ -77,7 +126,7 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
     alternateName: [s.nameEn, ...(s.otherNames || [])].filter(Boolean),
     scientificName: s.scientificName,
     description: s.summary,
-    image: s.image || undefined,
+    image: allImages.length > 1 ? allImages : allImages[0] || undefined,
     url: `/${type}/${s.slug}`,
   }
 
@@ -99,53 +148,11 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
       {/* Hero */}
       <div className="container-pb mt-3 grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <SmartImage
-            src={s.image}
-            alt={s.nameBn}
-            fallbackLabel={s.nameBn}
-            fallbackKind={type === 'udbhid' ? 'udbhid' : 'prani'}
-            width={900}
-            height={640}
-            priority
-            sizes="(max-width: 1024px) 100vw, 60vw"
-            className="aspect-[3/2] w-full rounded-2xl"
+          <SpeciesGallery
+            items={gallery}
+            name={s.nameBn}
+            fallbackKind={type === 'udbhid' ? 'udbhid' : type === 'sthan' ? 'sthan' : type === 'sahitto' ? 'sahitto' : 'prani'}
           />
-          {type === 'sthan' && s.image?.startsWith('/illustrations/landscapes/') && (
-            <p className="mt-1.5 text-[11px] text-black/50">প্রতিনিধিত্বমূলক ইলাস্ট্রেশন—এই স্থানের নির্দিষ্ট ছবি নিচের Commons গ্যালারিতে দেখুন।</p>
-          )}
-          {lic && (
-            <p className="mt-1.5 text-[11px] leading-relaxed text-black/50">
-              {lic.verified ? (
-                <>
-                  <span className="font-semibold text-emerald-800">ছবির লাইসেন্স যাচাইকৃত ✓</span> · ক্রেডিট:{' '}
-                  {lic.credit || 'অজানা'}{' '}
-                  {lic.source ? (
-                    <a href={lic.source} target="_blank" rel="noreferrer" className="text-forest-700 hover:underline">
-                      (উৎস)
-                    </a>
-                  ) : null}{' '}
-                  · লাইসেন্স: {lic.license}
-                </>
-              ) : (
-                <>
-                  <span className="font-semibold text-amber-800">ছবির লাইসেন্স যাচাই বাকি:</span>{' '}
-                  {lic.note || 'মূল ফটোগ্রাফারের নাম ও সুনির্দিষ্ট লাইসেন্স যাচাই প্রক্রিয়াধীন'}{' '}
-                  {lic.source ? (
-                    <>
-                      ·{' '}
-                      <a href={lic.source} target="_blank" rel="noreferrer" className="text-forest-700 hover:underline">
-                        সংগ্রহ-উৎস দেখুন
-                      </a>
-                    </>
-                  ) : null}{' '}
-                  ·{' '}
-                  <a href="/credits" className="text-forest-700 hover:underline">
-                    মিডিয়া ক্রেডিট তালিকা
-                  </a>
-                </>
-              )}
-            </p>
-          )}
           {!s.image && gap && (
             <p className="mt-1.5 text-[11px] leading-relaxed text-black/50">
               <span className="font-semibold text-black/70">কোনো মুক্ত-লাইসেন্স ছবি পাওয়া যায়নি:</span>{' '}
@@ -155,23 +162,6 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
               </a>
             </p>
           )}
-          {!!s.gallery?.length && (
-            <div className="mt-3 grid grid-cols-4 gap-2">
-              {s.gallery.slice(0, 4).map((g, i) => (
-                <SmartImage
-                  key={i}
-                  src={g}
-                  alt={`${s.nameBn} — ছবি ${i + 1}`}
-                  fallbackLabel={s.nameBn}
-                  fallbackKind={type === 'udbhid' ? 'udbhid' : 'prani'}
-                  width={200}
-                  height={150}
-                  className="aspect-square w-full rounded-xl"
-                />
-              ))}
-            </div>
-          )}
-          <SpeciesMediaGallery media={s.media || []} speciesName={s.nameBn} scientificName={s.scientificName} />
         </div>
 
         <div className="lg:col-span-2">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { UploadCloud, Loader2, Copy, Check } from 'lucide-react'
+import { toBn } from '@/lib/utils'
 
 export default function MediaManager({ storage }: { storage: 'r2' | 'local' }) {
   const [files, setFiles] = useState<File[]>([])
@@ -57,7 +58,7 @@ export default function MediaManager({ storage }: { storage: 'r2' | 'local' }) {
         </label>
         {files.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-black/60">{files.length} টি ফাইল নির্বাচিত</span>
+            <span className="text-xs text-black/60">{toBn(files.length)}টি ফাইল নির্বাচিত</span>
             <button onClick={upload} className="btn-primary text-sm" disabled={busy}>
               {busy ? <Loader2 size={15} className="animate-spin" /> : <UploadCloud size={15} />} আপলোড করুন
             </button>

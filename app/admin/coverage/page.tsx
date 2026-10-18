@@ -27,7 +27,7 @@ export default async function Page() {
         <Tile label="মোট রেকর্ড" value={total} />
         <Tile label="যাচাইকৃত ✓" value={verified} />
         <Tile label="যাচাই করা যায়নি (কারণসহ)" value={total - verified} />
-        <Tile label="যাচাইকৃতের হার" value={`${total ? Math.round((verified / total) * 100) : 0}%`} />
+        <Tile label="যাচাইকৃতের হার" value={toBn(`${total ? Math.round((verified / total) * 100) : 0}%`)} />
       </div>
 
       <div className="card overflow-x-auto">

@@ -5,6 +5,7 @@ import SmartImage from '@/components/SmartImage'
 import { buildFeedPage } from '@/lib/feed'
 import { getRepo } from '@/lib/repo'
 import { PORTAL_CATEGORIES } from '@/lib/portal-categories'
+import { toBn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,7 +75,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
 
       <section className="container-pb mt-8">
         <h2 className="section-title mb-1">গ্রাম থেকে শেয়ার করা হয়েছে</h2>
-        <p className="mb-4 text-xs text-black/50">মোট {count} টি ছবি/ভিডিও</p>
+        <p className="mb-4 text-xs text-black/50">মোট {toBn(count)}টি ছবি/ভিডিও</p>
         <Feed
           initialItems={feed.items as any}
           initialCursor={feed.nextCursor}

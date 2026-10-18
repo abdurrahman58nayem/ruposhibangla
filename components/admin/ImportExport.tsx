@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Download, Upload, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { toBn } from '@/lib/utils'
 
 type Result = {
   total: number
@@ -90,17 +91,17 @@ export default function ImportExport() {
       {result && (
         <div className="mt-3 rounded-xl bg-forest-50 p-3 text-[12px] text-forest-900">
           <p className="mb-1 flex items-center gap-1.5 font-semibold">
-            <CheckCircle2 size={14} /> আমদানি শেষ — মোট {result.total} সারি
+            <CheckCircle2 size={14} /> আমদানি শেষ — মোট {toBn(result.total)} সারি
           </p>
           <p>
-            নতুন যোগ: <b>{result.created}</b> · হালনাগাদ: <b>{result.updated}</b> · ডুপ্লিকেট:{' '}
-            <b>{result.duplicates.length}</b> · বাদ: <b>{result.skipped.length}</b>
+            নতুন যোগ: <b>{toBn(result.created)}</b> · হালনাগাদ: <b>{toBn(result.updated)}</b> · ডুপ্লিকেট:{' '}
+            <b>{toBn(result.duplicates.length)}</b> · বাদ: <b>{toBn(result.skipped.length)}</b>
           </p>
           {!!result.duplicates.length && (
             <ul className="mt-2 max-h-40 space-y-1 overflow-auto">
               {result.duplicates.slice(0, 30).map((d, i) => (
                 <li key={i} className="text-[11px] text-amber-800">
-                  সারি {d.row}: {d.name} — {d.reason} (<code>{d.slug}</code>)
+                  সারি {toBn(d.row)}: {d.name} — {d.reason} (<code>{d.slug}</code>)
                 </li>
               ))}
             </ul>

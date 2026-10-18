@@ -61,9 +61,12 @@ body {
 /* porer font-e. Local Inter/Noto thakle sheitai byohrito hoy.        */
 @font-face {
   font-family: 'RB Digits';
+  /* বাংলা অঙ্কই (০–৯) সাইটের প্রধান সংখ্যা — তাই বাংলা ফন্ট আগে;
+     ল্যাটিন অঙ্ক থাকলেও এসব ফন্টেই স্পষ্ট দেখায়। */
   src:
-    local('Inter'),
     local('Noto Sans Bengali'),
+    local('Hind Siliguri'),
+    local('Inter'),
     local('Noto Sans'),
     local('Segoe UI'),
     local('Roboto'),
@@ -73,10 +76,10 @@ body {
   font-display: swap;
 }
 
-/* boro sankhya/statistics - Inter + tabular onk */
+/* boro sankhya/statistics - RB Digits (bangla onk) + tabular */
 .num,
 .stat-num {
-  font-family: 'Inter', 'RB Digits', system-ui, sans-serif;
+  font-family: 'RB Digits', 'Hind Siliguri', 'Inter', system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
