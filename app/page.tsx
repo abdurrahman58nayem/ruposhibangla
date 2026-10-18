@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import CategoryRail from '@/components/CategoryRail'
-import { ArrowRight, Sparkles, Camera, Bird, Leaf, Map, Quote, Newspaper } from 'lucide-react'
+import { ArrowRight, Sparkles, Camera, Bird, Leaf, Map as MapIcon, Quote, Newspaper } from 'lucide-react'
 import Feed from '@/components/Feed'
 import SpeciesCard from '@/components/SpeciesCard'
 import SmartImage from '@/components/SmartImage'
@@ -32,29 +32,35 @@ const PLACE_HIGHLIGHTS = [
   },
 ]
 
-const CHIPS = [
-  { href: '/prani?cat=পাখি', label: 'পাখি' },
-  { href: '/prani?cat=স্তন্যপায়ী', label: 'স্তন্যপায়ী' },
-  { href: '/prani?cat=সরীসৃপ', label: 'সরীসৃপ' },
-  { href: '/prani?cat=মাছ', label: 'মাছ' },
-  { href: '/udbhid?cat=ফল গাছ', label: 'ফল গাছ' },
-  { href: '/udbhid?cat=বন গাছ', label: 'বন গাছ' },
-  { href: '/udbhid?cat=ম্যানগ্রোভ', label: 'ম্যানগ্রোভ' },
-  { href: '/udbhid?cat=ফুল গাছ', label: 'ফুল গাছ' },
-  { href: '/udbhid?cat=ঔষধি গাছ', label: 'ঔষধি' },
-  { href: '/grambangla', label: 'গ্রামবাংলা' },
+const ICONIC_FEATURED_SLUGS = [
+  'bagh',
+  'nil-timi',
+  'doyel',
+  'ilish',
+  'shushuk',
+  'nona-kumir',
+  'shundori',
+  'shapla',
 ]
 
 export default async function HomePage() {
   const repo = getRepo()
-  const [settings, stats, featured, news, feed, poetSpecies] = await Promise.all([
+  const [settings, stats, allFeatured, news, feed, poetSpecies] = await Promise.all([
     repo.getSettings(),
     repo.stats(),
-    repo.listSpecies({ featured: true, limit: 8 }),
+    repo.listSpecies({ featured: true, limit: 50 }),
     repo.listNews({ publishedOnly: true, limit: 3 }),
     buildFeedPage({ limit: 12, withSpecies: true }),
     repo.listSpecies({ limit: 200 }),
   ])
+
+  // বাংলাদেশের বিভিন্ন দলের বিশিষ্ট প্রজাতিগুলো সামনে রাখা — পাখি, বাঘ, তিমি, শুশুক, মাছ ও ফুল
+  const iconicMap = new Map(allFeatured.map((s) => [s.slug, s]))
+  const curatedFeatured = ICONIC_FEATURED_SLUGS.map((slug) => iconicMap.get(slug)).filter(Boolean) as typeof allFeatured
+  for (const s of allFeatured) {
+    if (curatedFeatured.length >= 8) break
+    if (!curatedFeatured.some((c) => c.slug === s.slug)) curatedFeatured.push(s)
+  }
 
   const poetEntries = poetSpecies
     .flatMap((s) => (s.poetViews || []).map((pv) => ({ s, pv })))
@@ -90,7 +96,7 @@ export default async function HomePage() {
               <Leaf size={14} className="mr-1 inline" /> উদ্ভিদ
             </Link>
             <Link href="/grambangla" className="rounded-full bg-white/10 px-4 py-2 font-medium backdrop-blur transition hover:bg-white/20">
-              <Map size={14} className="mr-1 inline" /> গ্রামবাংলা
+              <MapIcon size={14} className="mr-1 inline" /> গ্রামবাংলা
             </Link>
             <Link href="/ai" className="rounded-full bg-earth-400 px-4 py-2 font-medium text-white transition hover:bg-earth-500">
               <Sparkles size={14} className="mr-1 inline" /> এআই সহচর
@@ -113,90 +119,44 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---------- ১৭টি প্রধান ক্যাটাগরি ---------- */}
+      {/* ---------- ১৭টি প্রধান ক্যাটাগরি (একক ক্যাটাগরি ব্যবস্থা) ---------- */}
       <section className="container-pb mt-8">
-        <div className="mb-2 flex items-center justify-between gap-3">
-          <h2 className="text-sm font-bold text-forest-900">জীববৈচিত্র্যের ক্যাটাগরি</h2>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-forest-900 sm:text-lg">জীববৈচিত্র্যের ১৭টি ক্যাটাগরি</h2>
+            <p className="text-xs text-black/50">ছবি ও আইকন সহ বাংলাদেশের প্রাণিকুল, উদ্ভিদকুল ও প্রাকৃতিক ঐতিহ্য</p>
+          </div>
           <Link href="/categories" className="text-xs font-semibold text-forest-700 hover:underline">
-            সব ক্যাটাগরি →
+            সব ক্যাটাগরি দেখুন →
           </Link>
         </div>
         <CategoryRail />
       </section>
 
-      {/* ---------- দ্রুত প্রবেশপথ ---------- */}
-      <section className="container-pb mt-4">
-        <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-          {CHIPS.map((c) => (
-            <Link key={c.href} href={c.href} className="chip">
-              {c.label}
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ---------- Featured species ---------- */}
+      {/* ---------- Featured species (বাঘ, তিমি, দোয়েল, ইলিশ, সুন্দরী, শাপলা) ---------- */}
       <section className="container-pb mt-10">
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
             <h2 className="section-title">আজকের নির্বাচিত প্রজাতি</h2>
-            <p className="text-xs text-black/50">বাংলাদেশের সবচেয়ে বেশি খোঁজা প্রাণী ও উদ্ভিদ</p>
+            <p className="text-xs text-black/50">বাংলাদেশের বাঘ, নীল তিমি, দোয়েল, ইলিশ ও অন্যান্য বিশেষ জীববৈচিত্র্য</p>
           </div>
           <Link href="/prani" className="shrink-0 text-sm font-medium text-forest-700 hover:underline">
             সব দেখুন <ArrowRight size={14} className="inline" />
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {featured.slice(0, 8).map((s) => (
+          {curatedFeatured.slice(0, 8).map((s) => (
             <SpeciesCard key={s.slug} s={s} />
           ))}
         </div>
       </section>
 
-      {/* ---------- নদী, বন, পাহাড়: অস্থায়ী ধারণামূলক ছবি ---------- */}
-      <section className="container-pb mt-10">
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <h2 className="section-title">নদী, বন ও পাহাড়</h2>
-            <p className="mt-1 text-xs text-black/50">
-              অস্থায়ী AI-তৈরি ধারণামূলক ছবি — নির্দিষ্ট স্থানের নথিভুক্ত ছবি নয়; পরে আপনার বাস্তব ছবি দিয়ে বদলানো যাবে।
-            </p>
-          </div>
-          <Link href="/gyan?type=sthan" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">
-            সব স্থান <ArrowRight size={13} className="inline" />
-          </Link>
-        </div>
-        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
-          {PLACE_HIGHLIGHTS.map((place) => (
-            <Link key={place.title} href={place.href} className="card group w-[78%] shrink-0 overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg sm:w-auto">
-              <SmartImage
-                src={place.image}
-                alt={`${place.title} — অস্থায়ী ধারণামূলক ছবি`}
-                width={720}
-                height={405}
-                unoptimized
-                sizes="(max-width: 640px) 78vw, 33vw"
-                className="aspect-[16/9] w-full"
-                imgClassName="transition duration-500 group-hover:scale-105"
-              />
-              <div className="p-3">
-                <h3 className="text-sm font-bold text-forest-900">{place.title}</h3>
-                <p className="mt-0.5 text-xs text-black/60">{place.note}</p>
-                <span className="mt-2 inline-block rounded-full bg-forest-50 px-2 py-0.5 text-[10px] font-medium text-forest-700">
-                  AI-তৈরি অস্থায়ী ছবি
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ---------- Feed ---------- */}
+      {/* ---------- প্রকৃতির স্রোত (Feed) — কমিউনিটি ও প্রজাতির মেলবন্ধন ---------- */}
       <section className="container-pb mt-12">
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
             <h2 className="section-title">প্রকৃতির স্রোত</h2>
-            <p className="text-xs text-black/50">স্ক্রল করুন — মাঝে মাঝে প্রজাতির তথ্যও চলে আসবে</p>
+            <p className="text-xs text-black/50">স্ক্রল করুন — কমিউনিটির শেয়ার করা ছবি ও প্রজাতির জীবন্ত রূপ</p>
           </div>
           <Link href="/feed" className="shrink-0 text-sm font-medium text-forest-700 hover:underline">
             ফিড <ArrowRight size={14} className="inline" />
@@ -205,7 +165,49 @@ export default async function HomePage() {
         <Feed initialItems={feed.items as any} initialCursor={feed.nextCursor} query={{}} />
       </section>
 
-      {/* ---------- Poets ---------- */}
+      {/* ---------- সাম্প্রতিক প্রকৃতির খবর ---------- */}
+      {news.length > 0 && (
+        <section className="container-pb mt-12">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="section-title flex items-center gap-2">
+                <Newspaper size={18} className="text-forest-600" /> প্রকৃতির খবর
+              </h2>
+              <p className="text-xs text-black/50">জীববৈচিত্র্য ও পরিবেশ সংরক্ষণের সর্বশেষ খবর</p>
+            </div>
+            <Link href="/khobor" className="shrink-0 text-sm font-medium text-forest-700 hover:underline">
+              সব খবর <ArrowRight size={14} className="inline" />
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {news.map((n) => (
+              <Link key={n.id} href={`/khobor/${n.slug}`} className="card group overflow-hidden">
+                <SmartImage
+                  src={n.cover}
+                  alt={n.title}
+                  fallbackKind="gram"
+                  fallbackLabel="প্রকৃতির খবর"
+                  width={500}
+                  height={280}
+                  className="aspect-[16/9] w-full"
+                  imgClassName="transition duration-500 group-hover:scale-105"
+                />
+                <div className="p-4">
+                  <span className="rounded-full bg-forest-50 px-2 py-0.5 text-[10px] font-medium text-forest-700">
+                    {n.kind === 'conservation' ? 'সংরক্ষণ' : n.kind === 'research' ? 'গবেষণা' : n.tags?.[0] || 'সংবাদ'}
+                  </span>
+                  <h3 className="mt-2 text-sm font-bold leading-snug text-forest-900 group-hover:text-forest-700">
+                    {n.title}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 text-xs text-black/60">{n.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ---------- কবির চোখে প্রকৃতি ---------- */}
       {poetEntries.length > 0 && (
         <section className="container-pb mt-12">
           <div className="mb-4 flex items-end justify-between gap-4">
@@ -235,60 +237,58 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ---------- News ---------- */}
-      {news.length > 0 && (
-        <section className="container-pb mt-12">
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="section-title flex items-center gap-2">
-                <Newspaper size={18} className="text-forest-600" /> প্রকৃতির খবর
-              </h2>
-              <p className="text-xs text-black/50">জীববৈচিত্র্য ও পরিবেশের সর্বশেষ খবর</p>
-            </div>
-            <Link href="/khobor" className="shrink-0 text-sm font-medium text-forest-700 hover:underline">
-              সব খবর <ArrowRight size={14} className="inline" />
-            </Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {news.map((n) => (
-              <Link key={n.id} href={`/khobor/${n.slug}`} className="card group overflow-hidden">
-                <SmartImage
-                  src={n.cover}
-                  alt={n.title}
-                  fallbackKind="gram"
-                  fallbackLabel="প্রকৃতির খবর"
-                  width={500}
-                  height={280}
-                  className="aspect-[16/9] w-full"
-                  imgClassName="transition duration-500 group-hover:scale-105"
-                />
-                <div className="p-4">
-                  <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-forest-900">{n.title}</h3>
-                  <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-black/60">{n.excerpt}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ---------- CTA ---------- */}
+      {/* ---------- নদী, বন ও পাহাড়ের বাস্তুতন্ত্র ---------- */}
       <section className="container-pb mt-12">
-        <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-forest-600 to-forest-900 p-6 text-white sm:p-10">
-          <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold sm:text-3xl">আপনার ক্যামেরায় ধরা প্রকৃতি — শেয়ার করুন</h2>
-              <p className="mt-2 max-w-xl text-sm text-white/80">
-                বাগানের দোয়েল হোক কিংবা গ্রামের পুকুর — ছবি বা ভিডিও আপলোড করুন, লিখুন আপনার গল্প। অ্যাকাউন্ট না থাকলেও
-                শুধু নাম দিয়েই শেয়ার করা যায়।
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Link href="/share" className="btn-gold">
-                <Camera size={16} /> ছবি শেয়ার করুন
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="section-title">নদী, বন ও পাহাড়ি বাস্তুতন্ত্র</h2>
+            <p className="mt-1 text-xs text-black/50">
+              পদ্মা, সুন্দরবন ও পার্বত্য চট্টগ্রামের প্রাকৃতিক পরিবেশ
+            </p>
+          </div>
+          <Link href="/gyan?type=sthan" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">
+            সব স্থান <ArrowRight size={13} className="inline" />
+          </Link>
+        </div>
+        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">
+          {PLACE_HIGHLIGHTS.map((place) => (
+            <Link key={place.title} href={place.href} className="card group w-[78%] shrink-0 overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg sm:w-auto">
+              <SmartImage
+                src={place.image}
+                alt={`${place.title} — বাংলার প্রকৃতি`}
+                width={720}
+                height={405}
+                unoptimized
+                sizes="(max-width: 640px) 78vw, 33vw"
+                className="aspect-[16/9] w-full"
+                imgClassName="transition duration-500 group-hover:scale-105"
+              />
+              <div className="p-3">
+                <h3 className="text-sm font-bold text-forest-900">{place.title}</h3>
+                <p className="mt-0.5 text-xs text-black/60">{place.note}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- রূপসী বাংলায় অবদান রাখুন ---------- */}
+      <section className="container-pb mt-12 mb-4">
+        <div className="rounded-3xl bg-gradient-to-r from-forest-800 to-forest-900 p-6 text-white sm:p-10">
+          <div className="max-w-xl">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
+              <Camera size={13} /> উন্মুক্ত জীববৈচিত্র্য আর্কাইভ
+            </span>
+            <h2 className="mt-3 text-2xl font-bold sm:text-3xl">আপনার তোলা ছবি ও ভিডিও দিয়ে রূপসী বাংলাকে সমৃদ্ধ করুন</h2>
+            <p className="mt-2 text-sm text-white/80">
+              আপনার উঠোনের দোয়েল, ছাদের টুনটুনি কিংবা সুন্দরবনের বাঘ — যেকোনো ছবি মুক্ত লাইসেন্সে যুক্ত করুন আমাদের আর্কাইভে।
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href="/share" className="btn-primary bg-white text-forest-900 hover:bg-white/90">
+                ছবি শেয়ার করুন
               </Link>
-              <Link href="/jeno" className="btn bg-white/10 text-white backdrop-blur hover:bg-white/20">
-                তথ্য জানান
+              <Link href="/jeno" className="btn-outline border-white/30 text-white hover:bg-white/10">
+                নতুন তথ্য জানান
               </Link>
             </div>
           </div>

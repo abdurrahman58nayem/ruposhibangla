@@ -119,8 +119,32 @@ export default async function Page({
         <button className="btn-primary shrink-0">খুঁজুন</button>
       </form>
 
+      {/* ক্যাটাগরি রেল */}
+      <div className="mt-4">
+        <CategoryRail active={group === 'all' ? undefined : group} />
+      </div>
+
+      {/* ধরন ও অবস্থা */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {TYPES.map((t) => {
+          const href = buildHref({ type: t.id, page: 1 })
+          const active = type === t.id
+          return (
+            <Link key={t.id} href={href} className={`chip ${active ? 'chip-active' : ''}`}>
+              {t.label}
+            </Link>
+          )
+        })}
+        <Link href="/categories" className="chip">
+          সব ক্যাটাগরি
+        </Link>
+        <Link href="/admin/coverage" className="chip">
+          কভারেজ ও যাচাই রিপোর্ট
+        </Link>
+      </div>
+
       {/* যাচাই অবস্থা ফিল্টার */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-forest-100 bg-white p-3 shadow-sm">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-forest-100 bg-white p-3 shadow-sm">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="mr-1 text-xs font-bold text-forest-900">তথ্য যাচাই অবস্থা:</span>
           <Link
@@ -152,30 +176,6 @@ export default async function Page({
         </div>
         <Link href="/songrokkhon#unverified" className="text-xs font-semibold text-forest-800 hover:underline">
           সব কারণের পূর্ণ তালিকা দেখুন →
-        </Link>
-      </div>
-
-      {/* ক্যাটাগরি */}
-      <div className="mt-4">
-        <CategoryRail active={group === 'all' ? undefined : group} />
-      </div>
-
-      {/* ধরন ও অবস্থা */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        {TYPES.map((t) => {
-          const href = buildHref({ type: t.id, page: 1 })
-          const active = type === t.id
-          return (
-            <Link key={t.id} href={href} className={`chip ${active ? 'chip-active' : ''}`}>
-              {t.label}
-            </Link>
-          )
-        })}
-        <Link href="/categories" className="chip">
-          সব ক্যাটাগরি
-        </Link>
-        <Link href="/admin/coverage" className="chip">
-          কভারেজ ও যাচাই রিপোর্ট
         </Link>
       </div>
 

@@ -188,7 +188,7 @@ export const PLACES: Species[] = [
     sensitive: false,
   },
   {
-    slug: 'ratargul', type: 'sthan', group: 'pahar', category: 'বনাঞ্চল',
+    slug: 'ratargul', type: 'sthan', group: 'nadi', category: 'জলাভূমি',
     nameBn: 'রাতারগুল জলাবন', nameEn: 'Ratargul Swamp Forest', scientificName: '—',
     otherNames: ['বাংলাদেশের আমাজন'],
     taxonomy: { kingdom: '—' },

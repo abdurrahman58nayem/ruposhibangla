@@ -4,7 +4,7 @@ import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
-import { CATEGORIES } from '@/lib/categories'
+import { CATEGORIES, normalizeCategoryName } from '@/lib/categories'
 import { normalizeConservationBn } from '@/lib/utils'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
@@ -55,11 +55,12 @@ function inferGroup(s: { type?: string; category?: string }): any {
 }
 
 function rowToSpecies(r: SpeciesRow): Species {
+  const group = r.group || inferGroup({ type: r.type, category: r.category })
   return verifySpeciesRecord({
     slug: r.slug,
     type: r.type,
-    group: r.group || inferGroup({ type: r.type, category: r.category }),
-    category: r.category,
+    group,
+    category: normalizeCategoryName(r.category, group),
     nameBn: r.name_bn,
     nameEn: r.name_en || '',
     scientificName: r.scientific_name || '',
@@ -424,7 +425,12 @@ export const neonRepo: Repo = {
       where (${(type ?? null)}::text is null or type = ${type ?? null})
       group by category order by count desc
     `
-    return asRows(rows).map((r: any) => ({ name: r.name, count: Number(r.count) }))
+    const map = new Map<string, number>()
+    for (const r of asRows(rows)) {
+      const norm = normalizeCategoryName(r.name)
+      map.set(norm, (map.get(norm) || 0) + Number(r.count))
+    }
+    return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count)
   },
 
   // ---------- posts ----------

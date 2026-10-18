@@ -5,7 +5,7 @@ import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
-import { CATEGORIES } from '@/lib/categories'
+import { CATEGORIES, normalizeCategoryName } from '@/lib/categories'
 import { iucnInfo, normalizeConservationBn } from '@/lib/utils'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
@@ -200,19 +200,39 @@ function write(db: DB) {
   }
 }
 
+function cleanBn(str: string): string {
+  return str
+    .normalize('NFC')
+    .replace(/\u09af\u09bc/g, 'য়')
+    .replace(/\u09df/g, 'য়')
+    .replace(/\u09a1\u09bc/g, 'ড়')
+    .replace(/\u09dd/g, 'ড়')
+    .replace(/\u09a2\u09bc/g, 'ঢ়')
+    .replace(/\u09de/g, 'ঢ়')
+    .replace(/স্তন্যপায়ী|স্তনপায়ী|স্তন্যপায়ী|স্তনপায়ী/g, 'স্তন্যপায়ী')
+    .replace(/পাখী/g, 'পাখি')
+    .toLowerCase()
+}
+
 function matchesSpecies(s: Species, q: string): boolean {
-  const needle = q.trim().toLowerCase()
+  const needle = q.trim()
   if (!needle) return true
+  const normNeedle = cleanBn(needle)
   const iucn = iucnInfo(s.conservation)
+  const isCetacean = s.taxonomy?.order === 'Cetacea' || /তিমি|শুশুক|ডলফিন/.test(s.nameBn)
+  const isBat = s.taxonomy?.order === 'Chiroptera' || /বাদুড়|বাদুড়/.test(s.nameBn)
   const hay = [
-    s.nameBn, s.nameEn, s.scientificName, s.category, s.summary, s.habitat,
+    s.nameBn, s.nameEn, s.scientificName, s.category, normalizeCategoryName(s.category, s.group),
+    s.summary, s.habitat, s.description || '', s.identification || '',
     s.conservation, iucn.en, iucn.meaning, s.conservationBn || '',
     (s.otherNames || []).join(' '), (s.synonyms || []).join(' '), s.group || '',
     (s.poetViews || []).map((p) => `${p.poet} ${p.work || ''} ${p.note}`).join(' '),
+    isCetacean ? 'তিমি শুশুক ডলফিন whale dolphin cetacea সামুদ্রিক স্তন্যপায়ী' : '',
+    isBat ? 'বাদুড় bat chiroptera উড়ন্ত স্তন্যপায়ী' : '',
   ]
     .join(' ')
-    .toLowerCase()
-  return needle.split(/\s+/).every((t) => hay.includes(t))
+  const normHay = cleanBn(hay)
+  return normNeedle.split(/\s+/).every((t) => normHay.includes(t))
 }
 
 function sortPostsDesc(posts: Post[]) {
@@ -233,7 +253,11 @@ export const jsonRepo: Repo = {
     let rows = db.species.filter((s) => {
       if (q.type && q.type !== 'all' && s.type !== q.type) return false
       if (!groupMatches(s, q.group)) return false
-      if (q.category && q.category !== 'all' && s.category !== q.category) return false
+      if (q.category && q.category !== 'all') {
+        const target = normalizeCategoryName(q.category)
+        const itemCat = normalizeCategoryName(s.category, s.group)
+        if (itemCat !== target && s.category !== q.category) return false
+      }
       if (q.conservation && q.conservation !== 'all' && s.conservation !== q.conservation) return false
       if (q.dataStatus === 'unverified') {
         if ((s.dataStatus || 'partial') === 'verified') return false
@@ -259,7 +283,11 @@ export const jsonRepo: Repo = {
     return db.species.filter((s) => {
       if (q.type && q.type !== 'all' && s.type !== q.type) return false
       if (!groupMatches(s, q.group)) return false
-      if (q.category && q.category !== 'all' && s.category !== q.category) return false
+      if (q.category && q.category !== 'all') {
+        const target = normalizeCategoryName(q.category)
+        const itemCat = normalizeCategoryName(s.category, s.group)
+        if (itemCat !== target && s.category !== q.category) return false
+      }
       if (q.conservation && q.conservation !== 'all' && s.conservation !== q.conservation) return false
       if (q.dataStatus === 'unverified') {
         if ((s.dataStatus || 'partial') === 'verified') return false
@@ -304,7 +332,12 @@ export const jsonRepo: Repo = {
   async listCategories(type) {
     const db = read()
     const map = new Map<string, number>()
-    db.species.filter((s) => !type || s.type === type).forEach((s) => map.set(s.category, (map.get(s.category) || 0) + 1))
+    db.species
+      .filter((s) => !type || s.type === type)
+      .forEach((s) => {
+        const cat = normalizeCategoryName(s.category, s.group)
+        map.set(cat, (map.get(cat) || 0) + 1)
+      })
     return [...map.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count)
   },
 
