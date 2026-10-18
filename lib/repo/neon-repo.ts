@@ -408,6 +408,13 @@ export const neonRepo: Repo = {
     return s
   },
 
+  async setSpeciesMedia(slug, media) {
+    const sql = getSql()
+    await sql`update species set media = ${JSON.stringify(media || [])}::jsonb, updated_at = now() where slug = ${slug}`
+    const rows = await sql`select * from species where slug = ${slug}`
+    return asRows(rows)[0] ? rowToSpecies(asRows(rows)[0]) : null
+  },
+
   async deleteSpecies(slug) {
     const sql = getSql()
     await sql`delete from species where slug = ${slug}`

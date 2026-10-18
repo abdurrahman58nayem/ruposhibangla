@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { MEDIA_LICENSES } from '@/data/seed/media-licenses'
+import { allMediaLicenses } from '@/data/seed/media-licenses'
 import { toBn } from '@/lib/utils'
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function CreditsPage() {
   // MEDIA_LICENSES একটি অ্যারে — Object.entries() ব্যবহার করলে “ফাইল” কলামে
   // ফাইলের নামের বদলে ক্রমিক নম্বর চলে আসত (আগের বাগ)। সরাসরি অ্যারেই ব্যবহার করছি।
-  const entries = MEDIA_LICENSES
+  const entries = allMediaLicenses().sort((a, b) => Number(a.verified) - Number(b.verified) || a.subject.localeCompare(b.subject))
   const verified = entries.filter((m) => m.verified).length
   const pending = entries.length - verified
 
@@ -52,7 +52,7 @@ export default function CreditsPage() {
             </thead>
             <tbody className="divide-y divide-black/5">
               {entries.map((m) => (
-                <tr key={m.file} className="align-top hover:bg-forest-50/30">
+                <tr key={`${m.file}::${m.slug}`} className="align-top hover:bg-forest-50/30">
                   <td className="max-w-[22rem] px-3 py-2 font-mono text-[11px] text-black/75">
                     <a
                       href={m.file}

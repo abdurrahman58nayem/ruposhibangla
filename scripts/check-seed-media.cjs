@@ -5,7 +5,8 @@ require('./register-typescript.cjs')
 const { SPECIES } = require('../data/seed/index.ts')
 const { SEED_VIDEOS } = require('../data/seed/media-videos.ts')
 const { CURATED_REELS, speciesMediaReels } = require('../lib/curated-reels.ts')
-const { licenseFor } = require('../data/seed/media-licenses.ts')
+const { allMediaLicenses, licenseFor } = require('../data/seed/media-licenses.ts')
+const { SEED_IMAGES } = require('../data/seed/media-images.ts')
 
 let expectedVideos = 0
 for (const [slug, videos] of Object.entries(SEED_VIDEOS)) {
@@ -33,16 +34,22 @@ for (const reel of reels) {
   assert.ok(reel.speciesHref)
 }
 
-const duplicateEditorialVideos = reels.filter((reel) => CURATED_REELS.some((existing) => existing.mediaUrl === reel.mediaUrl))
-assert.equal(duplicateEditorialVideos.length, 2, 'known kingfisher clips should already have their canonical editorial reels')
-for (const reel of duplicateEditorialVideos) {
+const canonicalVideoOverlaps = reels.filter((reel) => CURATED_REELS.some((existing) => existing.mediaUrl === reel.mediaUrl))
+assert.equal(canonicalVideoOverlaps.length, 2, 'known kingfisher clips should already have their canonical editorial reels')
+for (const reel of canonicalVideoOverlaps) {
   const canonical = CURATED_REELS.find((existing) => existing.mediaUrl === reel.mediaUrl)
   assert.equal(canonical?.speciesSlug, reel.speciesSlug, 'canonical reel must retain its species identity')
   assert.equal(canonical?.speciesHref, reel.speciesHref, 'canonical reel must link to the exact species detail page')
 }
+const creditEntries = allMediaLicenses()
+const creditKeys = creditEntries.map((entry) => `${entry.file}::${entry.slug}`)
+assert.equal(new Set(creditKeys).size, creditEntries.length, 'credits register has one row per file/species pair')
+for (const seedImage of SEED_IMAGES) assert.ok(creditKeys.includes(`${seedImage.file}::${seedImage.slug}`), `seed image missing from credits register: ${seedImage.file}`)
+const speciesImageRefs = SPECIES.filter((species) => species.image)
+const unregisteredSpeciesImageRefs = speciesImageRefs.filter((species) => !licenseFor(species.image))
 const photoLicense = licenseFor('/seed/prani/jal-moyur.jpg')
 assert.equal(photoLicense?.verified, false, 'unverified image licence must remain explicitly pending')
 assert.equal(photoLicense?.license, 'যাচাই বাকি')
 assert.match(photoLicense?.source || '', /^https:\/\/commons\.wikimedia\.org\//)
 
-console.log(JSON.stringify({ seedVideos: expectedVideos, speciesReels: reels.length, duplicateEditorialVideos: duplicateEditorialVideos.length, unverifiedImageAttribution: 'explicitly pending' }, null, 2))
+console.log(JSON.stringify({ seedVideos: expectedVideos, speciesReels: reels.length, canonicalVideoOverlaps: canonicalVideoOverlaps.length, creditRegisterRecords: creditEntries.length, verifiedCreditRecords: creditEntries.filter((entry) => entry.verified).length, pendingCreditRecords: creditEntries.filter((entry) => !entry.verified).length, speciesImageReferences: speciesImageRefs.length, imageReferencesUsingUnregisteredPlaceholder: unregisteredSpeciesImageRefs.length, unverifiedImageAttribution: 'explicitly pending' }, null, 2))

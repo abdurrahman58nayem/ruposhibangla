@@ -8,8 +8,11 @@ import Link from 'next/link'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'আমি কী দেখলাম? — পর্যবেক্ষণ' }
 
-export default async function Page() {
-  const items = (await getRepo().listObservations?.({ limit: 30 })) || []
+export default async function Page({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q = '' } = await searchParams
+  const items = (await getRepo().listObservations?.({ limit: 200 })) || []
+  const needle = q.trim().toLowerCase()
+  const visibleItems = items.filter((item) => item.status !== 'rejected' && (!needle || [item.name, item.guessedName, item.speciesSlug, item.notes].join(' ').toLowerCase().includes(needle)))
   return (
     <div className="container-pb max-w-3xl space-y-5 py-6">
       <div>
@@ -23,16 +26,14 @@ export default async function Page() {
       <ObservationForm />
 
       <section>
-        <h2 className="section-title mb-2">সাম্প্রতিক পর্যবেক্ষণ ({toBn(items.length)})</h2>
-        {!items.length && (
+        <h2 className="section-title mb-2">{needle ? `“${q}” — পর্যবেক্ষণ (${toBn(visibleItems.length)})` : `সাম্প্রতিক পর্যবেক্ষণ (${toBn(visibleItems.length)})`}</h2>
+        {!visibleItems.length && (
           <div className="card p-6 text-center text-sm text-black/55">
-            এখনো কোনো পর্যবেক্ষণ জমা পড়েনি।
+            {needle ? 'এই নামে কোনো পর্যবেক্ষণ পাওয়া যায়নি।' : 'এখনো কোনো পর্যবেক্ষণ জমা পড়েনি।'}
           </div>
         )}
         <div className="space-y-2">
-          {items
-            .filter((o) => o.status !== 'rejected')
-            .map((o) => (
+          {visibleItems.map((o) => (
               <div key={o.id} className="card flex gap-3 p-3">
                 {o.photoUrl ? (
                   <SmartImage

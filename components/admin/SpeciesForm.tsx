@@ -105,7 +105,7 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
             </select>
           </div>
           <div>
-            <label className="label">প্রধান ক্যাটাগরি (১৭টি)</label>
+            <label className="label">মূল রেকর্ডের শ্রেণি (বিদ্যমান ১৭টি গ্রুপ)</label>
             <select value={s.group} onChange={(e) => set('group', e.target.value as any)} className="field">
               {CATEGORIES.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -113,6 +113,7 @@ export default function SpeciesForm({ initial, isNew = false }: { initial: Speci
                 </option>
               ))}
             </select>
+            <p className="mt-1 text-[10px] leading-relaxed text-black/45">প্রাণী/উদ্ভিদের বৈজ্ঞানিক গ্রুপ আলাদা রাখুন; স্থান হলে নদী-জলাভূমি বা পাহাড়-বন বেছে নিন। আবাসস্থল, পর্যটন ও সংরক্ষণ cross-category হিসেবে বিবরণ/ট্যাগে যুক্ত করুন—একই record নকল করবেন না।</p>
           </div>
           <div>
             <label className="label">বিভাগ</label>

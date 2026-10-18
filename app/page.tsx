@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import CategoryRail from '@/components/CategoryRail'
+import PortalCategoryGrid from '@/components/PortalCategoryGrid'
 import { ArrowRight, Sparkles, Camera, Bird, Leaf, Map as MapIcon, Quote, Newspaper } from 'lucide-react'
 import Feed from '@/components/Feed'
 import SpeciesCard from '@/components/SpeciesCard'
@@ -19,13 +19,13 @@ const PLACE_HIGHLIGHTS = [
     note: 'পদ্মা, মেঘনা, হাওর ও বাংলার জলজ জীবন',
   },
   {
-    href: '/gyan?type=sthan&group=pahar',
+    href: '/sthan?cat=বনাঞ্চল',
     image: '/illustrations/landscapes/forest-placeholder.jpg',
     title: 'বন ও ম্যানগ্রোভ',
     note: 'সুন্দরবন, রাতারগুল ও দেশের বনাঞ্চল',
   },
   {
-    href: '/gyan?type=sthan&group=pahar',
+    href: '/sthan?cat=পাহাড়',
     image: '/illustrations/landscapes/hills-placeholder.jpg',
     title: 'পাহাড়ি অঞ্চল',
     note: 'রাঙামাটি, কাপ্তাই ও পাহাড়ি বাস্তুতন্ত্র',
@@ -119,18 +119,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ---------- ১৭টি প্রধান ক্যাটাগরি (একক ক্যাটাগরি ব্যবস্থা) ---------- */}
-      <section className="container-pb mt-8">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-bold text-forest-900 sm:text-lg">জীববৈচিত্র্যের ১৭টি ক্যাটাগরি</h2>
-            <p className="text-xs text-black/50">ছবি ও আইকন সহ বাংলাদেশের প্রাণিকুল, উদ্ভিদকুল ও প্রাকৃতিক ঐতিহ্য</p>
-          </div>
-          <Link href="/categories" className="text-xs font-semibold text-forest-700 hover:underline">
-            সব ক্যাটাগরি দেখুন →
-          </Link>
+      {/* ---------- ১০টি প্রধান বিভাগ — সাবক্যাটাগরির সংক্ষিপ্ত সূচি ---------- */}
+      <section className="container-pb mt-6 sm:mt-8">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div><h2 className="text-base font-bold text-forest-900 sm:text-lg">কী খুঁজছেন?</h2><p className="text-xs text-black/50">প্রাণী থেকে গ্রামবাংলা—সব বিভাগ ও দ্রুত সাবক্যাটাগরি</p></div>
+          <Link href="/categories" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">সব বিভাগ <ArrowRight size={13} className="ml-1 inline" /></Link>
         </div>
-        <CategoryRail />
+        <PortalCategoryGrid compact />
       </section>
 
       {/* ---------- Featured species (বাঘ, তিমি, দোয়েল, ইলিশ, সুন্দরী, শাপলা) ---------- */}
@@ -207,6 +202,22 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ---------- গ্রামবাংলার ছবি ---------- */}
+      <section className="container-pb mt-12">
+        <div className="mb-4 flex items-end justify-between gap-3"><div><h2 className="section-title">গ্রামবাংলার চোখে দেখা</h2><p className="text-xs text-black/50">মাঠ, উঠান, নৌকা আর মানুষের দৈনন্দিন জীবন</p></div><Link href="/grambangla" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">সব ছবি <ArrowRight size={13} className="ml-1 inline"/></Link></div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { src: '/seed/village/paddy-1.jpg', label: 'ধানখেত ও ফসলের মাঠ' },
+            { src: '/seed/village/homestead.jpg', label: 'গ্রামীণ বাড়ি ও উঠান' },
+            { src: '/seed/village/nouka.jpg', label: 'নদীপাড় ও নৌকার ঘাট' },
+            { src: '/seed/village/haat.jpg', label: 'হাটবাজার ও লোকজ জীবন' },
+          ].map((photo) => <Link key={photo.src} href="/grambangla" className="card group overflow-hidden">
+            <SmartImage src={photo.src} alt={photo.label} width={480} height={320} className="aspect-[4/3] w-full" imgClassName="transition duration-500 group-hover:scale-105" />
+            <p className="p-2.5 text-xs font-semibold text-forest-900">{photo.label}</p>
+          </Link>)}
+        </div>
+      </section>
+
       {/* ---------- কবির চোখে প্রকৃতি ---------- */}
       {poetEntries.length > 0 && (
         <section className="container-pb mt-12">
@@ -270,6 +281,14 @@ export default async function HomePage() {
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* ---------- সংরক্ষণ ও দায়িত্বশীল ভ্রমণ ---------- */}
+      <section className="container-pb mt-12">
+        <Link href="/songrokkhon" className="group flex flex-col gap-4 rounded-3xl border border-emerald-100 bg-gradient-to-r from-emerald-50 to-white p-5 transition hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-7">
+          <div className="max-w-2xl"><span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">জীববৈচিত্র্য ও সংরক্ষণ</span><h2 className="mt-1 text-lg font-bold text-forest-900 sm:text-xl">জানুন, দেখুন, সংরক্ষণে পাশে থাকুন</h2><p className="mt-1 text-xs leading-relaxed text-black/55">বিপন্ন প্রজাতি, সংরক্ষিত বন, বৈজ্ঞানিক তথ্য ও যাচাই-অবস্থা—তথ্যসূত্রসহ দেখুন।</p></div>
+          <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-forest-800 px-4 py-2 text-xs font-semibold text-white group-hover:bg-forest-900">সংরক্ষণ বিভাগ <ArrowRight size={14}/></span>
+        </Link>
       </section>
 
       {/* ---------- রূপসী বাংলায় অবদান রাখুন ---------- */}

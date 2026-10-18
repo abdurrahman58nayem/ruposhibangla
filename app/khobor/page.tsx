@@ -4,6 +4,7 @@ import SmartImage from '@/components/SmartImage'
 import { getRepo } from '@/lib/repo'
 import { bnDate, toBn } from '@/lib/utils'
 import { Newspaper } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,8 +14,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/khobor' },
 }
 
-export default async function Page() {
-  const news = await getRepo().listNews({ publishedOnly: true, limit: 60 })
+export default async function Page({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
+  const { kind = '' } = await searchParams
+  const allNews = await getRepo().listNews({ publishedOnly: true, limit: 100 })
+  const validKind = ['news', 'research', 'conservation'].includes(kind) ? kind : ''
+  const news = validKind ? allNews.filter((item) => item.kind === validKind) : allNews
   const [featured, ...rest] = news
 
   return (
@@ -25,6 +29,10 @@ export default async function Page() {
         </h1>
         <p className="mt-1 text-sm text-black/55">জীববৈচিত্র্য, বন, হাওর-নদী আর সংরক্ষণ — যা ঘটছে আমাদের চারপাশে</p>
       </header>
+
+      <nav aria-label="সংবাদ বিভাগ" className="mb-5 flex gap-2 overflow-x-auto pb-1">
+        {[{ id: '', label: 'সব' }, { id: 'news', label: 'সংবাদ' }, { id: 'research', label: 'গবেষণা ও প্রতিবেদন' }, { id: 'conservation', label: 'সংরক্ষণ' }].map((tab) => <Link key={tab.id || 'all'} href={tab.id ? `/khobor?kind=${tab.id}` : '/khobor'} className={cn('chip whitespace-nowrap', validKind === tab.id && 'chip-active')}>{tab.label}</Link>)}
+      </nav>
 
       {featured && (
         <Link href={`/khobor/${featured.slug}`} className="card group mb-6 overflow-hidden lg:flex">

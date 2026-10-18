@@ -14,6 +14,8 @@ import SpeciesSections from '@/components/SpeciesSections'
 import { IucnSpeciesCard } from '@/components/IucnGuide'
 import { UNVERIFIED_REASONS } from '@/data/seed/verification'
 import SpeciesVideoEmbed, { type VideoEmbed } from '@/components/SpeciesVideoEmbed'
+import SpeciesMediaGallery from '@/components/SpeciesMediaGallery'
+import CommonsPlaceMedia from '@/components/CommonsPlaceMedia'
 import { DATA_STATUS_LABEL } from '@/lib/i18n'
 import { MapPin, Utensils, Ruler, CalendarDays, Trees, BookOpen, Quote, Camera, Info, ExternalLink, Pencil } from 'lucide-react'
 import type { Species, SpeciesType } from '@/lib/types'
@@ -44,14 +46,18 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
   const showIucn = type === 'prani' || type === 'udbhid' || s.conservation !== 'NE'
   /** §12 — কপিরাইট-মুক্ত ভিডিও: ডাউনলোড না করে সরাসরি এম্বেড */
   const videos: VideoEmbed[] = (s.media || [])
-    .filter((m) => m.kind === 'video' && m.url)
+    .filter((m) => m.kind === 'video' && m.url && (!m.verificationStatus || m.verificationStatus === 'verified'))
+    .slice(0, 3)
     .map((m) => ({
       url: m.url,
-      title: m.caption || `${s.nameBn} — ভিডিও`,
-      credit: m.credit,
+      title: m.title || m.caption || `${s.nameBn} — ভিডিও`,
+      credit: m.creator || m.credit,
+      creatorUrl: m.creatorUrl,
+      sourcePlatform: m.sourcePlatform,
       license: m.license,
       licenseUrl: m.licenseUrl,
       sourceUrl: m.sourceUrl,
+      poster: m.poster,
     }))
   const base = type === 'prani' ? '/prani' : type === 'udbhid' ? '/udbhid' : type === 'sthan' ? '/sthan' : '/sahitto'
 
@@ -104,6 +110,9 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
             sizes="(max-width: 1024px) 100vw, 60vw"
             className="aspect-[3/2] w-full rounded-2xl"
           />
+          {type === 'sthan' && s.image?.startsWith('/illustrations/landscapes/') && (
+            <p className="mt-1.5 text-[11px] text-black/50">প্রতিনিধিত্বমূলক ইলাস্ট্রেশন—এই স্থানের নির্দিষ্ট ছবি নিচের Commons গ্যালারিতে দেখুন।</p>
+          )}
           {lic && (
             <p className="mt-1.5 text-[11px] leading-relaxed text-black/50">
               {lic.verified ? (
@@ -162,6 +171,7 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
               ))}
             </div>
           )}
+          <SpeciesMediaGallery media={s.media || []} speciesName={s.nameBn} scientificName={s.scientificName} />
         </div>
 
         <div className="lg:col-span-2">
@@ -281,6 +291,7 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
 
           {/* কপিরাইট-মুক্ত ভিডিও — এম্বেড, ডাউনলোড নয় */}
           {!!videos.length && <SpeciesVideoEmbed videos={videos} />}
+          {type === 'sthan' && <CommonsPlaceMedia slug={s.slug} name={s.nameBn} existingVideoUrls={videos.map((video) => video.url)} />}
 
           {!!s.poetViews?.length && (
             <section id="kobi" className="card mt-4 scroll-mt-24 p-5">

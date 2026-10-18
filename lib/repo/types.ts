@@ -45,6 +45,8 @@ export interface Repo {
   countSpecies(q: SpeciesQuery): Promise<number>
   getSpecies(slug: string): Promise<Species | null>
   upsertSpecies(s: Species): Promise<Species>
+  /** Replace only the media JSON column, preserving all other species fields. */
+  setSpeciesMedia(slug: string, media: Species['media']): Promise<Species | null>
   deleteSpecies(slug: string): Promise<void>
   bumpSpeciesViews(slug: string): Promise<void>
   listCategories(type?: SpeciesType): Promise<{ name: string; count: number }[]>

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getRepo } from '@/lib/repo'
+import { speciesPath } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 3600
@@ -15,13 +16,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ])
 
     const staticRoutes: MetadataRoute.Sitemap = [
-      '', '/prani', '/udbhid', '/grambangla', '/kobirchokhe', '/ai', '/khobor', '/feed', '/share', '/jeno', '/about', '/search',
+      '', '/categories', '/gyan', '/prani', '/udbhid', '/sthan', '/grambangla', '/kobirchokhe', '/songrokkhon', '/ai', '/khobor', '/feed', '/observations', '/share', '/jeno', '/about', '/search',
     ].map((p) => ({ url: `${base}${p}`, changeFrequency: 'weekly', priority: p === '' ? 1 : 0.8 }))
 
     return [
       ...staticRoutes,
       ...species.map((s) => ({
-        url: `${base}/${s.type === 'prani' ? 'prani' : 'udbhid'}/${s.slug}`,
+        url: `${base}${speciesPath(s)}`,
         lastModified: s.updatedAt ? new Date(s.updatedAt) : undefined,
         changeFrequency: 'monthly' as const,
         priority: 0.7,

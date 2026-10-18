@@ -41,6 +41,11 @@ export default function SpeciesCard({ s, compact = false }: { s: Species; compac
           <CategoryIcon id={s.group} size={12} variant="mono" strokeWidth={2.1} />
           {s.category || categoryLabel(s.group)}
         </span>
+        {s.type === 'sthan' && s.image?.startsWith('/illustrations/landscapes/') && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-medium text-white backdrop-blur">
+            প্রতিনিধিত্বমূলক ইলাস্ট্রেশন
+          </span>
+        )}
         {overlayIucn && (
           <span
             className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm ${status.color}`}

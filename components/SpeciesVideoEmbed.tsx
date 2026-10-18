@@ -9,11 +9,15 @@
  * পিক্সাবে-স্টাইলে "কোনো ভিডিও পাওয়া যায়নি" অবস্থায় কিছুই রেন্ডার হয় না।
  */
 
+import DirectVideo from '@/components/DirectVideo'
+
 export type VideoEmbed = {
   /** সরাসরি ফাইলের URL (webm/mp4) অথবা embed পেইজের URL */
   url: string
   title: string
   credit?: string
+  creatorUrl?: string
+  sourcePlatform?: string
   license?: string
   licenseUrl?: string
   sourceUrl?: string
@@ -62,20 +66,11 @@ export default function SpeciesVideoEmbed({ videos }: { videos: VideoEmbed[] }) 
             <figure key={i} className="overflow-hidden rounded-xl bg-black/95">
               <div
                 className={`relative mx-auto bg-black ${
-                  isLandscape(v.url, yt) ? 'aspect-video w-full' : 'aspect-[9/16] w-full max-w-sm'
+                  isLandscape(v.url, yt) ? 'aspect-video min-h-[200px] w-full' : 'aspect-[9/16] min-h-[200px] w-full max-w-sm'
                 }`}
               >
                 {asDirectVideo(v.url) ? (
-                  <video
-                    className="h-full w-full object-contain"
-                    controls
-                    preload="metadata"
-                    poster={v.poster}
-                    playsInline
-                  >
-                    <source src={v.url} />
-                    আপনার ব্রাউজার এই ভিডিওটি চালাতে পারছে না।
-                  </video>
+                  <DirectVideo video={v} />
                 ) : yt ? (
                   <iframe
                     className="absolute inset-0 h-full w-full"
@@ -107,7 +102,7 @@ export default function SpeciesVideoEmbed({ videos }: { videos: VideoEmbed[] }) 
 
               <figcaption className="bg-black/80 px-3 py-2 text-[11px] leading-relaxed text-white/70">
                 <span className="font-medium text-white/90">{v.title}</span>
-                {v.credit && <> · ক্রেডিট: {v.credit}</>}
+                {v.credit && <> · ক্রেডিট: {v.creatorUrl ? <a href={v.creatorUrl} target="_blank" rel="noopener noreferrer" className="underline decoration-dotted hover:text-white">{v.credit}</a> : v.credit}</>}
                 {v.license && (
                   <>
                     {' '}
@@ -133,6 +128,7 @@ export default function SpeciesVideoEmbed({ videos }: { videos: VideoEmbed[] }) 
                     </a>
                   </>
                 )}
+                {v.sourcePlatform === 'pexels' && <> · <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="font-semibold underline decoration-dotted hover:text-white">Pexels থেকে ভিডিও</a></>}
                 {' · '}
                 <a href="/reels" className="underline decoration-dotted hover:text-white">
                   রিলসে পূর্ণপর্দায় দেখুন
