@@ -74,14 +74,37 @@ export type PoetView = {
   speciesSlugs?: string[]
 }
 
+export type SpeciesMediaVerification = 'verified' | 'needs_review' | 'restricted' | 'unavailable'
+export type SpeciesMediaPlatform = 'commons' | 'inaturalist' | 'pexels' | 'youtube' | 'manual'
+
+/** Existing inline media JSON stays compatible; externally discovered assets carry a complete audit trail. */
 export type SpeciesMedia = {
   url: string
   kind: 'image' | 'video'
   caption?: string
+  title?: string
   credit?: string
+  creator?: string
+  creatorUrl?: string
   license?: string
   licenseUrl?: string
   sourceUrl?: string
+  directMediaUrl?: string
+  poster?: string
+  sourcePlatform?: SpeciesMediaPlatform
+  sourceId?: string
+  verificationStatus?: SpeciesMediaVerification
+  verificationNote?: string
+  scientificName?: string
+  identificationConfidence?: number
+  identificationBasis?: 'exact_taxon' | 'research_grade' | 'manual_confirmed' | 'unverified'
+  commercialUse?: boolean | null
+  modificationPermission?: boolean | null
+  attributionText?: string
+  lastVerifiedAt?: string
+  lastReviewedAt?: string
+  lastCheckedAt?: string
+  mediaId?: string
 }
 
 export type Species = {

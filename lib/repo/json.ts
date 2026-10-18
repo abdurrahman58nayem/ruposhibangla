@@ -314,6 +314,15 @@ export const jsonRepo: Repo = {
     return next
   },
 
+  async setSpeciesMedia(slug, media) {
+    const db = read()
+    const i = db.species.findIndex((x) => x.slug === slug)
+    if (i < 0) return null
+    db.species[i] = { ...db.species[i], media: media || [], updatedAt: new Date().toISOString() }
+    write(db)
+    return db.species[i]
+  },
+
   async deleteSpecies(slug) {
     const db = read()
     db.species = db.species.filter((s) => s.slug !== slug)

@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Leaf, Newspaper, ImageIcon, Users, MessageSquare, Settings, Database, Sparkles, PieChart, Flag, Binoculars, UserCog } from 'lucide-react'
+import { LayoutDashboard, Leaf, Newspaper, ImageIcon, Users, MessageSquare, Settings, Database, Sparkles, PieChart, Flag, Binoculars, UserCog, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ITEMS = [
   { href: '/admin', label: 'ড্যাশবোর্ড', icon: LayoutDashboard },
   { href: '/admin/species', label: 'জ্ঞানভান্ডার', icon: Leaf },
+  { href: '/admin/species-media', label: 'মিডিয়া যাচাই', icon: ShieldCheck },
   { href: '/admin/coverage', label: 'কভারেজ', icon: PieChart },
   { href: '/admin/news', label: 'খবর', icon: Newspaper },
   { href: '/admin/posts', label: 'পোস্ট', icon: ImageIcon },
@@ -27,7 +28,7 @@ export default function AdminNav({ pending = 0, aiPending = 0, reports = 0 }: { 
   return (
     <nav className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
       {ITEMS.map(({ href, label, icon: Icon }) => {
-        const active = href === '/admin' ? pathname === '/admin' : pathname.startsWith(href)
+        const active = href === '/admin' ? pathname === '/admin' : pathname === href || pathname.startsWith(`${href}/`)
         return (
           <Link
             key={href}

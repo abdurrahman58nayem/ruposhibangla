@@ -4,6 +4,7 @@ import Feed from '@/components/Feed'
 import SmartImage from '@/components/SmartImage'
 import { buildFeedPage } from '@/lib/feed'
 import { getRepo } from '@/lib/repo'
+import { PORTAL_CATEGORIES } from '@/lib/portal-categories'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,10 +22,12 @@ const HIGHLIGHTS = [
   { src: '/seed/village/haat.jpg', title: 'সাপ্তাহিক হাট', note: 'গ্রামের মিলনমেলা' },
 ]
 
-export default async function Page() {
-  const feed = await buildFeedPage({ category: 'grambangla', limit: 12, withSpecies: false })
+export default async function Page({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
+  const { topic = '' } = await searchParams
+  const feed = await buildFeedPage({ category: 'grambangla', q: topic || undefined, limit: 12, withSpecies: false })
   const repo = getRepo()
-  const count = (await repo.listPosts({ status: 'approved', category: 'grambangla', limit: 200 })).items.length
+  const count = (await repo.listPosts({ status: 'approved', category: 'grambangla', q: topic || undefined, limit: 200 })).items.length
+  const villageTopics = PORTAL_CATEGORIES.find((category) => category.id === 'village')?.subcategories || []
 
   return (
     <div>
@@ -48,6 +51,11 @@ export default async function Page() {
             </Link>
           </div>
         </div>
+      </section>
+
+      <section className="container-pb mt-5">
+        <div className="mb-2 flex items-center justify-between gap-3"><h2 className="text-sm font-bold text-forest-900">গ্রামবাংলার বিষয়</h2>{topic && <Link href="/grambangla" className="text-xs font-semibold text-forest-700 hover:underline">সব দেখুন ×</Link>}</div>
+        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1"><Link href="/grambangla" className={`chip whitespace-nowrap ${!topic ? 'chip-active' : ''}`}>সব বিষয়</Link>{villageTopics.map((item) => { const value = new URL(item.href, 'https://ruposhibangla.local').searchParams.get('topic') || ''; return <Link key={item.label} href={item.href} className={`chip whitespace-nowrap ${topic === value ? 'chip-active' : ''}`}>{item.label}</Link> })}</div>
       </section>
 
       <section className="container-pb mt-6">

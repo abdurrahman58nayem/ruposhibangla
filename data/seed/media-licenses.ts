@@ -9590,3 +9590,16 @@ export function licenseFor(file: string): MediaLicense | undefined {
     note: seedImage.note,
   }
 }
+
+/** All credit records, including local seed images not yet represented in the verified register. */
+export function allMediaLicenses(): MediaLicense[] {
+  const byFileAndSpecies = new Map(MEDIA_LICENSES.map((entry) => [`${entry.file}::${entry.slug}`, entry]))
+  for (const image of SEED_IMAGES) {
+    const key = `${image.file}::${image.slug}`
+    if (!byFileAndSpecies.has(key)) {
+      const entry = licenseFor(image.file)
+      if (entry) byFileAndSpecies.set(key, entry)
+    }
+  }
+  return [...byFileAndSpecies.values()]
+}
