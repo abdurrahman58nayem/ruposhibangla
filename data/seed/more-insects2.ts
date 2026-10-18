@@ -20,7 +20,7 @@ import { IUCN, GBIF, EOFF, NEEDS_CHECK } from './sources'
 export const MORE_INSECTS2: Species[] = [
   /* ---------------- ওডোনাটা (ফড়িং) ---------------- */
   {
-    slug: 'shobuj-foring', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'shobuj-foring', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'সবুজ ফড়িং', nameEn: 'Green Marsh Hawk', scientificName: 'Orthetrum sabina',
     otherNames: ['সবুজ ড্রাগনফ্লাই', 'মার্শ হক'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Odonata', family: 'Libellulidae', genus: 'Orthetrum', species: 'Orthetrum sabina' },
@@ -39,7 +39,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF],
   },
   {
-    slug: 'chhoto-konna-foring', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'chhoto-konna-foring', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ক্ষুদ্র কন্যা ফড়িং', nameEn: 'Variable Wisp / Pygmy Dartlet', scientificName: 'Agriocnemis femina',
     otherNames: ['ক্ষুদে কন্যা ফড়িং', 'পিগমি ডার্টলেট'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Odonata', family: 'Coenagrionidae', genus: 'Agriocnemis', species: 'Agriocnemis femina' },
@@ -58,7 +58,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF],
   },
   {
-    slug: 'lal-konna-foring', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'lal-konna-foring', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'লাল কন্যা ফড়িং', nameEn: 'Coromandel Marsh Dart', scientificName: 'Ceriagrion coromandelianum',
     otherNames: ['করোমন্ডেল মার্শ ডার্ট', 'লাল ড্যামসেলফ্লাই'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Odonata', family: 'Coenagrionidae', genus: 'Ceriagrion', species: 'Ceriagrion coromandelianum' },
@@ -79,7 +79,7 @@ export const MORE_INSECTS2: Species[] = [
 
   /* ---------------- হাইমেনোপটেরা (মৌমাছি, বোলতা, পিঁপড়া) ---------------- */
   {
-    slug: 'khude-moumachhi', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'khude-moumachhi', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ক্ষুদ্র মৌমাছি', nameEn: 'Dwarf Honey Bee', scientificName: 'Apis florea',
     otherNames: ['ছোট মৌমাছি', 'ডোয়ার্ফ হানি বিই'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Apidae', genus: 'Apis', species: 'Apis florea' },
@@ -98,7 +98,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'bolta', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'bolta', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'বোলতা', nameEn: 'Lesser Banded Hornet', scientificName: 'Vespa affinis',
     otherNames: ['ভিমরুল (আঞ্চলিক)', 'বাঁধা বোলতা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Vespidae', genus: 'Vespa', species: 'Vespa affinis' },
@@ -117,7 +117,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'mati-bolta', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'mati-bolta', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'মাটির বোলতা', nameEn: 'Potter Wasp', scientificName: 'Eumenes spp.',
     otherNames: ['কুমোর বোলতা', 'পটার ওয়াস্প'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Vespidae', genus: 'Eumenes', species: 'Eumenes spp.' },
@@ -136,7 +136,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'porojibi-bolta', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'porojibi-bolta', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'পরজীবী বোলতা', nameEn: 'Trichogramma Wasp', scientificName: 'Trichogramma spp.',
     otherNames: ['ট্রাইকোগ্রামা', 'ডিম-পরজীবী'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Trichogrammatidae', genus: 'Trichogramma', species: 'Trichogramma spp.' },
@@ -155,7 +155,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'pata-kata-moumachhi', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'pata-kata-moumachhi', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'পাতা কাটা মৌমাছি', nameEn: 'Leafcutter Bee', scientificName: 'Megachile spp.',
     otherNames: ['লিফকাটার বিই', 'পাতা-কাটা মৌমাছি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Megachilidae', genus: 'Megachile', species: 'Megachile spp.' },
@@ -174,7 +174,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'lal-pipra', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'lal-pipra', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'লাল পিঁপড়া', nameEn: 'Tropical Fire Ant', scientificName: 'Solenopsis geminata',
     otherNames: ['আগুন পিঁপড়া', 'ফায়ার অ্যান্ট'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Formicidae', genus: 'Solenopsis', species: 'Solenopsis geminata' },
@@ -193,7 +193,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'boro-kalo-pipra', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'boro-kalo-pipra', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'বড় কালো পিঁপড়া', nameEn: 'Carpenter Ant', scientificName: 'Camponotus compressus',
     otherNames: ['কাঠমিস্ত্রি পিঁপড়া', 'কাঠ পিঁপড়া'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Formicidae', genus: 'Camponotus', species: 'Camponotus compressus' },
@@ -214,7 +214,7 @@ export const MORE_INSECTS2: Species[] = [
 
   /* ---------------- কোলিওপটেরা (গুবরে পোকা) ---------------- */
   {
-    slug: 'gondaar-gubre', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'gondaar-gubre', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'গণ্ডার গুবরে পোকা', nameEn: 'Rhinoceros Beetle', scientificName: 'Xylotrupes gideon',
     otherNames: ['গণ্ডার পোকা', 'রাইনো বিটল'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Coleoptera', family: 'Scarabaeidae', genus: 'Xylotrupes', species: 'Xylotrupes gideon' },
@@ -233,7 +233,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'duburi-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'duburi-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ডুবুরি পোকা', nameEn: 'Predaceous Diving Beetle', scientificName: 'Cybister spp.',
     otherNames: ['ডাইভিং বিটল', 'পানির গুবরে পোকা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Coleoptera', family: 'Dytiscidae', genus: 'Cybister', species: 'Cybister spp.' },
@@ -254,7 +254,7 @@ export const MORE_INSECTS2: Species[] = [
 
   /* ---------------- হেমিপটেরা (গন্ধি পোকা ও অন্যান্য) ---------------- */
   {
-    slug: 'gandhi-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'gandhi-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'গন্ধি পোকা', nameEn: 'Southern Green Stink Bug', scientificName: 'Nezara viridula',
     otherNames: ['সবুজ গন্ধি পোকা', 'স্টিংক বাগ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hemiptera', family: 'Pentatomidae', genus: 'Nezara', species: 'Nezara viridula' },
@@ -273,7 +273,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'boro-pani-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'boro-pani-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'বড় পানি পোকা', nameEn: 'Giant Water Bug', scientificName: 'Lethocerus indicus',
     otherNames: ['পানির পোকা', 'জায়ান্ট ওয়াটার বাগ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hemiptera', family: 'Belostomatidae', genus: 'Lethocerus', species: 'Lethocerus indicus' },
@@ -292,7 +292,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'shada-machhi', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'shada-machhi', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'সাদা মাছি', nameEn: 'Silverleaf Whitefly', scientificName: 'Bemisia tabaci',
     otherNames: ['হোয়াইটফ্লাই', 'সাদা পাখা পোকা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hemiptera', family: 'Aleyrodidae', genus: 'Bemisia', species: 'Bemisia tabaci' },
@@ -311,7 +311,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'amer-mukul-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'amer-mukul-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'আমের মুকুল পোকা', nameEn: 'Mango Hopper', scientificName: 'Idioscopus clypealis',
     otherNames: ['আমের পোকা', 'ম্যানগো হপার'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hemiptera', family: 'Cicadellidae', genus: 'Idioscopus', species: 'Idioscopus clypealis' },
@@ -330,7 +330,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'dhaner-gandhi-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'dhaner-gandhi-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ধানের গন্ধি পোকা', nameEn: 'Rice Bug', scientificName: 'Leptocorisa oratorius',
     otherNames: ['ধানের পোকা', 'রাইস বাগ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hemiptera', family: 'Alydidae', genus: 'Leptocorisa', species: 'Leptocorisa oratorius' },
@@ -351,7 +351,7 @@ export const MORE_INSECTS2: Species[] = [
 
   /* ---------------- লেপিডোপটেরা (প্রজাপতি ও মথ) ---------------- */
   {
-    slug: 'lemon-pansy', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'lemon-pansy', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'লেবু প্যানসি', nameEn: 'Lemon Pansy', scientificName: 'Junonia lemonias',
     otherNames: ['লেমন প্যানসি', 'হলুদ প্যানসি (ভিন্ন)'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Nymphalidae', genus: 'Junonia', species: 'Junonia lemonias' },
@@ -370,7 +370,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'chocolate-pansy', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'chocolate-pansy', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'চকলেট প্যানসি', nameEn: 'Chocolate Pansy', scientificName: 'Junonia iphita',
     otherNames: ['চকলেট সোলজার', 'গাঢ় প্যানসি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Nymphalidae', genus: 'Junonia', species: 'Junonia iphita' },
@@ -389,7 +389,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'common-emigrant', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'common-emigrant', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কমন এমিগ্রান্ট', nameEn: 'Common Emigrant', scientificName: 'Catopsilia pomona',
     otherNames: ['এমিগ্রান্ট', 'হলুদ-সাদা ইমিগ্রান্ট'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Pieridae', genus: 'Catopsilia', species: 'Catopsilia pomona' },
@@ -408,7 +408,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'common-cerulean', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'common-cerulean', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কমন সেরুলিয়ান', nameEn: 'Common Cerulean', scientificName: 'Jamides celeno',
     otherNames: ['সেরুলিয়ান', 'নীল ছোট প্রজাপতি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Lycaenidae', genus: 'Jamides', species: 'Jamides celeno' },
@@ -427,7 +427,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'atlas-moth', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'atlas-moth', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'আটলাস মথ', nameEn: 'Atlas Moth', scientificName: 'Attacus atlas',
     otherNames: ['অ্যাটলাস মথ', 'বিরাট মথ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Saturniidae', genus: 'Attacus', species: 'Attacus atlas' },
@@ -446,7 +446,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'dhaner-majra-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'dhaner-majra-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ধানের মাজরা পোকা', nameEn: 'Yellow Stem Borer', scientificName: 'Scirpophaga incertulas',
     otherNames: ['মাজরা পোকা', 'ইয়েলো স্টেম বোরার'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Crambidae', genus: 'Scirpophaga', species: 'Scirpophaga incertulas' },
@@ -465,7 +465,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'beguner-doga-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'beguner-doga-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'বেগুনের ডগা ও ফল ছিদ্রকারী পোকা', nameEn: 'Brinjal Shoot and Fruit Borer', scientificName: 'Leucinodes orbonalis',
     otherNames: ['বেগুন পোকা', 'শুট অ্যান্ড ফ্রুট বোরার'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Crambidae', genus: 'Leucinodes', species: 'Leucinodes orbonalis' },
@@ -486,7 +486,7 @@ export const MORE_INSECTS2: Species[] = [
 
   /* ---------------- ডিপটেরা (মাছি) ---------------- */
   {
-    slug: 'phol-machhi', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'phol-machhi', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ফলের মাছি', nameEn: 'Oriental Fruit Fly', scientificName: 'Bactrocera dorsalis',
     otherNames: ['ফল মাছি', 'ফ্রুট ফ্লাই'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Diptera', family: 'Tephritidae', genus: 'Bactrocera', species: 'Bactrocera dorsalis' },
@@ -505,7 +505,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'nilbotol-machhi', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'nilbotol-machhi', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'নীলবোতল মাছি', nameEn: 'Oriental Latrine Fly / Blue Bottle Fly', scientificName: 'Chrysomya megacephala',
     otherNames: ['নীল বোতল মাছি', 'ব্লু বোতল ফ্লাই'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Diptera', family: 'Calliphoridae', genus: 'Chrysomya', species: 'Chrysomya megacephala' },
@@ -526,7 +526,7 @@ export const MORE_INSECTS2: Species[] = [
 
   /* ---------------- অন্যান্য পতঙ্গ ---------------- */
   {
-    slug: 'uku-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'uku-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'উকুন', nameEn: 'Human Head Louse', scientificName: 'Pediculus humanus',
     otherNames: ['মাথার উকুন', 'হেড লাউস'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Phthiraptera', family: 'Pediculidae', genus: 'Pediculus', species: 'Pediculus humanus' },
@@ -545,7 +545,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'jarman-telapoka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'jarman-telapoka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'জার্মান তেলাপোকা', nameEn: 'German Cockroach', scientificName: 'Blattella germanica',
     otherNames: ['জার্মান ককরোচ', 'ছোট তেলাপোকা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Blattodea', family: 'Ectobiidae', genus: 'Blattella', species: 'Blattella germanica' },
@@ -564,7 +564,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'singha-poka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'singha-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'সিংহ পোকা', nameEn: 'Antlion', scientificName: 'Myrmeleon spp.',
     otherNames: ['পিঁপড়া-সিংহ', 'অ্যান্টলায়ন'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Neuroptera', family: 'Myrmeleontidae', genus: 'Myrmeleon', species: 'Myrmeleon spp.' },
@@ -583,7 +583,7 @@ export const MORE_INSECTS2: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'pata-foring', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'pata-foring', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'পাতা ফড়িং', nameEn: 'Katydid / Long-horned Grasshopper', scientificName: 'Phaneroptera spp.',
     otherNames: ['লম্বা শুঁড় ফড়িং', 'ক্যাটিডিড'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Orthoptera', family: 'Tettigoniidae', genus: 'Phaneroptera', species: 'Phaneroptera spp.' },

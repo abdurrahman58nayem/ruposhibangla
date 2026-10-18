@@ -8,7 +8,7 @@ import SpeciesCard from './SpeciesCard'
 import { getRepo } from '@/lib/repo'
 import { getSession } from '@/lib/auth'
 import { iucnInfo, extraConservationNote, toBn, bnDate } from '@/lib/utils'
-import { speciesPath, typeLabel } from '@/lib/categories'
+import { speciesPath, typeLabel, isCetaceanOrMarine, isBatSpecies } from '@/lib/categories'
 import SpeciesActions from '@/components/SpeciesActions'
 import SpeciesSections from '@/components/SpeciesSections'
 import { IucnSpeciesCard } from '@/components/IucnGuide'
@@ -71,7 +71,7 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
     alternateName: [s.nameEn, ...(s.otherNames || [])].filter(Boolean),
     scientificName: s.scientificName,
     description: s.summary,
-    image: s.image ? undefined : undefined,
+    image: s.image || undefined,
     url: `/${type}/${s.slug}`,
   }
 
@@ -165,7 +165,19 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
         </div>
 
         <div className="lg:col-span-2">
-          <span className="rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-800">{s.category}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-800">{s.category}</span>
+            {isCetaceanOrMarine(s) && (
+              <span className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-900">
+                🌊 সামুদ্রিক স্তন্যপায়ী (Cetacea)
+              </span>
+            )}
+            {isBatSpecies(s) && (
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900">
+                🦇 উড়ন্ত স্তন্যপায়ী (Chiroptera)
+              </span>
+            )}
+          </div>
           <h1 className="mt-2 text-3xl font-bold leading-tight text-forest-900 sm:text-4xl">{s.nameBn}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <p className="text-sm italic text-black/55">{s.scientificName}</p>
@@ -203,6 +215,17 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
           </div>
 
           <p className="mt-4 text-[15px] leading-relaxed text-black/80">{s.summary}</p>
+
+          {isCetaceanOrMarine(s) && (
+            <div className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 text-xs leading-relaxed text-cyan-950">
+              <b>বিজ্ঞান-তথ্য:</b> তিমি ও শুশুক জলে বসবাস করলেও এরা মাছ নয়। এরা উষ্ণ রক্তের স্তন্যপায়ী প্রাণী — ফুসফুস দিয়ে শ্বাস নেয়, বাতাসে ভেসে নিশ্বাস ফেলে এবং শাবককে বুকের দুধ পান করায়।
+            </div>
+          )}
+          {isBatSpecies(s) && (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs leading-relaxed text-amber-950">
+              <b>বিজ্ঞান-তথ্য:</b> বাদুড় ডানায় ভর করে উড়লেও এটি পাখি নয়। এরা পৃথিবীর একমাত্র উড়তে সক্ষম স্তন্যপায়ী প্রাণী — ছানা প্রসব করে ও দুধ পান করিয়ে বড় করে।
+            </div>
+          )}
 
           <div className="mt-5 flex flex-wrap gap-2">
             <Link href={`/share?species=${s.slug}`} className="btn-primary text-sm">

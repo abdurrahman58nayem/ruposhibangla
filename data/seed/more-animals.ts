@@ -501,7 +501,7 @@ export const MORE_ANIMALS: Species[] = [
 
   // ── স্তন্যপায়ী ──────────────────────────────────────────────────────────
   {
-    slug: 'bonrui', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'bonrui', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'বনরুই', nameEn: 'Indian Pangolin', scientificName: 'Manis crassicaudata',
     otherNames: ['বনরই', 'কাঁটাখেকো', 'বজ্রকাঁটা', 'প্যাংগোলিন'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Pholidota', family: 'Manidae', genus: 'Manis', species: 'Manis crassicaudata' },
@@ -526,7 +526,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'deshi-bhodor', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'deshi-bhodor', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'দেশি ভোঁদড়', nameEn: 'Smooth-coated Otter', scientificName: 'Lutrogale perspicillata',
     otherNames: ['ভোঁদর', 'উদবিড়াল', 'জল বিড়াল'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Mustelidae', genus: 'Lutrogale', species: 'Lutrogale perspicillata' },
@@ -551,7 +551,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'gondhogokul', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'gondhogokul', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'গন্ধগোকুল', nameEn: 'Small Indian Civet', scientificName: 'Viverricula indica',
     otherNames: ['বেজি-বিড়াল', 'খটাশ', 'গন্ধবিড়াল'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Viverridae', genus: 'Viverricula', species: 'Viverricula indica' },
@@ -576,7 +576,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'buno-kukur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'buno-kukur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'বুনো কুকুর / রামকুত্তা', nameEn: 'Dhole / Asiatic Wild Dog', scientificName: 'Cuon alpinus',
     otherNames: ['রামকুত্তা', 'ঢোল', 'বন কুকুর'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Canidae', genus: 'Cuon', species: 'Cuon alpinus' },
@@ -604,7 +604,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'phayre-langur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'phayre-langur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ফায়ারের ল্যাঙ্গুর', nameEn: "Phayre's Langur", scientificName: 'Trachypithecus phayrei',
     otherNames: ['লালচে ল্যাঙ্গুর', 'চশমা-পরা হনুমান', 'লাল ল্যাঙ্গুর'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Primates', family: 'Cercopithecidae', genus: 'Trachypithecus', species: 'Trachypithecus phayrei' },
@@ -629,7 +629,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'uronto-kathbirali', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'uronto-kathbirali', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'উড়ন্ত কাঠবিড়ালি', nameEn: 'Indian Giant Flying Squirrel', scientificName: 'Petaurista philippensis',
     otherNames: ['উড়ন্ত কাঠবিড়াল', 'বড় উড়ন্ত কাঠবিড়ালি', 'গ্লাইডিং কাঠবিড়ালি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Rodentia', family: 'Sciuridae', genus: 'Petaurista', species: 'Petaurista philippensis' },
@@ -654,7 +654,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'dhani-indur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'dhani-indur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ধানি ইঁদুর', nameEn: 'Lesser Bandicoot Rat', scientificName: 'Bandicota bengalensis',
     otherNames: ['ধানি ইদুর', 'মাঠের ইঁদুর', 'বান্ডিকুট'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Rodentia', family: 'Muridae', genus: 'Bandicota', species: 'Bandicota bengalensis' },
@@ -679,7 +679,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, EOFF, GBIF],
   },
   {
-    slug: 'bon-khorgosh', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'bon-khorgosh', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'বন খরগোশ', nameEn: 'Indian Hare', scientificName: 'Lepus nigricollis',
     otherNames: ['খরগোশ', 'দেশি খরগোশ', 'খরহা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Lagomorpha', family: 'Leporidae', genus: 'Lepus', species: 'Lepus nigricollis' },
@@ -704,7 +704,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'kalo-bhalluk', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'kalo-bhalluk', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'কালো ভালুক', nameEn: 'Asiatic Black Bear', scientificName: 'Ursus thibetanus',
     otherNames: ['হিমালয়ী কালো ভালুক', 'ভালুক'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Ursidae', genus: 'Ursus', species: 'Ursus thibetanus' },
@@ -732,7 +732,7 @@ export const MORE_ANIMALS: Species[] = [
     sources: [IUCN, IUCN_BD, EOFF],
   },
   {
-    slug: 'chitabagh', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী প্রাণী',
+    slug: 'chitabagh', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'চিতাবাঘ', nameEn: 'Leopard', scientificName: 'Panthera pardus',
     otherNames: ['চিতা', 'বাঘ-চিতা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Felidae', genus: 'Panthera', species: 'Panthera pardus' },

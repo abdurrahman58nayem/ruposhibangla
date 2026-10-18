@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Search, Sparkles } from 'lucide-react'
-import { getRepo } from '@/lib/repo'
 
 type Hit = { title: string; href: string; type: string }
 

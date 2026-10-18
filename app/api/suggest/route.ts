@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getRepo } from '@/lib/repo'
+import { normalizeCategoryName } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,7 @@ export async function GET(req: Request) {
     ...species.map((s) => ({
       title: `${s.nameBn} — ${s.scientificName}`,
       href: s.type === 'prani' ? `/prani/${s.slug}` : `/udbhid/${s.slug}`,
-      type: s.type === 'prani' ? 'প্রাণী' : 'উদ্ভিদ',
+      type: normalizeCategoryName(s.category) || (s.type === 'prani' ? 'প্রাণী' : 'উদ্ভিদ'),
     })),
     ...news
       .filter((n) => n.title.toLowerCase().includes(needle) || n.excerpt.toLowerCase().includes(needle))

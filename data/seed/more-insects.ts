@@ -15,7 +15,7 @@ import { IUCN, GBIF, EOFF } from './sources'
 export const MORE_INSECTS: Species[] = [
   /* ---------------- প্রজাপতি ---------------- */
   {
-    slug: 'common-rose', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'common-rose', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কমন রোজ', nameEn: 'Common Rose', scientificName: 'Pachliopta aristolochiae',
     otherNames: ['লাল গোলাপী প্রজাপতি', 'রোজ প্রজাপতি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Papilionidae', genus: 'Pachliopta', species: 'Pachliopta aristolochiae' },
@@ -35,7 +35,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'tailed-jay', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'tailed-jay', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'টেইলড জে', nameEn: 'Tailed Jay', scientificName: 'Graphium agamemnon',
     otherNames: ['জে প্রজাপতি', 'সবুজ-কালো প্রজাপতি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Papilionidae', genus: 'Graphium', species: 'Graphium agamemnon' },
@@ -55,7 +55,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'grass-yellow', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'grass-yellow', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কমন গ্রাস ইয়েলো', nameEn: 'Common Grass Yellow', scientificName: 'Eurema hecabe',
     otherNames: ['হলুদ ঘাস প্রজাপতি', 'ছোট হলুদ প্রজাপতি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Pieridae', genus: 'Eurema', species: 'Eurema hecabe' },
@@ -75,7 +75,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'blue-mormon', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'blue-mormon', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'নীল মরমন', nameEn: 'Blue Mormon', scientificName: 'Papilio polymnestor',
     otherNames: ['বড় নীল প্রজাপতি', 'মরমন'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Papilionidae', genus: 'Papilio', species: 'Papilio polymnestor' },
@@ -95,7 +95,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'peacock-pansy', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'peacock-pansy', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'পিকক প্যানসি', nameEn: 'Peacock Pansy', scientificName: 'Junonia almana',
     otherNames: ['ময়ূর প্যানসি', 'চোখ-চোখ প্রজাপতি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Nymphalidae', genus: 'Junonia', species: 'Junonia almana' },
@@ -115,7 +115,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'striped-tiger', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'striped-tiger', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ডোরা টাইগার', nameEn: 'Striped Tiger', scientificName: 'Danaus genutia',
     otherNames: ['স্ট্রাইপড টাইগার', 'কালো-কমলা প্রজাপতি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Nymphalidae', genus: 'Danaus', species: 'Danaus genutia' },
@@ -135,7 +135,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'dark-blue-tiger', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'dark-blue-tiger', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'গাঢ় নীল টাইগার', nameEn: 'Dark Blue Tiger', scientificName: 'Tirumala septentrionis',
     otherNames: ['নীল টাইগার', 'ডার্ক ব্লু টাইগার'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Nymphalidae', genus: 'Tirumala', species: 'Tirumala septentrionis' },
@@ -155,7 +155,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'common-sailor', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'common-sailor', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কমন সেইলর', nameEn: 'Common Sailor', scientificName: 'Neptis hylas',
     otherNames: ['সেইলর প্রজাপতি', 'ডোরা সেইলর'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Lepidoptera', family: 'Nymphalidae', genus: 'Neptis', species: 'Neptis hylas' },
@@ -177,7 +177,7 @@ export const MORE_INSECTS: Species[] = [
 
   /* ---------------- উপকারী ও পরিচিত পোকা ---------------- */
   {
-    slug: 'ladybird', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'ladybird', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'লেডিবার্ড পোকা', nameEn: 'Seven-spotted Ladybird', scientificName: 'Coccinella septempunctata',
     otherNames: ['লেডিবাগ', 'সাত-বিন্দু পোকা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Coleoptera', family: 'Coccinellidae', genus: 'Coccinella', species: 'Coccinella septempunctata' },
@@ -197,7 +197,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'mantis', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'mantis', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ম্যান্টিস', nameEn: 'Praying Mantis', scientificName: 'Mantis religiosa',
     otherNames: ['প্রার্থনাময়ী পোকা', 'ঘোড়া পোকা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Mantodea', family: 'Mantidae', genus: 'Mantis', species: 'Mantis religiosa' },
@@ -217,7 +217,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'stick-insect', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'stick-insect', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কাঠি পোকা', nameEn: 'Indian Stick Insect', scientificName: 'Carausius morosus',
     otherNames: ['লাঠি পোকা', 'ডাল পোকা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Phasmatodea', family: 'Phasmatidae', genus: 'Carausius', species: 'Carausius morosus' },
@@ -237,7 +237,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'kath-bhomra', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'kath-bhomra', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কাঠ ভোমরা', nameEn: 'Carpenter Bee', scientificName: 'Xylocopa spp.',
     otherNames: ['কাঠ ভ্রমর', 'বড় ভোমরা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hymenoptera', family: 'Apidae', genus: 'Xylocopa', species: 'Xylocopa spp.' },
@@ -259,7 +259,7 @@ export const MORE_INSECTS: Species[] = [
 
   /* ---------------- মানুষের আশেপাশের পোকা ---------------- */
   {
-    slug: 'culex-mosha', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'culex-mosha', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'কিউলেক্স মশা', nameEn: 'Southern House Mosquito', scientificName: 'Culex quinquefasciatus',
     otherNames: ['সাধারণ মশা', 'ঘরের মশা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Diptera', family: 'Culicidae', genus: 'Culex', species: 'Culex quinquefasciatus' },
@@ -279,7 +279,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'ghorer-machhi', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'ghorer-machhi', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ঘরের মাছি', nameEn: 'Housefly', scientificName: 'Musca domestica',
     otherNames: ['মাছি', 'সাধারণ মাছি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Diptera', family: 'Muscidae', genus: 'Musca', species: 'Musca domestica' },
@@ -299,7 +299,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'telapoka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'telapoka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'তেলাপোকা', nameEn: 'American Cockroach', scientificName: 'Periplaneta americana',
     otherNames: ['আরশোলা', 'ককরোচ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Blattodea', family: 'Blattidae', genus: 'Periplaneta', species: 'Periplaneta americana' },
@@ -319,7 +319,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'charpoka', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'charpoka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'ছারপোকা', nameEn: 'Bed Bug', scientificName: 'Cimex lectularius',
     otherNames: ['খাটের পোকা', 'বিছানার পোকা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Hemiptera', family: 'Cimicidae', genus: 'Cimex', species: 'Cimex lectularius' },
@@ -339,7 +339,7 @@ export const MORE_INSECTS: Species[] = [
     dataStatus: 'partial', sources: [GBIF, EOFF],
   },
   {
-    slug: 'lal-foring', type: 'prani', group: 'kitpotongo', category: 'পতঙ্গ',
+    slug: 'lal-foring', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
     nameBn: 'লাল ড্রাগনফ্লাই', nameEn: 'Scarlet Skimmer / Ruddy Marsh Skimmer', scientificName: 'Crocothemis servilia',
     otherNames: ['লাল ফড়িং', 'স্কারলেট ড্রাগনফ্লাই'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Odonata', family: 'Libellulidae', genus: 'Crocothemis', species: 'Crocothemis servilia' },

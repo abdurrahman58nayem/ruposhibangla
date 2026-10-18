@@ -16,7 +16,7 @@ import { IUCN, IUCN_BD, GBIF, EOFF, NEEDS_CHECK } from './sources'
 export const MORE_MAMMALS: Species[] = [
   /* ---------------- বাদুড় ---------------- */
   {
-    slug: 'khude-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'khude-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ক্ষুদে বাদুড়', nameEn: 'Indian Pipistrelle', scientificName: 'Pipistrellus coromandra',
     otherNames: ['চামচিকা', 'ছোট বাদুড়'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Chiroptera', family: 'Vespertilionidae', genus: 'Pipistrellus', species: 'Pipistrellus coromandra' },
@@ -36,7 +36,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF],
   },
   {
-    slug: 'khaja-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'khaja-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'খাজা বাদুড়', nameEn: 'Greater Short-nosed Fruit Bat', scientificName: 'Cynopterus sphinx',
     otherNames: ['ছোট ফল বাদুড়', 'তাল বাদুড়'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Chiroptera', family: 'Pteropodidae', genus: 'Cynopterus', species: 'Cynopterus sphinx' },
@@ -56,7 +56,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF],
   },
   {
-    slug: 'lejhina-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'lejhina-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'লেজহীন বাদুড়', nameEn: "Leschenault's Rousette", scientificName: 'Rousettus leschenaultii',
     otherNames: ['ফলাহারী বাদুড়', 'গুহা বাদুড়'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Chiroptera', family: 'Pteropodidae', genus: 'Rousettus', species: 'Rousettus leschenaultii' },
@@ -76,7 +76,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF, NEEDS_CHECK],
   },
   {
-    slug: 'bhut-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'bhut-badur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ভূত বাদুড়', nameEn: 'Greater False Vampire Bat', scientificName: 'Megaderma lyra',
     otherNames: ['দৈত্য বাদুড়', 'মাংসাশী বাদুড়'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Chiroptera', family: 'Megadermatidae', genus: 'Megaderma', species: 'Megaderma lyra' },
@@ -98,7 +98,7 @@ export const MORE_MAMMALS: Species[] = [
 
   /* ---------------- ক্ষুদ্র স্তন্যপায়ী ---------------- */
   {
-    slug: 'chuchundra', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'chuchundra', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'চুচুন্দ্র', nameEn: 'Asian House Shrew', scientificName: 'Suncus murinus',
     otherNames: ['ছুঁচা', 'কিরকিরে'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Eulipotyphla', family: 'Soricidae', genus: 'Suncus', species: 'Suncus murinus' },
@@ -118,7 +118,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF],
   },
   {
-    slug: 'nengti-indur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'nengti-indur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'নেংটি ইঁদুর', nameEn: 'House Mouse', scientificName: 'Mus musculus',
     otherNames: ['বাড়ির ইঁদুর', 'ক্ষুদে ইঁদুর'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Rodentia', family: 'Muridae', genus: 'Mus', species: 'Mus musculus' },
@@ -138,7 +138,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF],
   },
   {
-    slug: 'kalo-indur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'kalo-indur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'কালো ইঁদুর', nameEn: 'Black Rat / House Rat', scientificName: 'Rattus rattus',
     otherNames: ['বাড়ির বড় ইঁদুর', 'ছাদ ইঁদুর'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Rodentia', family: 'Muridae', genus: 'Rattus', species: 'Rattus rattus' },
@@ -160,7 +160,7 @@ export const MORE_MAMMALS: Species[] = [
 
   /* ---------------- প্রাইমেট ---------------- */
   {
-    slug: 'capped-langur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'capped-langur', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ক্যাপড ল্যাঙ্গুর', nameEn: 'Capped Langur', scientificName: 'Trachypithecus pileatus',
     otherNames: ['টুপি হনুমান', 'কালো মুখ ল্যাঙ্গুর'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Primates', family: 'Cercopithecidae', genus: 'Trachypithecus', species: 'Trachypithecus pileatus' },
@@ -180,7 +180,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF],
   },
   {
-    slug: 'lajjaboti-banor', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'lajjaboti-banor', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'লজ্জাবতী বানর', nameEn: 'Bengal Slow Loris', scientificName: 'Nycticebus bengalensis',
     otherNames: ['শ্লথ লোরিস', 'নিশি বানর'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Primates', family: 'Lorisidae', genus: 'Nycticebus', species: 'Nycticebus bengalensis' },
@@ -202,7 +202,7 @@ export const MORE_MAMMALS: Species[] = [
 
   /* ---------------- শিকারি স্তন্যপায়ী ---------------- */
   {
-    slug: 'meghla-chita', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'meghla-chita', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'মেঘলা চিতা', nameEn: 'Clouded Leopard', scientificName: 'Neofelis nebulosa',
     otherNames: ['মেঘ চিতাবাঘ', 'লামছিতা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Felidae', genus: 'Neofelis', species: 'Neofelis nebulosa' },
@@ -222,7 +222,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF],
   },
   {
-    slug: 'bham', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'bham', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ভাম', nameEn: 'Large Indian Civet', scientificName: 'Viverra zibetha',
     otherNames: ['গন্ধভাদাল', 'বড় খাটাশ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Viverridae', genus: 'Viverra', species: 'Viverra zibetha' },
@@ -242,7 +242,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF],
   },
   {
-    slug: 'chhoto-neul', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'chhoto-neul', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ছোট নকুল', nameEn: 'Small Indian Mongoose', scientificName: 'Urva auropunctata',
     otherNames: ['বেড়া নকুল', 'ক্ষুদে নকুল'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Herpestidae', genus: 'Urva', species: 'Urva auropunctata' },
@@ -262,7 +262,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, GBIF, EOFF],
   },
   {
-    slug: 'eurasian-otter', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'eurasian-otter', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ইউরেশীয় ভোঁদড়', nameEn: 'Eurasian Otter', scientificName: 'Lutra lutra',
     otherNames: ['পাতি ভোঁদড়', 'জল ভোঁদড়'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Mustelidae', genus: 'Lutra', species: 'Lutra lutra' },
@@ -282,7 +282,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF, NEEDS_CHECK],
   },
   {
-    slug: 'china-bonrui', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'china-bonrui', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'চীনা বনরুই', nameEn: 'Chinese Pangolin', scientificName: 'Manis pentadactyla',
     otherNames: ['কাঁটা বনরুই', 'বনরুই'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Pholidota', family: 'Manidae', genus: 'Manis', species: 'Manis pentadactyla' },
@@ -302,7 +302,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF],
   },
   {
-    slug: 'sloth-bhalluk', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'sloth-bhalluk', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'স্লথ ভালুক', nameEn: 'Sloth Bear', scientificName: 'Melursus ursinus',
     otherNames: ['ভালুক', 'মৌ ভালুক'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Ursidae', genus: 'Melursus', species: 'Melursus ursinus' },
@@ -322,7 +322,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF, NEEDS_CHECK],
   },
   {
-    slug: 'hyena', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'hyena', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'হায়েনা', nameEn: 'Striped Hyena', scientificName: 'Hyaena hyaena',
     otherNames: ['ডোরাকাটা হায়েনা', 'কুঁজি হায়েনা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Carnivora', family: 'Hyaenidae', genus: 'Hyaena', species: 'Hyaena hyaena' },
@@ -344,7 +344,7 @@ export const MORE_MAMMALS: Species[] = [
 
   /* ---------------- খুরযুক্ত প্রাণী ---------------- */
   {
-    slug: 'maya-horin', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'maya-horin', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'মায়া হরিণ', nameEn: 'Indian Muntjac / Barking Deer', scientificName: 'Muntiacus muntjak',
     otherNames: ['কাঁকড়া হরিণ', 'ভেউ হরিণ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Artiodactyla', family: 'Cervidae', genus: 'Muntiacus', species: 'Muntiacus muntjak' },
@@ -364,7 +364,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF],
   },
   {
-    slug: 'krishnosar', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'krishnosar', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'কৃষ্ণসার', nameEn: 'Blackbuck', scientificName: 'Antilope cervicapra',
     otherNames: ['কৃষ্ণসার মৃগ', 'কালো হরিণ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Artiodactyla', family: 'Bovidae', genus: 'Antilope', species: 'Antilope cervicapra' },
@@ -384,7 +384,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF, NEEDS_CHECK],
   },
   {
-    slug: 'gourh', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'gourh', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'গৌড়', nameEn: 'Gaur / Indian Bison', scientificName: 'Bos gaurus',
     otherNames: ['বন গরু', 'বন মহিষ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Artiodactyla', family: 'Bovidae', genus: 'Bos', species: 'Bos gaurus' },
@@ -404,7 +404,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF, NEEDS_CHECK],
   },
   {
-    slug: 'buno-mohish', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'buno-mohish', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'বুনো মহিষ', nameEn: 'Wild Water Buffalo', scientificName: 'Bubalus arnee',
     otherNames: ['জল মহিষ', 'অরণ্য মহিষ'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Artiodactyla', family: 'Bovidae', genus: 'Bubalus', species: 'Bubalus arnee' },
@@ -424,7 +424,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF, NEEDS_CHECK],
   },
   {
-    slug: 'gonrar', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'gonrar', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'গণ্ডার', nameEn: 'Greater One-horned Rhinoceros', scientificName: 'Rhinoceros unicornis',
     otherNames: ['একশৃঙ্গ গণ্ডার', 'ভারতীয় গণ্ডার'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Perissodactyla', family: 'Rhinocerotidae', genus: 'Rhinoceros', species: 'Rhinoceros unicornis' },
@@ -446,7 +446,7 @@ export const MORE_MAMMALS: Species[] = [
 
   /* ---------------- সামুদ্রিক স্তন্যপায়ী ---------------- */
   {
-    slug: 'gangeya-shushuk', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'gangeya-shushuk', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'গাঙ্গেয় শুশুক', nameEn: 'Ganges River Dolphin', scientificName: 'Platanista gangetica',
     otherNames: ['সুসু', 'নদীর শুশুক'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Cetacea', family: 'Platanistidae', genus: 'Platanista', species: 'Platanista gangetica' },
@@ -466,7 +466,7 @@ export const MORE_MAMMALS: Species[] = [
     dataStatus: 'partial', sources: [IUCN, IUCN_BD, GBIF],
   },
   {
-    slug: 'nil-timi', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'nil-timi', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'নীল তিমি', nameEn: 'Blue Whale', scientificName: 'Balaenoptera musculus',
     otherNames: ['ব্লু হোয়েল', 'নীল তিমিংগিল'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Cetacea', family: 'Balaenopteridae', genus: 'Balaenoptera', species: 'Balaenoptera musculus' },
@@ -483,10 +483,11 @@ export const MORE_MAMMALS: Species[] = [
     threats: 'ঐতিহাসিক বাণিজ্যিক তিমি শিকার (এখন নিষিদ্ধ), জাহাজের ধাক্কা, জেলের জালে আটকা, সমুদ্রের শব্দ-দূষণ ও জাহাজের শব্দে যোগাযোগ বিঘ্ন, জলবায়ু পরিবর্তনে ক্রিলের বিস্তার বদল, প্লাস্টিক ও রাসায়নিক দূষণ।',
     conservationActions: 'আন্তর্জাতিক তিমি শিকার নিষেধাজ্ঞা মানা, জাহাজের গতিসীমা ও রুট পরিবর্তন, জেলের জাল নিয়ন্ত্রণ, শব্দ-দূষণ কমানো, বঙ্গোপসাগরে জরিপ ও নিরীক্ষণ, আঞ্চলিক সহযোগিতা।',
     colorTags: ['#4f6f8f', '#2f4459', '#a8c0d4'], image: '',
+    featured: true,
     dataStatus: 'partial', sources: [IUCN, GBIF, NEEDS_CHECK],
   },
   {
-    slug: 'dugong', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
+    slug: 'dugong', type: 'prani', group: 'stanapayi', category: 'স্তন্যপায়ী',
     nameBn: 'ডুগং', nameEn: 'Dugong', scientificName: 'Dugong dugon',
     otherNames: ['সমুদ্র গরু', 'সমুদ্রের গাভী'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Mammalia', order: 'Sirenia', family: 'Dugongidae', genus: 'Dugong', species: 'Dugong dugon' },

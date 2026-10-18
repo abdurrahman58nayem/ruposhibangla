@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getRepo } from '@/lib/repo'
 import { getSession } from '@/lib/auth'
 import HeaderClient from './HeaderClient'
+import CategoryTopBar from './CategoryTopBar'
 
 export default async function SiteHeader({ notice }: { notice: string | null }) {
   const repo = getRepo()
@@ -30,6 +31,7 @@ export default async function SiteHeader({ notice }: { notice: string | null }) 
           <HeaderClient settings={settings} user={user} />
         </div>
       </div>
+      <CategoryTopBar />
     </header>
   )
 }

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ cat?: string; iucn?: string; q?: string; page?: string }>
+  searchParams: Promise<{ cat?: string; sub?: string; iucn?: string; q?: string; page?: string }>
 }) {
   const sp = await searchParams
   return (
@@ -22,6 +22,7 @@ export default async function Page({
       title="বাংলাদেশের প্রাণী"
       subtitle="পাখি, স্তন্যপায়ী, সরীসৃপ, উভচর, মাছ ও পতঙ্গ — বাংলাদেশের যা কিছু প্রাণ আছে"
       cat={sp.cat}
+      sub={sp.sub}
       iucn={sp.iucn}
       q={sp.q}
       page={Number(sp.page || 1)}

@@ -1,4 +1,5 @@
 import type { Species, SpeciesSeed, News, Post, UserRecord, SiteSettings, GroupId } from '@/lib/types'
+import { normalizeCategoryName } from '@/lib/categories'
 import { verifySpeciesRecord } from './verification'
 import { BIRDS } from './birds'
 import { ANIMALS } from './animals'
@@ -83,7 +84,7 @@ export function inferGroup(s: Pick<Species, 'type' | 'category'>): GroupId {
   if (s.type === 'udbhid') {
     if (/ছত্রাক|শৈবাল|লাইকেন/.test(c)) return 'chhatrak'
     if (/অণুজীব|ব্যাকটেরিয়া|ব্যাকটেরিয়া/.test(c)) return 'onujib'
-    if (/বন|ম্যানগ্রোভ|তাল|বট|ঔষধি/.test(c)) return 'gachhbon'
+    if (/বন|ম্যানগ্রোভ|তাল|বট|ঔষধি|ঘাস/.test(c)) return 'gachhbon'
     return 'udbhidful'
   }
   if (/পাখি/.test(c)) return 'pakhi'
@@ -97,9 +98,12 @@ export function inferGroup(s: Pick<Species, 'type' | 'category'>): GroupId {
 }
 
 function normalize(s: SpeciesSeed): Species {
+  const group = s.group || inferGroup(s)
+  const category = normalizeCategoryName(s.category, group)
   return {
     ...s,
-    group: s.group || inferGroup(s),
+    group,
+    category,
     dataStatus: s.dataStatus || 'partial',
     updatedAt: s.updatedAt || new Date('2026-01-01').toISOString(),
   }
@@ -118,7 +122,7 @@ function mergeKey(s: Species, kind: 'sci' | 'name'): string | null {
     if (!v || v === '—' || !SCI_RE.test(v)) return null
     return 'sci:' + v.toLowerCase()
   }
-  return `name:${s.type}:${(s.nameBn || '').trim()}`
+  return `name:${s.type}:${s.group || ''}:${(s.nameBn || '').trim()}`
 }
 
 function fillFrom(target: Species, src: Species) {
@@ -466,14 +470,16 @@ export const SEED_POSTS: Post[] = [
   {
     id: 'post-11',
     kind: 'photo',
-    category: 'prani',
+    category: 'udbhid',
+    group: 'gachhbon',
     title: 'সুন্দরবনের সুন্দরী গাছ',
     body: 'যে গাছের নামেই সুন্দরবনের নাম। লোনা জলে টিকে থাকা এই গাছ বনের প্রথম প্রতিরক্ষা।',
     mediaUrl: '/seed/udbhid/shundori.jpg',
     mediaType: 'image',
     speciesSlug: 'shundori',
+    speciesHref: '/udbhid/shundori',
     location: 'সুন্দরবন',
-    tags: ['সুন্দরী', 'ম্যানগ্রোভ'],
+    tags: ['সুন্দরী', 'ম্যানগ্রোভ', 'উদ্ভিদ'],
     authorName: 'নেচার বাংলাদেশ',
     authorId: 'user-nature-bd',
     authorKey: 'seed-naturebd',
