@@ -47,6 +47,12 @@ assert.equal(new Set(creditKeys).size, creditEntries.length, 'credits register h
 for (const seedImage of SEED_IMAGES) assert.ok(creditKeys.includes(`${seedImage.file}::${seedImage.slug}`), `seed image missing from credits register: ${seedImage.file}`)
 const speciesImageRefs = SPECIES.filter((species) => species.image)
 const unregisteredSpeciesImageRefs = speciesImageRefs.filter((species) => !licenseFor(species.image))
+// প্রতিটি ছবির (নিজস্ব চিত্রণসহ) ক্রেডিট/লাইসেন্স রেকর্ড থাকতেই হবে (§12)
+assert.equal(
+  unregisteredSpeciesImageRefs.length,
+  0,
+  `species image without a credits record: ${unregisteredSpeciesImageRefs.map((s) => `${s.slug} (${s.image})`).join(', ')}`,
+)
 const photoLicense = licenseFor('/seed/prani/jal-moyur.jpg')
 assert.equal(photoLicense?.verified, false, 'unverified image licence must remain explicitly pending')
 assert.equal(photoLicense?.license, 'যাচাই বাকি')

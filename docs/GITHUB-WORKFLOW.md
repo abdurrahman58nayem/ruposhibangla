@@ -35,9 +35,11 @@ gh pr merge --squash      # পর্যালোচনার পর
 প্রতিটি PR ও `main`-এ পুশে চলে:
 
 1. `npm ci`
-2. `npx tsc --noEmit` — টাইপ যাচাই
-3. `npm run lint`
-4. `npm run build` — বিল্ড নিশ্চিতকরণ
+2. `npm run test:unit` — Vitest (কভারেজের হিসাব, রেট-লিমিট, ক্যাটাগরি/সংখ্যা)
+3. `npm run test:contract` — সিড/ছবি/ক্রেডিট/ভিডিও চুক্তি
+4. `npx tsc --noEmit` — টাইপ যাচাই
+5. `npm run lint` — ESLint (`eslint.config.mjs`; লিন্ট আর `continue-on-error` নয়)
+6. `npm run build` — বিল্ড নিশ্চিতকরণ
 
 Vercel নিজেই প্রিভিউ ডিপ্লয় তৈরি করে; `main`-এ মার্জ হলে প্রোডাকশন ডিপ্লয়।
 

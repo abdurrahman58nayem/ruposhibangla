@@ -6,7 +6,7 @@ import { guard as rateGuard, tooManyRequests, RULES } from '@/lib/rate-limit'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
-  const _rl = rateGuard(req, RULES.auth, 'login')
+  const _rl = await rateGuard(req, RULES.auth, 'login')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   const body = (await req.json().catch(() => null)) as { username?: string; password?: string } | null

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
 export async function POST(req: Request) {
-  const _rl = rateGuard(req, RULES.ai, 'ai')
+  const _rl = await rateGuard(req, RULES.ai, 'ai')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   const body = (await req.json().catch(() => ({}))) as {

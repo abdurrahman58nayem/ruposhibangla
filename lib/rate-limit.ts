@@ -4,8 +4,12 @@
  * কেন: অতিথিরাও (অ্যাকাউন্ট ছাড়াই) পোস্ট, মন্তব্য, রিপোর্ট ও এআই প্রশ্ন পাঠাতে পারে —
  * তাই স্প্যাম/অপব্যবহার ঠেকাতে প্রতিটি সংবেদনশীল রুটে সার্ভার-পাশে সীমা বাঁধা দরকার।
  *
- * সীমাবদ্ধতা: এটি প্রতি ইনস্ট্যান্সে (মেমোরিতে) কাজ করে। সার্ভারলেস/একাধিক ইনস্ট্যান্সে
- * চালালে হিসাব ভাগ হয়ে যায় — তখন Neon/Upstash-এর মতো কেন্দ্রীয় স্টোর ব্যবহার করতে হবে।
+ * দুই স্তরের কাঠামো:
+ *  ১) **কেন্দ্রীয় স্টোর (ঐচ্ছিক)** — `UPSTASH_REDIS_REST_URL` ও
+ *     `UPSTASH_REDIS_REST_TOKEN` সেট থাকলে Upstash Redis REST-এ ফিক্সড-উইন্ডো
+ *     কাউন্টার রাখা হয়। একাধিক ইনস্ট্যান্স/সার্ভারলেস ফাংশনেও একই সীমা কার্যকর।
+ *  ২) **ইন-মেমোরি ফলব্যাক** — উপরের সেটিং নেই বা কেন্দ্রীয় স্টোর সাময়িকভাবে
+ *     ব্যর্থ হলে প্রতিটি ইনস্ট্যান্স নিজে গোনে (কখনো রিকোয়েস্ট আটকে যায় না)।
  */
 
 type Bucket = { count: number; resetAt: number }
@@ -71,9 +75,71 @@ export function clientKey(req: Request, scope: string, extra?: string): string {
   return `${scope}:${ip}${extra ? `:${extra}` : ''}`
 }
 
-/** রুট হ্যান্ডলারে সহজে ব্যবহারের হেল্পার */
-export function guard(req: Request, rule: RateRule, scope: string, extra?: string): RateResult {
-  return rateLimit(clientKey(req, scope, extra), rule)
+/* ------------------------------------------------------------------ */
+/* ঐচ্ছিক কেন্দ্রীয় স্টোর (Upstash Redis REST)                          */
+/* ------------------------------------------------------------------ */
+
+const UPSTASH_URL = (process.env.UPSTASH_REDIS_REST_URL || '').replace(/\/$/, '')
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || ''
+
+/** কেন্দ্রীয় স্টোর কনফিগার করা আছে কি না (ডকুমেন্টেশন/ডায়াগনস্টিকসের জন্য) */
+export const sharedLimiterEnabled = Boolean(UPSTASH_URL && UPSTASH_TOKEN)
+
+let warnedSharedFailure = false
+
+type UpstashPipelineReply = { result?: number | string | null; error?: string }[]
+
+/**
+ * কেন্দ্রীয় স্টোরে এক ধাপ গোনা। কনফিগার না থাকলে/ব্যর্থ হলে `null` —
+ * তখন ডাকনেকার ইন-মেমোরি ফলব্যাকে যায়।
+ */
+async function sharedLimit(key: string, rule: RateRule): Promise<RateResult | null> {
+  if (!sharedLimiterEnabled) return null
+  const now = Date.now()
+  const bucket = Math.floor(now / rule.windowMs)
+  const redisKey = `rl:${key}:${bucket}`
+  const resetAt = (bucket + 1) * rule.windowMs
+  try {
+    const res = await fetch(`${UPSTASH_URL}/pipeline`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${UPSTASH_TOKEN}`,
+        'content-type': 'application/json',
+      },
+      // INCR আগে, তারপর TTL (NX — বিদ্যমান TTL বদলায় না)
+      body: JSON.stringify([
+        ['INCR', redisKey],
+        ['PEXPIRE', redisKey, rule.windowMs + 1000, 'NX'],
+      ]),
+      signal: AbortSignal.timeout(1500),
+    })
+    if (!res.ok) throw new Error(`upstash ${res.status}`)
+    const data = (await res.json()) as UpstashPipelineReply
+    const count = Number(data?.[0]?.result)
+    if (!Number.isFinite(count) || count <= 0) throw new Error('upstash bad reply')
+    return {
+      ok: count <= rule.max,
+      remaining: Math.max(0, rule.max - count),
+      retryAfterSec: Math.max(1, Math.ceil((resetAt - now) / 1000)),
+      limit: rule.max,
+    }
+  } catch (e) {
+    if (!warnedSharedFailure) {
+      warnedSharedFailure = true
+      console.warn('[rate-limit] কেন্দ্রীয় স্টোর অব্যবহারযোগ্য — ইন-মেমোরি ফলব্যাকে চলছে:', (e as Error)?.message || e)
+    }
+    return null
+  }
+}
+
+/**
+ * রুট হ্যান্ডলারে সহজে ব্যবহারের হেল্পার — কেন্দ্রীয় স্টোর থাকলে সেটি, নইলে মেমোরি।
+ * (কেন্দ্রীয় স্টোর ব্যবহার করলে এটিকে `await` করতে হবে।)
+ */
+export async function guard(req: Request, rule: RateRule, scope: string, extra?: string): Promise<RateResult> {
+  const key = clientKey(req, scope, extra)
+  const shared = await sharedLimit(key, rule)
+  return shared ?? rateLimit(key, rule)
 }
 
 export function tooManyRequests(res: RateResult) {

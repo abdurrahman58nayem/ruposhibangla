@@ -22,6 +22,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
   if (!body) return NextResponse.json({ error: 'invalid' }, { status: 400 })
   const existing = await getRepo().getSpecies(slug)
   const merged: Species = { ...(existing || ({} as Species)), ...body, slug } as Species
+  // ফর্ম থেকে তথ্যের অবস্থা বদলানো হলে সেটি লক হয়ে থাকবে (রিড-টাইম ভেরিফিকেশন আর ওভাররাইড করবে না)
+  if (body.dataStatus) merged.statusLockedAt = new Date().toISOString()
   await getRepo().upsertSpecies(merged)
   return NextResponse.json({ ok: true, species: merged })
 }

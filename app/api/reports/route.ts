@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 /** যেকেউ (অতিথিসহ) অনুপযুক্ত কনটেন্ট রিপোর্ট করতে পারবে */
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as Partial<Report> | null
-  const _rl = rateGuard(req, RULES.write, 'reports')
+  const _rl = await rateGuard(req, RULES.write, 'reports')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   if (!body?.targetType || !body?.targetId) {

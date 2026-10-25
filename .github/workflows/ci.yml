@@ -20,18 +20,19 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Audit species images
-        run: node scripts/check-species-images.cjs
+      # দ্রুত ইউনিট টেস্ট (Vitest) — কভারেজের হিসাব, রেট-লিমিট, ক্যাটাগরি/সংখ্যা
+      - name: Unit tests
+        run: npm run test:unit
 
-      - name: Test image recovery
-        run: node scripts/check-smart-image.cjs
+      # সিড ও মিডিয়া-চুক্তি (ছবি, ক্রেডিট, ভিডিও, SmartImage)
+      - name: Contract checks
+        run: npm run test:contract
 
       - name: Type check
         run: npx tsc --noEmit
 
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Build
         run: npm run build

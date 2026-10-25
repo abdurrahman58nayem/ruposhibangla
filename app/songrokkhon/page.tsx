@@ -341,16 +341,24 @@ export default async function Page() {
               </tr>
             </thead>
             <tbody>
-              {coverage.map((c) => (
-                <tr key={c.group} className="border-t border-black/5">
-                  <td className="p-2 font-medium text-forest-900">{c.label}</td>
-                  <td className="p-2">{toBn(c.total)}</td>
-                  <td className="p-2 font-semibold text-emerald-700">{toBn(c.verified)}</td>
-                  <td className="p-2 font-semibold text-amber-700">{toBn(c.partial)}</td>
-                  <td className="p-2">{toBn(c.missingImage)}</td>
-                  <td className="p-2">{toBn(c.missingSource)}</td>
-                </tr>
-              ))}
+              {coverage
+                .filter((c) => c.kind === 'species')
+                .map((c) => (
+                  <tr
+                    key={c.group}
+                    className={c.umbrella ? 'border-t-2 border-forest-200 bg-forest-50/60 font-semibold' : 'border-t border-black/5'}
+                  >
+                    <td className="p-2 font-medium text-forest-900">
+                      {c.label}
+                      {c.umbrella && <span className="ml-1.5 text-[10px] font-normal text-black/45">(ছাতা · সাবটোটাল, মোটে গণনা হয় না)</span>}
+                    </td>
+                    <td className="p-2">{toBn(c.total)}</td>
+                    <td className="p-2 font-semibold text-emerald-700">{toBn(c.verified)}</td>
+                    <td className="p-2 font-semibold text-amber-700">{toBn(c.partial)}</td>
+                    <td className="p-2">{toBn(c.missingImage)}</td>
+                    <td className="p-2">{toBn(c.missingSource)}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

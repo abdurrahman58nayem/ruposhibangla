@@ -1,4 +1,5 @@
 import { SEED_IMAGES } from './media-images'
+import { ILLUSTRATION_LICENSES } from './media-illustrations'
 
 /**
  * মিডিয়া লাইসেন্স রেকর্ড (§12) — প্রকাশের আগে প্রতিটি ছবি/ভিডিওর উৎস, লেখক ও লাইসেন্স যাচাই করা বাধ্যতামূলক।
@@ -9576,6 +9577,9 @@ export function licenseFor(file: string): MediaLicense | undefined {
   const clean = file.split('?')[0]
   const registered = MEDIA_LICENSES.find((m) => m.file === clean)
   if (registered) return registered
+  // প্রকল্পের নিজস্ব সাধারণ চিত্রণ (public/illustrations) — হাতে রাখা রেকর্ড
+  const illustration = ILLUSTRATION_LICENSES.find((m) => m.file === clean)
+  if (illustration) return illustration
   const seedImage = SEED_IMAGES.find((image) => image.file === clean)
   if (!seedImage) return undefined
   return {
@@ -9594,6 +9598,9 @@ export function licenseFor(file: string): MediaLicense | undefined {
 /** All credit records, including local seed images not yet represented in the verified register. */
 export function allMediaLicenses(): MediaLicense[] {
   const byFileAndSpecies = new Map(MEDIA_LICENSES.map((entry) => [`${entry.file}::${entry.slug}`, entry]))
+  for (const illustration of ILLUSTRATION_LICENSES) {
+    byFileAndSpecies.set(`${illustration.file}::${illustration.slug}`, illustration)
+  }
   for (const image of SEED_IMAGES) {
     const key = `${image.file}::${image.slug}`
     if (!byFileAndSpecies.has(key)) {
