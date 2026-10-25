@@ -159,6 +159,11 @@ export type Species = {
   /** তথ্যের মান */
   dataStatus?: DataStatus
   lastVerifiedAt?: string
+  /**
+   * অ্যাডমিন ফর্ম থেকে তথ্যের অবস্থা নির্দিষ্ট করে দেওয়ার সময় বসে।
+   * থাকলে রিড-টাইম ভেরিফিকেশন আর `dataStatus` বদলায় না (অ্যাডমিনের সিদ্ধান্ত অক্ষত)।
+   */
+  statusLockedAt?: string
   /** একাধিক উৎসে পার্থক্য থাকলে */
   conflictingInfo?: string
   /**
@@ -470,16 +475,45 @@ export type Stats = {
 }
 
 /** জীবগোষ্ঠীভিত্তিক তথ্য কভারেজ */
-export type CoverageRow = {
+/** কভারেজে আলাদা করে দেখা ক্ষেত্রগুলো */
+export type CoverageFieldKey = 'otherNames' | 'origin' | 'sizeOrHeight' | 'taxonomy'
+
+/** ডেটাবেজ/স্টোর থেকে আসা কাঁচা গণনা — লেবেল যোগ করে CoverageRow তৈরি হয় */
+export type CoverageAggregate = {
   group: GroupId
-  label: string
   total: number
   verified: number
   partial: number
   missingNameBn: number
   missingImage: number
   missingSource: number
+  /** কেবল প্রযোজ্য রেকর্ডের মধ্যে ফাঁকা কতটি */
+  missingFields: Record<CoverageFieldKey, number>
   lastUpdated?: string
+}
+
+export type CoverageRow = CoverageAggregate & {
+  label: string
+  /** species = জীবগোষ্ঠী, content = বিষয়ভিত্তিক বিভাগ (নিজস্ব প্রজাতি-রেকর্ড নেই) */
+  kind: 'species' | 'content'
+  /**
+   * ছাতা-ক্যাটাগরি (প্রাণীজগৎ) — সব প্রাণীর সমষ্টি।
+   * ড্যাশবোর্ডে সাবটোটাল হিসেবে দেখানো হয়, কিন্তু মোটে গোনা হয় না (ডাবল-কাউন্ট এড়াতে)।
+   */
+  umbrella?: boolean
+}
+
+/** `/api/coverage`-এর সারাংশ — ছাতা ও কনটেন্ট রো বাদ দেওয়া প্রকৃত মোট */
+export type CoverageTotals = {
+  records: number
+  verified: number
+  partial: number
+  speciesGroups: number
+  contentGroups: number
+  missingNameBn: number
+  missingImage: number
+  missingSource: number
+  missingFields: Record<CoverageFieldKey, number>
 }
 
 /** সিড ডেটার জন্য — group স্বয়ংক্রিয়ভাবে বসানো যায় */

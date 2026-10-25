@@ -23,7 +23,7 @@ export async function GET() {
  * পাসওয়ার্ড বদলাতে বর্তমান পাসওয়ার্ড দিতে হবে (সেশান হাইজ্যাক হলে রক্ষা)।
  */
 export async function PUT(req: Request) {
-  const _rl = rateGuard(req, RULES.auth, 'account')
+  const _rl = await rateGuard(req, RULES.auth, 'account')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   const session = await getSession()

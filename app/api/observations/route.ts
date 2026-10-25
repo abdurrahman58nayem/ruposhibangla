@@ -24,7 +24,7 @@ export async function GET(req: Request) {
  */
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as Partial<Observation> | null
-  const _rl = rateGuard(req, RULES.write, 'observations')
+  const _rl = await rateGuard(req, RULES.write, 'observations')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   if (!body?.name) return NextResponse.json({ error: 'আপনার নাম দিন' }, { status: 400 })

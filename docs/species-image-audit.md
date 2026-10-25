@@ -1,5 +1,9 @@
 # Species image audit — 2026-10-15
 
+> **ঐতিহাসিক নথি।** নিচের ৬৬১-এর সংখ্যাগুলো ২০২৬-১০-১৫ তারিখের অডিটের।
+> বর্তমান অবস্থা (১৪৫১ রেকর্ড, ছবি ১৪৪৮, ৩টি নথিভুক্ত ফাঁক) জানতে `npm run stats`
+> চালান অথবা `README.md`-এর “জ্ঞানভান্ডার” সারি দেখুন।
+
 ## Verified locally
 
 Run `node scripts/check-species-images.cjs`.

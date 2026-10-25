@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
-  const _rl = rateGuard(req, RULES.write, 'posts')
+  const _rl = await rateGuard(req, RULES.write, 'posts')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   const parsed = CreateSchema.safeParse(body)

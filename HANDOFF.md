@@ -1,64 +1,64 @@
 # HANDOFF — রূপসী বাংলা (Ruposhi Bangla)
 
 > **পরের সেশনের AI এজেন্টের জন্য নির্দেশাবলি।** প্রথমে এই ফাইল, তারপর `git log --oneline -20` ও `MASTER-PROMPT.md` দেখুন।
-> প্রতিটি সেশনের **নিজস্ব ফিক্সড শাখা** থাকে (গত সেশন: `arena/261cc675-ruposhibangla`) — অন্য শাখায় কাজ করবেন না,
+> প্রতিটি সেশনের **নিজস্ব ফিক্সড শাখা** থাকে (শেষ সেশন: `arena/5081f420-ruposhibangla`) — অন্য শাখায় কাজ করবেন না,
 > শুধু `git push origin <নিজের শাখা>`, PR সেই শাখা থেকে `main`-এ। **কখনো `git push --force` বা `git reset --hard` নয়।**
 
 ---
 
 ## ০) এক লাইনে বর্তমান অবস্থা
 
-জ্ঞানভান্ডারে **৬৬১টি রেকর্ড (প্রাণী ৪৪৯, উদ্ভিদ/ছত্রাক/অণুজীব ১৯৩, স্থান ১৩, সাহিত্য ৬) — ছবি ৬৬১/৬৬১ (১০০%, ০ ভাঙা)** ·
-ভিডিও **০** · অ্যাডমিন-ইমেইল লগইন, প্রোফাইল কভার-অবতার আপলোড, প্রোফাইলে সেটিংস, অ্যাডমিনে প্রজাতি যোগ/এডিট+ছবি-আপলোড সব চালু ও পরীক্ষিত।
+জ্ঞানভান্ডারে **১৪৫১টি রেকর্ড** (প্রাণী ১২০২ — পাখি ৮৫১, স্তন্যপায়ী ১৩৯, মাছ ৭৭, কীটপতঙ্গ ৬৪, সরীসৃপ ৪৫, উভচর ১৩, অন্যান্য অমেরুদণ্ডী ১৩;
+উদ্ভিদ/ছত্রাক/অনুজীব ১৯৩, স্থান ৫০, সাহিত্য ৬) · **ছবি ১৪৪৮/১৪৫১** (লোকাল ৬৯২ + কমন্স ৭৫৬, ৩টি নথিভুক্ত ফাঁক) ·
+**ভিডিও-এন্ট্রি ১৯৩** (১৫৬ কমন্স সিড + ৩৭ ওয়েব) · তথ্যের অবস্থা: **১৪২১ verified**, ২৩ review, ৬ identity_uncertain, ১ needs_correction ·
+মিডিয়া-ক্রেডিট **১৪২৯** (৭৬০ যাচাইকৃত, ৬৬৯ বাকি) · অ্যাডমিন-ইমেইল লগইন, প্রোফাইল কভার-অবতার, সেটিংস, প্রজাতি CRUD+ছবি-আপলোড সব চালু।
 
-> ⚠️ **“কোডে আছে, সাইটে নেই” সমস্যা (সমাধান করা হয়েছে):** সিড আগে কেবল **ফাঁকা** ডেটাবেজে বসতো,
-> তাই পরে যোগ করা ব্যাচগুলো লাইভ সাইটে কখনোই ঢুকতো না (সাইট ৪৮৪ দেখাতে থাকতো, অথচ কোডে ৬৬১)।
-> এখন `repo.syncSpecies()` আছে — অ্যাপ চালু হওয়ার সময় নিজে থেকেই **শুধু অনুপস্থিত রেকর্ড** যোগ করে
-> (কিছু মুছে না), আর অ্যাডমিন ড্যাশবোর্ডে “জ্ঞানভান্ডার সিঙ্ক” কার্ডে কোড/ডেটাবেজ/বাকি — তিনটি সংখ্যা
-> ও “এখনই সিঙ্ক করুন” বাটন থাকে। বিস্তারিত: [`docs/SEED-SYNC.md`](./docs/SEED-SYNC.md)।
+> সংখ্যা হাতে লিখবেন না — `npm run stats` চালালেই কোড থেকে প্রকৃত হিসাব আসে (মার্কডাউন টেবিল)।
+> `/api/coverage`-এ `rows`-এর সাথে `totals` আছে; **`pranijogot` ছাতা-রো** (সব প্রাণীর সমষ্টি) মোটে গোনা হয় না।
 
 ---
 
-## ০.১) ছবি — বর্তমান অবস্থা ও রক্ষণাবেক্ষণ (২০২৫/২০২৬-এর ছবি-মেরামত সেশন)
+## ০.১) ছবি ও ভিডিও — রক্ষণাবেক্ষণ
 
-**অবস্থা: ১,৪১৩ রেকর্ডের মধ্যে ১,৪১০-এর ছবি আছে** (লোকাল `public/seed` ৬৫৪ + কমন্স হটলিংক ৭৫৫)।
-বাকি **৩টি** প্রজাতির কোনো মুক্ত-লাইসেন্স ছবি নেই (শুধু বিস্তার-মানচিত্র আছে) — এগুলো
-`data/seed/image-gaps.ts`-এ কারণসহ নথিভুক্ত, প্রজাতির পাতায় স্পষ্ট বার্তা দেখায়।
+**অবস্থা: ১৪৪৮/১৪৫১-এ ছবি আছে।** বাকি **৩টি** বাদুড়ের কোনো মুক্ত-লাইসেন্স ছবি নেই (শুধু বিস্তার-মানচিত্র) —
+`data/seed/image-gaps.ts`-এ কারণসহ নথিভুক্ত, প্রজাতির পাতায় স্পষ্ট বার্তা দেখায়।
 
-| কাজ | কোথায় | কীভাবে |
+| কাজ | কোথায় | কীভাবে |
 |---|---|---|
-| ছবি নেই এমন ৮৮টি স্তন্যপায়ীতে কমন্সের ছবি লিংক | `scripts/link-commons-images.py` (ROWS) → `data/seed/media-images.ts` + `data/seed/media-licenses.ts` (ব্যাচ ৪৫) | `python3 scripts/link-commons-images.py --titles` → কমন্স API → `/tmp/commons-meta-*.json` → `--apply` |
-| লেখক/লাইসেন্স যাচাই | কমন্স API `extmetadata` (`Artist` + `LicenseShortName`) | `verified: true` + `licenseUrl`; না পেলে `verified: false` (“যাচাই বাকি”) — **কখনোই কল্পিত ক্রেডিট নয়** |
-| ছবি আদৌ দেখা যাচ্ছে কিনা যাচাই | `scripts/audit-species-images.cjs` | `npm run audit:images` (লোকাল ফাইল) · `npm run audit:images -- --check` (দূরবর্তী লিংক, ইন্টারনেট দরকার) |
-| নথিভুক্ত ফাঁক | `data/seed/image-gaps.ts` | তালিকার বাইরে কোনো প্রজাতি ছবিহীন থাকলে **`npm test` ব্যর্থ হয়**; ছবি পেয়ে গেলে স্লাগটি তালিকা থেকে সরাতে হবে (নইলে টেস্ট ধরবে) |
+| ছবি নেই এমন প্রজাতিতে কমন্সের ছবি লিংক | `scripts/link-commons-images.py` (ROWS) → `data/seed/media-images.ts` + `data/seed/media-licenses.ts` | `python3 scripts/link-commons-images.py --titles` → কমন্স API → `--apply` |
+| লেখক/লাইসেন্স যাচাই | কমন্স API `extmetadata` (`Artist` + `LicenseShortName`) | `verified: true` + `licenseUrl`; না পেলে `verified: false` (“যাচাই বাকি”) — **কখনোই কল্পিত ক্রেডিট নয়** |
+| ছবি আদৌ দেখা যাচ্ছে কিনা | `scripts/audit-species-images.cjs` | `npm run audit:images` · `-- --check` (দূরবর্তী লিংক, ইন্টারনেট দরকার) |
+| নিজস্ব সাধারণ চিত্রণ | `public/illustrations/landscapes/` + `data/seed/media-illustrations.ts` | **verified:true**, ক্রেডিট “প্রকল্পের নিজস্ব চিত্রণ” — এগুলো কোনো নির্দিষ্ট স্থানের বাস্তব ছবি নয় |
+| নথিভুক্ত ফাঁক | `data/seed/image-gaps.ts` | তালিকার বাইরে কোনো প্রজাতি ছবিহীন থাকলে **`npm test` ব্যর্থ হয়** |
 
-**নিয়ম (§12):** বিস্তার/রেঞ্জ-মানচিত্র, ডায়াগ্রাম, স্ট্যাম্প বা অন্য প্রজাতির ছবি কখনোই “প্রজাতির ছবি”
-হিসেবে বসানো যাবে না — এমনকি উইকিপিডিয়ার lead image হলেও না। নতুন ছবি যোগ করার সময়
+**নিয়ম (§12):** বিস্তার/রেঞ্জ-মানচিত্র, ডায়াগ্রাম, স্ট্যাম্প বা অন্য প্রজাতির ছবি কখনোই “প্রজাতির ছবি”
+হিসেবে বসানো যাবে না — এমনকি উইকিপিডিয়ার lead image হলেও না। নতুন ছবি যোগ করার সময়
 `subject`/`credit`/`source`/`license` অবশ্যই পূরণ করতে হবে।
-
-**হটলিংক নীতি:** `public/seed`-এ থাকা ছবি রিপোর সঙ্গেই আসে; কমন্সের ছবি
-`upload.wikimedia.org`/`thumb.wikimedia.org` থেকে সরাসরি লোড হয় (ভিডিওর মতোই)।
-`next.config.mjs`-এ `images.remotePatterns` সব https হোস্ট অনুমোদন করে, আর `SmartImage`
-অপটিমাইজার ব্যর্থ হলে `unoptimized` মূল URL-এ রিট্রাই করে।
+`npm test`-এর `check-seed-media.cjs` এখন **প্রতিটি প্রজাতির ছবির ক্রেডিট-রেকর্ড বাধ্যতামূলক** করে (অনুপস্থিত = test fail)।
 
 ---
 
-## ১) গত সেশনে যা হয়েছে (সব লোকালে পরীক্ষিত, tsc ক্লিন)
+## ১) গত সেশনে যা হয়েছে (সব লোকালে পরীক্ষিত, tsc + lint + test ক্লিন)
 
 | কাজ | কোথায় | অবস্থা |
 |---|---|---|
-| ৫০৮/৫০৮ ডিটেইলস-এন্ট্রি লেখা+রেজিস্টার | `data/seed/details/*` (৪০+ ফাইল), `index.ts`-এ `mergeDetails` ফিল্ড-মার্জ **রাখতে হবে** | ✅ অডিট ০ ঘাটতি (কঠোর ও মূল নিয়ম দুটোতেই) |
-| ছবি ৩০০টি আমদানি | `scripts/import-images.py` → `media-images.ts` (৫৫৪ স্লাগ), সব `verified:false` + `লাইসেন্স যাচাই বাকি` | ✅ ৬৬১/৬৬১ |
-| রেজিস্টারে ইমেইল বাধ্যতামূলক (ফরম্যাট+ইউনিক) | `components/AuthForm.tsx`, `app/api/auth/register/route.ts` | ✅ ডুপ্লিকেট ৪০৯, ভুল ৪০০ |
-| লগইন ইমেইল বা ইউজারনেম | `app/api/auth/login/route.ts` + AuthForm UI “ইমেইল বা ব্যবহারনাম” | ✅ **প্রথম `role==='admin'` অ্যাকাউন্ট = অ্যাডমিন** (সিডে admin নেই — বর্তমানে ০ জন, ইউজার প্রথম রেজিস্টার করলেই অ্যাডমিন) |
-| প্রোফাইলে কভার+অবতার আপলোড (FB-স্টাইল) | `components/ProfileControls.tsx` → `/u/[username]` (কভার img + “কভার যোগ করুন/বদলান”, অবতার-ক্যামেরা, ⚙️ সেটিংস) | ✅ নিজ প্রোফাইলে কার্নার, অন্যদের নয় |
-| সেটিংস এখন প্রোফাইলের ভেতরে | BottomNav ও হেডার-মেনু থেকে সেটিংস সরানো → প্রোফাইলের ⚙️ | ✅ |
-| পোস্টে “ক্যামেরা দিয়ে সোজে তুলুন” | `components/ShareForm.tsx` (`capture="environment"`) + প্রোফাইলে “নতুন পোস্ট” | ✅ |
-| অ্যাডমিন প্রজাতি-ফর্ম: বিস্তারিত বৈশিষ্ট্য কার্ড | `SpeciesForm.tsx` (physical/behavior/ecologicalRole — আগে ফর্মে ছিল না), `UploadField`-এ প্রিভিউ+✕ সরান | ✅ POST/PUT/DELETE CRUD লাইভ টেস্ট |
-| এডিট-পাতায় “সাইটে দেখুন ↗” | `app/admin/species/[slug]/page.tsx` (পাবলিক পাথ = `/${s.type}/${s.slug}`) | ✅ |
+| **কভারেজ ডাবল-কাউন্ট বাগ ঠিক** — `/admin/coverage`-এ মোট ২৬৫৩ দেখাচ্ছিল, প্রকৃত ১৪৫১ | `lib/coverage.ts` (নতুন, একক হিসাব), `lib/repo/json.ts`, `lib/repo/neon-repo.ts`, `app/admin/coverage/page.tsx`, `app/api/coverage/route.ts` | ✅ ছাতা-রো সাবটোটাল, content-রো `—`, `totals` যোগ |
+| **Neon-এ সাইলেন্ট ডেটা-লস ঠিক** — `users.cover`, `users.deletion_requested`, `species.stub_archive`, `news.kind/publisher/source_url/published_at`, `jeno.kind` কলাম ছিলই না | `db/schema.sql`-এ `alter table … add column if not exists` + `neon-repo.ts` mapping/insert/update | ✅ প্রোফাইল কভার, মুছার অনুরোধ, সংবাদ-উৎস, জেনো-ধরন, স্টাব-আর্কাইভ এখন সংরক্ষিত |
+| **অনুসরণ-সংখ্যা হালনাগাদ** (`following` কখনো বাড়ত না) | `lib/repo/json.ts`, `lib/repo/neon-repo.ts` (`toggleFollow`) | ✅ দুই স্টোরেই |
+| **অ্যাডমিনের দেওয়া `dataStatus` হারিয়ে যেত** — রিড-টাইম `verifySpeciesRecord` সব রেকর্ডকে আবার `verified` বানাত | `lib/types.ts` (`statusLockedAt`), `data/seed/verification.ts`, `app/api/species/*`, `db/schema.sql` (`status_locked_at`) | ✅ অ্যাডমিন-এডিট লক থাকে; টেস্টে আটকানো |
+| **নিচের নেভি §৪ অনুযায়ী ৬ আইটেম** (সেটিংস ফিরল) | `components/BottomNav.tsx` | ✅ `grid-cols-6`, ছোট পর্দায় ৯.৫px লেবেল |
+| **মিডিয়া-ক্রেডিটে ৩৭টি অনিবন্ধিত নিজস্ব চিত্রণ** | `data/seed/media-illustrations.ts` + `media-licenses.ts` + `check-seed-media.cjs` | ✅ ০ অনিবন্ধিত; টেস্টে বাধ্যতামূলক |
+| **উৎপত্তি ফাঁকা ৮টি দেশীয় প্রাণী** | `data/seed/verification.ts` → `ORIGIN_OVERRIDES` | ✅ `origin: 'native'` |
+| **রেট লিমিট এখন কেন্দ্রীয় করা যায়** (ঐচ্ছিক Upstash REST, ব্যর্থ হলে মেমোরি ফলব্যাক) | `lib/rate-limit.ts` + ৯টি API রুট `await rateGuard(...)` | ✅ `UPSTASH_REDIS_REST_*` |
+| **JSON স্টোর লেখা** — ১৮MB ইন্ডেন্টেড, প্রতিবার পুরো ফাইল, ক্র্যাশে নষ্ট হওয়ার ঝুঁকি | `lib/repo/json.ts` `write()` | ✅ কম্প্যাক্ট + টেম্প-ফাইল `rename` (অ্যাটমিক) |
+| **টেস্ট-রানার নেই** | `vitest.config.ts`, `tests/unit/*` (২৬টি টেস্ট), `npm run test:unit` | ✅ CI-তে যোগ |
+| **`next lint` ইন্টারঅ্যাকটিভ প্রম্পটে আটকে যেত** | `eslint.config.mjs`, `npm run lint` = `eslint .`, CI থেকে `continue-on-error` সরানো | ✅ ০ error |
+| **`npm run stats`** — ডকের সংখ্যা কোড থেকেই | `scripts/site-stats.mjs` | ✅ |
+| ডক হালনাগাদ (পুরোনো ৬৬১/“০ verified”) | `README.md`, `HANDOFF.md`, `docs/SECURITY.md`, `docs/TESTING.md`, `docs/GITHUB-WORKFLOW.md` | ✅ |
 
-**পরীক্ষা-লগ:** রেজিস্টার(ইমেইল)→admin ✅ · ইমেইল-লগইন ✅ · `/admin` ২০০ ✅ · আপলোড (local storage) ✅ ·
-avatar/cover PATCH ✅ · স্পিসিস CRUD ✅ · টেস্ট-ইউজার ও টেস্ট-ফাইল মুছে **০ অ্যাডমিন** অবস্থায় ফেরত ✅
+**পরীক্ষা-লগ:** `npm run test:unit` ২৬/২৬ ✅ · `npm run test:contract` ৪/৪ ✅ · `tsc --noEmit` ০ error ✅ ·
+`npm run lint` ০ error (২টি স্টাইল-সতর্কতা config-ফাইলে) ✅ · `npm run build` সফল (৮০+ রুট) ✅ ·
+প্রোডাকশন সার্ভারে `/`, `/gyan`, `/prani/bagh`, `/feed`, `/reels`, `/ai`, `/admin`, `/songrokkhon`, `/categories` — সব ২০০ ✅
 
 ---
 
@@ -70,42 +70,50 @@ AUTH_SECRET             লম্বা র‍্যান্ডম স্ট্
 ADMIN_USERNAME / ADMIN_EMAIL / ADMIN_PASSWORD   প্রথম অ্যাডমিন bootstrap-এ (env থাকলে)
 NEXT_PUBLIC_SITE_URL    https://আপনার-ডোমেইন
 R2_*                    ঐচ্ছিক — /admin/media থেকে বসানো যায়
+UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN   ঐচ্ছিক — কেন্দ্রীয় রেট লিমিট
 AI_PROVIDER / AI_API_KEY   ঐচ্ছিক — না দিলে লোকাল RAG
 ```
 > ⚠️ পাসওয়ার্ড/ক্রেডেনশিয়াল রিপোজিটরিতে কমিট **কখনো নয়**। `.env.local` gitignored।
+
+**Neon আপডেট:** নতুন কলামগুলো (`db/schema.sql`-এর শেষ অংশ: `species.stub_archive`, `species.status_locked_at`,
+`users.cover`, `users.deletion_requested`, `news.kind/publisher/source_url/published_at`, `jeno.kind`) বসাতে `migrate.yml` → Run workflow
+অথবা `DATABASE_URL="…" node scripts/migrate.mjs` চালান। `add column if not exists` — বারবার চালানো নিরাপদ।
 
 ---
 
 ## ৩) পরের সেশনে যা করতে হবে (অগ্রাধিকার অনুযায়ী)
 
-> ইউজারের স্থায়ী নির্দেশ (গত সেশনে প্রশ্নের উত্তরে দেওয়া সংখ্যা-হিসাব মেনে):
-> **সাইটে ৬৬১ যা আছে; দেশে প্রকৃত আনুমান — পাখি ~৭০০–৮২৮, স্তন্যপায়ী ১৩৮, সরীসৃপ ~১৬০–১৬৭,
+> ইউজারের স্থায়ী নির্দেশ: **সাইটে ১৪৫১ যা আছে; দেশে প্রকৃত আনুমান — পাখি ~৭০০–৮২৮, স্তন্যপায়ী ১৩৮, সরীসৃপ ~১৬০–১৬৭,
 > উভচর ~৪৯–৫৬, মিষ্টিজল মাছ ~২৫৩–২৯৩ (+সমুদ্রী শত শত), প্রজাপতি ~৩০৫, সস্যবীজী উদ্ভিদ ~৩,৮১০–৫,১৩১,
 > বাকি পোকা-অণুজীব অগণিত → বাকি ~৫,০০০–৬,৪০০+।** ইউজার **গোষ্ঠী/সীমা ঠিক করে দিলে তবেই নতুন প্রজাতি এড** —
 > না বলা পর্যন্ত অপেক্ষা; প্রথমে তার সিদ্ধান্ত নিন।
 
-### A. ভিডিও (সবচেয়ে বড় বাকি কাজ)
+### A. বাকি তথ্য-ফাঁক (অনুমান ছাড়া)
+- **৬৬টি “অন্য/স্থানীয় নাম” নেই** (৬০টি স্তন্যপায়ী + ৪ মাছ + ১ পোকা + ১ অণুজীব) — নির্ভরযোগ্য সূত্র থেকে নাম যোগ করুন, অনুমান নয়।
+- **৩৭টি পাহাড়/বন রেকর্ডে উচ্চতা/আয়তন নেই** — সরকারি/বন বিভাগের সূত্র থেকে।
+- **৬৬৯টি ছবির ক্রেডিট যাচাই** — কমন্স API (`extmetadata`) দিয়ে; ইন্টারনেট দরকার।
+- `/admin/coverage`-এ “ক্ষেত্র-ভিত্তিক পূর্ণতা” টেবিল থেকেই অগ্রাধিকার ঠিক করুন।
+
+### B. ভিডিও
 `components/SpeciesVideoEmbed.tsx` প্রস্তুত; `Species.media[]`-এ `{kind:'video', url, credit, license, sourceUrl}` বসালেই
 স্পিসিস পেজে এমবেড (YouTube/Commons iframe বা সরাসরি webm/mp4 `<video>`) — **ডাউনলোড/আপলোড নয়, উৎস থেকে স্ট্রিম**।
-নতুন ফাইল বানাতে হবে (`data/seed/media-videos.ts` + `data/seed/index.ts`-এ `withSeedVideos` — `withSeedImages`-এর পাশে)।
-উৎস: Wikimedia Commons (লাইসেন্স API থেকে যাচাই, ক্রেডিট ছাড়া কখনো নয়), Pexels-স্টাইল হটলিংক। লক্ষ্য ~২০–৩০ চিত্রণযোগ্য প্রজাতি।
+বর্তমান ১৯৩টি এন্ট্রি (`data/seed/media-videos.ts` ১৫৬ + `media-web-videos.ts` ৩৭)। লক্ষ্য ~২০–৩০ বেশি চিত্রণযোগ্য প্রজাতি।
 
-### B. লোগো ও og-cover
+### C. লোগো ও og-cover
 - `public/brand/og-cover.jpg`-তে **Dreamstime ওয়াটারমার্ক + পুরনো লোগো** আছে — বদলাতে হবে। নিজস্ব `public/seed/village/nouka.jpg`
   (নৌকা-মানুষ-নদী) ১২০০×৬৩০ করে নতুন কভার বানান (PIL) + বর্তমান লোগো।
-- `logo-mark.svg` ও `logo-mark.png` **আলাদা ডিজাইন** (SVG দুর্বল, PNG ভালো) — এক করতে হবে; ইউজারের চাহিদা:
+- `logo-mark.svg` ও `logo-mark.png` **আলাদা ডিজাইন** — এক করতে হবে; ইউজারের চাহিদা:
   দেশের রং (পতাকা সবুজ `#006A4E` + লাল `#F42A41`), মানুষ (নৌকা), প্রকৃতি, ঐতিহ্য (কাঁথা-বিন্দু)।
-  রেন্ডার: `npm i --no-save sharp` → `sharp('public/brand/logo-mark.svg').resize(512,512).png()`; এরপর favicon-32/64, apple-touch-icon ওগুলো থেকেই।
-- রঙ/ফন্ট পাস কোড-অডিটে ক্লিন (০ gray, ০ font-sans ওভাররাইড; হেরিটেজ-প্যালেট `--rb-*`; আইকনসেট `components/icons/` সম্পন্ন) —
-  শুধু একবার চোখে-দেখা বাকি। ফ্ল্যাগ-রং এখনো প্যালেটে যোগ হয়নি (লোগোর সাথে যোগ করুন)।
+  রেন্ডার: `npm i --no-save sharp` → `sharp('public/brand/logo-mark.svg').resize(512,512).png()`; এরপর favicon-32/64, apple-touch-icon।
+- ফ্ল্যাগ-রং প্যালেটে যোগ করা বাকি (`--rb-*` / tailwind)।
 
-### C. অবকাঠামো
-- কোনো টেস্ট-রানার নেই — Vitest/Playwright যোগ করুন; CI শুধু tsc+lint+build।
-- `app/admin/ai/page.tsx` পাতলা — ৭-স্তর রিভিউ UI।
-- Neon seeding ৬৬১× `upsertSpecies` — ব্যাচ-ইনসার্টে বদলান (`syncSpecies()` ইতোমধ্যে ৮টি করে সমান্তরালে চালায়)।
-- `dataStatus` বেশিরভাগ `partial/review` — দ্বিতীয় সূত্র যাচাই চলতে পারে (ইউজার না বলা পর্যন্ত নতুন প্রজাতি নয়)।
+### D. অবকাঠামো
+- **e2e (Playwright)** যোগ করা — এখন শুধু Vitest + চুক্তি-পরীক্ষা আছে।
+- `app/api/admin/setup`-এর `syncSpecies()` এখনো ১৪৫১× upsert — Neon-এ ব্যাচ-ইনসার্টে বদলানো যায় (৮টি করে সমান্তরাল চালে)।
+- `dataStatus`-এ ৩০টি রেকর্ড verified নয় — কারণ `UNVERIFIED_REASONS`-এ; দ্বিতীয় সূত্রে যাচাই হলে সরান।
+- ইন-মেমোরি রেট লিমিট শুধু `UPSTASH_*` না থাকলে — প্রোডাকশনে সেট করা ভালো।
 
-### D. নীতিমালা (কখনো ভাঙবেন নয়)
+### E. নীতিমালা (কখনো ভাঙবেন নয়)
 কোনো ডেমো/নকল ব্যবহারকারী-ফলোয়ার-এনগেজমেন্ট · ব্লু-টিক শুধু আমরা দেব · AI কখনো যাচাইহীন তথ্য জ্ঞানভান্ডারে লিখবে না ·
 কপিরাইট-মুক্ত মিডিয়া ছাড়া নয়, ভিডিও ডাউনলোড/রি-আপলোড নয় · পূর্ণ সাহিত্য-পাঠ্য নয় · লাইসেন্স অজানা হলে `verified:false` + `যাচাই বাকি` ·
 `media-images.ts` শুধু স্ক্রিপ্ট দিয়ে (import-images.py/add-images.py) · লিটারেল hex (`.replace()` হ্যাক নয়) · কমিট `git commit -F /tmp/msg.txt` (backtick নয়)।
@@ -118,18 +126,27 @@ AI_PROVIDER / AI_API_KEY   ঐচ্ছিক — না দিলে লোক�
 cd /home/user/ruposhibangla
 npm install --no-audit --no-fund        # node_modules স্ন্যাপশটে থাকে না (ওয়ার্কস্পেস রিসেট হলেও)
 ./node_modules/.bin/tsc --noEmit         # npx tsc চালাবেন নয় — ভুল tsc@2.0.4 ইনস্টল করে
+npm run lint                            # ESLint CLI (Next 15.5-এ `next lint` অবচিত + ইন্টারঅ্যাকটিভ)
+npm run test:unit                       # Vitest
+npm test                                # Vitest + ৪টি চুক্তি-পরীক্ষা
+npm run stats                           # প্রকৃত সংখ্যা (ডকের জন্য)
 npm run dev                             # 0.0.0.0:3000
-# রিসিড: সার্ভার বন্ধ → rm -f .data/db.json → start → warm: curl "/api/species?limit=1" (db.json স্টার্টআপে লেখা হয়)
-# অডিট: .data/db.json-এ species[] — fields physical,behavior,diet,reproduction,season,whereToSee
-#   মূল নিয়ম: ফাঁকা/'absent' = ঘাটতি, '—' = আছে  ·  কঠোর নিয়ম: '—'ও ঘাটতি (দুটোতে ০ আছে এখন)
+# রিসিড: সার্ভার বন্ধ → rm -f .data/db.json → start → warm: curl "/api/species?limit=1"
+# কভারেজ যাচাই: curl -s localhost:3000/api/coverage | python3 -m json.tool | head -40
+#   → totals.records = 1451 (rows-এর প্রাণীজগৎ ছাতা-রো বাদ দিয়ে)
 ```
 রুট: `/prani/<slug>` · `/udbhid/<slug>` · `/sthan/<slug>` · `/sahitto/<slug>` · `/gyan?group=<g>` (এমবেডড ৪০৪ নয়)।
-`/api/species`-এ `limit` সর্বোচ্চ ৩০০। সিড-কী: লগইন-তথ্য সিডে `SEED_USERS` (২টি partner, admin নয়)।
+`/api/species`-এ `limit` সর্বোচ্চ ৩০০ (পাবলিক); অ্যাডমিন/অভ্যন্তরীণ কোডে ৫০০০ পর্যন্ত।
 
 ---
 
 ## ৫) যা যা ভুল হয়েছে — আবার করবেন না
 
+- **কভারেজে ছাতা-ক্যাটাগরি গুনবেন না** — `pranijogot` = সব প্রাণীর সমষ্টি; মোটে গুনলে ১৪৫১-এর জায়গায় ২৬৫৩ দেখাবে।
+  হিসাবের একমাত্র জায়গা `lib/coverage.ts`; UI-তে `summarizeCoverage(rows)` ব্যবহার করুন।
+- **`create table if not exists` নতুন কলাম যোগ করে না** — নতুন ফিল্ডের জন্য `db/schema.sql`-এ
+  `alter table … add column if not exists` + `neon-repo.ts`-এর mapping/insert/update তিনটিই বদলাতে হবে,
+  নইলে Neon-এ ডেটা সাইলেন্টলি হারায় (কভার/মুছার-অনুরোধ/সংবাদ-উৎসের মতো)।
 - **এক ব্লকে একই ফাইলে একাধিক `edit_file` = রেস, শেষটি জিতে** (আগেরটি মুছে যায়)। ক্রমিক করুন: edit → grep → edit → `tsc`।
 - **`edit_file`-এর `old_text`-এ `য়` (U+09DF) থাকলে ম্যাচ হয় না** (Unicode ডিকম্পোজিশন পার্থক্য) — ASCII অ্যাঙ্কর বা python দিয়ে এডিট করুন।
 - পাইপের পর `echo $?` → head-এর ০; tsc-শব্দ কেবল stderr থেকে পড়ুন।
@@ -137,13 +154,15 @@ npm run dev                             # 0.0.0.0:3000
 - **`mergeDetails` (details/index.ts) মুছবেন না** — নতুন এন্ট্রি পুরনো ফিল্ড মুছে ফেলে (doyel-এর ঘটনা)।
 - **ওয়ার্কস্পেস রিসেট ৩ দেখা** — node_modules/`.data`/pip/`/tmp` মুছে যায়, গিট-ফাইল থাকে। রিসেট: npm install → সার্ভার → রিসিড → অডিট।
   PIL না থাকলে `pip install --break-system-packages pillow`। sharp লাগলে `npm i --no-save sharp`।
-- db.json সার্ভার **স্টার্টআপে** লেখে; চালু-সার্ভারে ফাইল এডিট ক্যাশে হারায় — স্টপ→এডিট→স্টার্ট।
+- `.data/db.json` সার্ভার **স্টার্টআপে** লেখে; চালু-সার্ভারে ফাইল এডিট ক্যাশে হারায় — স্টপ→এডিট→স্টার্ট।
+  এখন ফাইল কম্প্যাক্ট ও অ্যাটমিকভাবে লেখা হয় (`write()`), তাই হাতে সুন্দর করে সাজানো থাকবে না — `npm run stats`/`/api/coverage` দেখুন।
 - `UID` bash-এ readonly — ভ্যারিয়েবলে নাম বদলান।
 - ইনলাইন `python3 -c` লম্বা স্ক্রিপ্ট → SyntaxError; heredoc ফাইলে লিখুন।
 - `git commit -m`-এ backtick → মেসেজ নষ্ট; `-F /tmp/msg.txt`। **`git push --force`/`git reset --hard` কখনো নয়।**
 - প্রজাতি-স্লাগ-কী ডিবি-এর সাথে হুবহু মিলতে হবে (`tanguar-haor`, `hakaluki-haor`, `khude-badur`…) — না মিললে সাইলেন্ট মিস।
 - ছবি সার্চে ব্যর্থ প্যাটার্ন: commons `site:`+বাইনোমিয়াল ভুল প্রজাতি, ১২০–৩০০px থাম্ব, dreamstime/istock/kiddle/reddit,
   মিউজিয়াম-স্পেসিমেন, ডিস্ট্রিবিউশন-ম্যাপ। কাজ করে: `Category:<binomial>`, সাধারণ কোয়েরি, en.wikipedia infobox File:, flickr-গবেষক।
+- **সেটিংস নিচের নেভিতে ৬ষ্ঠ আইটেম** — স্পেক §৪; প্রোফাইলের ⚙️ আলাদা সুবিধা, নেভি বদলাবেন না।
 - **শটস্ক্রিন-পুনরাবৃত্তি-অভিযোগ বন্ধ** — কারণ ছিল এজেন্ট-রেসপন্স গ্লিচ, সাইটের ডেটা নয়; বড় রাইট-ফাইল ১০–১২ স্পিসিসে ভাগ করুন, কখনো প্যাড করবেন না।
 
 ---
@@ -152,6 +171,9 @@ npm run dev                             # 0.0.0.0:3000
 
 ```bash
 cd /home/user/ruposhibangla
+npm run test:unit && npm run test:contract && npm run lint
+./node_modules/.bin/tsc --noEmit
+npm run build
 git status                      # পরিবর্তন দেখুন
 git add -A
 git commit -F /tmp/msg.txt      # বাংলা মেসেজ, backtick ছাড়া

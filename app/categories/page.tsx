@@ -12,6 +12,8 @@ export const metadata: Metadata = { title: 'সব ক্যাটাগরি �
 export default async function Page() {
   const coverage = await getRepo().coverage()
   const count = Object.fromEntries(coverage.map((row) => [row.group, row.total]))
+  // কনটেন্ট বিভাগের (গ্রামবাংলা / সংরক্ষণ) নিজস্ব প্রজাতি-রেকর্ড নেই — 0 দেখানো বিভ্রান্তিকর
+  const contentGroups = new Set(coverage.filter((row) => row.kind === 'content').map((row) => row.group))
 
   return <main className="container-pb py-6 sm:py-8">
     <header className="mb-5 max-w-3xl">
@@ -30,7 +32,13 @@ export default async function Page() {
           return <Link key={category.id} href={category.route} className="card flex items-center gap-3 p-3 transition hover:-translate-y-0.5 hover:shadow-md">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl" style={{ backgroundColor: tone.soft }}><CategoryIcon id={category.id} size={20}/></span>
             <span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-forest-900">{category.label}</span><span className="block truncate text-[10px] text-black/45">{category.hint}</span></span>
-            <span className="shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold text-white" style={{ backgroundColor: tone.from }}>{toBn(count[category.id] || 0)}</span>
+            <span
+              className="shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold text-white"
+              style={{ backgroundColor: tone.from }}
+              title={contentGroups.has(category.id) ? 'কনটেন্ট বিভাগ — প্রজাতি-রেকর্ড নেই' : 'প্রজাতি-রেকর্ড'}
+            >
+              {contentGroups.has(category.id) ? '—' : toBn(count[category.id] || 0)}
+            </span>
           </Link>
         })}
       </div>

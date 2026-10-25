@@ -64,7 +64,11 @@ export default async function SpeciesDetail({ slug, type }: { slug: string; type
   const facts = [
     s.habitat && { icon: Trees, label: 'বাসস্থান', value: s.habitat },
     s.diet && { icon: Utensils, label: type === 'udbhid' ? 'পুষ্টি/ব্যবহার' : 'খাদ্য', value: s.diet },
-    s.sizeOrHeight && { icon: Ruler, label: type === 'udbhid' ? 'আকার/উচ্চতা' : 'আকার', value: s.sizeOrHeight },
+    s.sizeOrHeight && {
+      icon: Ruler,
+      label: type === 'sthan' ? 'উচ্চতা/আয়তন' : type === 'udbhid' ? 'আকার/উচ্চতা' : 'আকার',
+      value: s.sizeOrHeight,
+    },
     s.season && { icon: CalendarDays, label: 'মৌসুম', value: s.season },
     s.whereToSee && { icon: MapPin, label: 'কোথায় দেখা যায়', value: s.whereToSee },
     s.reproduction && { icon: Info, label: 'প্রজনন', value: s.reproduction },

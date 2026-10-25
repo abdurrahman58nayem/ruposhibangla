@@ -373,6 +373,22 @@ function ensureSources(s: Species): Species['sources'] {
  * একটি প্রজাতি/উদ্ভিদ/স্থান/সাহিত্য রেকর্ড যাচাই করে তার `dataStatus`, `lastVerifiedAt`,
  * `sources`, `conservation`, `conservationBn` এবং (অ-যাচাইযোগ্য হলে) `conflictingInfo` নির্ধারণ করে।
  */
+/**
+ * উৎপত্তি (দেশীয় / পরিযায়ী / চাষকৃত …) — যে কয়টি রেকর্ডে ফিল্ডটি ফাঁকা ছিল কিন্তু
+ * রেকর্ডের নিজস্ব সারাংশ ও বিস্তৃতি-বিবরণে বাংলাদেশে এর প্রাকৃতিক (দেশীয়) উপস্থিতি
+ * স্পষ্টভাবে লেখা আছে, কেবল সেগুলোর জন্য এই মান বসানো হয়। নতুন কোথাও অনুমান নয়।
+ */
+export const ORIGIN_OVERRIDES: Record<string, Species['origin']> = {
+  'nona-kumir': 'native', // সুন্দরবনের খালে দেশীয় জনসংখ্যা
+  ghoreal: 'native', // গাঙ্গেয় অববাহিকার দেশীয় প্রজাতি (বন্য পরিবেশে এখন বিলুপ্তপ্রায়)
+  'keute-sap': 'native',
+  ojogor: 'native',
+  guisap: 'native',
+  jonaki: 'native',
+  'kalo-kachhim': 'native',
+  'kecho-sisilia': 'native',
+}
+
 export function verifySpeciesRecord(raw: Species): Species {
   const s: Species = { ...raw }
 
@@ -384,6 +400,9 @@ export function verifySpeciesRecord(raw: Species): Species {
   } else if (s.conservationBn) {
     s.conservationBn = normalizeConservationBn(s.conservation, s.conservationBn)
   }
+
+  // ১.৫) উৎপত্তি ফিল্ড ফাঁকা থাকলে প্রমাণিত দেশীয় রেকর্ডে বসানো
+  if (!s.origin && ORIGIN_OVERRIDES[s.slug]) s.origin = ORIGIN_OVERRIDES[s.slug]
 
   // ২) কয়েকটি ক্লাসিক রেকর্ডে অনুপস্থিত শনাক্তকরণ/বিস্তৃতি পূরণ
   if (s.slug === 'nona-kumir') {
@@ -408,6 +427,10 @@ export function verifySpeciesRecord(raw: Species): Species {
 
   // ৩) তথ্যসূত্র নিশ্চিত করা
   s.sources = ensureSources(s)
+
+  // ৩.৫) অ্যাডমিন যদি ফর্ম থেকে তথ্যের অবস্থা নির্দিষ্ট করেন, সেটিই চূড়ান্ত —
+  // রিড-টাইম ভেরিফিকেশন আর নিজের মতো `verified` বসাবে না (অ্যাডমিন-এডিট হারাত না)
+  if (s.statusLockedAt) return s
 
   // ৪) অ-যাচাইযোগ্য ৩০টি রেকর্ডে সুনির্দিষ্ট কারণ ও স্ট্যাটাস বসানো
   const unverified = UNVERIFIED_REASONS[s.slug]

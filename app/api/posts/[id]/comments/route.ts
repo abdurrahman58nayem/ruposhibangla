@@ -18,7 +18,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const body = await req.json().catch(() => ({} as any))
-  const _rl = rateGuard(req, RULES.write, 'comments')
+  const _rl = await rateGuard(req, RULES.write, 'comments')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   const text = String(body.body || '').trim()

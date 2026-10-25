@@ -244,3 +244,26 @@ create table if not exists blocks (
   created_at timestamptz default now(),
   primary key (blocker_key, user_id)
 );
+
+/* ------------------------------------------------------------------ */
+/* হালনাগাদ কলাম — পুরোনো ডেটাবেজেও নিরাপদে যোগ হয়                     */
+/*                                                                     */
+/* `create table if not exists` আগের টেবিলে নতুন কলাম যোগ করে না। তাই  */
+/* নিচের কলামগুলো আগে কোডে ব্যবহার হলেও বাস্তব Neon ডেটাবেজে ছিল না —   */
+/* ফলে প্রোফাইল কভার, অ্যাকাউন্ট মুছার অনুরোধ, সংবাদের ধরন/প্রকাশক/     */
+/* উৎস-লিংক, জেনো-র ধরন ও প্রজাতির পুরোনো-লেখার আর্কাইভ সাইলেন্টলি     */
+/* হারিয়ে যেত। `if not exists` থাকায় বারবার চালালেও নিরাপদ।            */
+/* ------------------------------------------------------------------ */
+
+alter table species add column if not exists stub_archive text default '{}';
+alter table species add column if not exists status_locked_at timestamptz;
+
+alter table users add column if not exists cover text default '';
+alter table users add column if not exists deletion_requested boolean default false;
+
+alter table news add column if not exists kind text default 'news';
+alter table news add column if not exists publisher text default '';
+alter table news add column if not exists source_url text default '';
+alter table news add column if not exists published_at timestamptz;
+
+alter table jeno add column if not exists kind text default '';

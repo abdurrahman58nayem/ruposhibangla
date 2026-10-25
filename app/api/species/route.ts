@@ -65,6 +65,8 @@ export async function POST(req: Request) {
     conservationActions: body.conservationActions,
     media: body.media,
     dataStatus: body.dataStatus || 'partial',
+    // অ্যাডমিনের দেওয়া অবস্থা রিড-টাইম ভেরিফিকেশনে বদলে যাবে না
+    statusLockedAt: new Date().toISOString(),
     lastVerifiedAt: body.lastVerifiedAt,
     conflictingInfo: body.conflictingInfo,
     sensitive: body.sensitive,

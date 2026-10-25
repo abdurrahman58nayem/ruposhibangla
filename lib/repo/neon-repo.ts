@@ -2,9 +2,10 @@ import { getSql } from '@/lib/db/client'
 import { resolveSpeciesImage, resolveSpeciesMedia } from '@/lib/species-image'
 import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
-  AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
+  AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow, CoverageAggregate,
 } from '@/lib/types'
-import { CATEGORIES, normalizeCategoryName } from '@/lib/categories'
+import { normalizeCategoryName } from '@/lib/categories'
+import { mapCoverageAggregates } from '@/lib/coverage'
 import { normalizeConservationBn } from '@/lib/utils'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
@@ -93,7 +94,13 @@ function rowToSpecies(r: SpeciesRow): Species {
     media: resolveSpeciesMedia(r.slug, P(r.media)),
     dataStatus: r.data_status || 'partial',
     lastVerifiedAt: r.last_verified_at ? new Date(r.last_verified_at).toISOString() : undefined,
+    statusLockedAt: r.status_locked_at ? new Date(r.status_locked_at).toISOString() : undefined,
     conflictingInfo: r.conflicting_info || '',
+    /** পুরোনো সংক্ষিপ্ত লেখা — নতুন বিস্তারিত লেখায় প্রতিস্থাপিত হলেও হারায় না */
+    stubArchive:
+      r.stub_archive && typeof r.stub_archive === 'object'
+        ? (r.stub_archive as Record<string, string>)
+        : parseJson<Record<string, string>>(r.stub_archive, {}),
     sensitive: !!r.sensitive,
     featured: !!r.featured,
     views: Number(r.views || 0),
@@ -204,6 +211,10 @@ function rowToNews(r: Record<string, any>): News {
     tags: P(r.tags),
     published: !!r.published,
     pinned: !!r.pinned,
+    kind: r.kind || 'news',
+    publisher: r.publisher || '',
+    sourceUrl: r.source_url || '',
+    publishedAt: r.published_at ? new Date(r.published_at).toISOString() : undefined,
     views: Number(r.views || 0),
     createdAt: new Date(r.created_at).toISOString(),
   }
@@ -219,8 +230,10 @@ function rowToUser(r: Record<string, any>): UserRecord {
     role: r.role || 'user',
     verified: !!r.verified,
     avatar: r.avatar || '',
+    cover: r.cover || '',
     bio: r.bio || '',
     location: r.location || '',
+    deletionRequested: !!r.deletion_requested,
     followers: Number(r.followers || 0),
     following: Number(r.following || 0),
     createdAt: new Date(r.created_at).toISOString(),
@@ -235,6 +248,7 @@ function rowToJeno(r: Record<string, any>): Jeno {
     topic: r.topic || '',
     message: r.message || '',
     speciesSlug: r.species_slug || '',
+    kind: r.kind || undefined,
     status: r.status || 'new',
     createdAt: new Date(r.created_at).toISOString(),
   }
@@ -378,7 +392,8 @@ export const neonRepo: Repo = {
         synonyms, taxonomy, summary, description, physical, identification, diet, behavior, reproduction,
         habitat, distribution, where_to_see, season, size_info, ecological_role, origin, conservation,
         conservation_bn, threats, conservation_actions, conflicting_info, sensitive,
-        color_tags, image, gallery, media, poet_views, sources, data_status, last_verified_at, featured, views, updated_at)
+        color_tags, image, gallery, media, poet_views, sources, stub_archive, data_status, last_verified_at,
+        status_locked_at, featured, views, updated_at)
       values (${s.slug}, ${s.type}, ${s.category}, ${s.group}, ${s.nameBn}, ${s.nameEn || ''}, ${s.scientificName || ''},
         ${J(s.otherNames)}, ${J(s.synonyms)}, ${JSON.stringify(s.taxonomy || {})},
         ${s.summary || ''}, ${s.description || ''}, ${s.physical || ''}, ${s.identification || ''}, ${s.diet || ''},
@@ -387,7 +402,8 @@ export const neonRepo: Repo = {
         ${s.origin || ''}, ${s.conservation || 'NE'}, ${s.conservationBn || ''}, ${s.threats || ''},
         ${s.conservationActions || ''}, ${s.conflictingInfo || ''}, ${!!s.sensitive},
         ${J(s.colorTags)}, ${s.image || ''}, ${J(s.gallery)}, ${J(s.media)}, ${J(s.poetViews)}, ${J(s.sources)},
-        ${s.dataStatus || 'partial'}, ${s.lastVerifiedAt || null}, ${!!s.featured}, ${s.views || 0}, now())
+        ${JSON.stringify(s.stubArchive || {})}, ${s.dataStatus || 'partial'}, ${s.lastVerifiedAt || null},
+        ${s.statusLockedAt || null}, ${!!s.featured}, ${s.views || 0}, now())
       on conflict (slug) do update set
         type = excluded.type, category = excluded.category, name_bn = excluded.name_bn,
         name_en = excluded.name_en, scientific_name = excluded.scientific_name,
@@ -402,7 +418,9 @@ export const neonRepo: Repo = {
         distribution = excluded.distribution, ecological_role = excluded.ecological_role, origin = excluded.origin,
         threats = excluded.threats, conservation_actions = excluded.conservation_actions,
         conflicting_info = excluded.conflicting_info, sensitive = excluded.sensitive, media = excluded.media,
+        stub_archive = excluded.stub_archive,
         data_status = excluded.data_status, last_verified_at = excluded.last_verified_at,
+        status_locked_at = excluded.status_locked_at,
         views = excluded.views, updated_at = now()
     `
     return s
@@ -631,9 +649,11 @@ export const neonRepo: Repo = {
   async createUser(u) {
     const sql = getSql()
     await sql`
-      insert into users (id, username, name, password_hash, email, role, verified, avatar, bio, location, followers, following, created_at)
+      insert into users (id, username, name, password_hash, email, role, verified, avatar, cover, bio, location,
+        deletion_requested, followers, following, created_at)
       values (${u.id}, ${u.username}, ${u.name}, ${u.passwordHash || ''}, ${u.email || ''}, ${u.role},
-        ${!!u.verified}, ${u.avatar || ''}, ${u.bio || ''}, ${u.location || ''}, ${u.followers || 0}, ${u.following || 0}, ${u.createdAt})
+        ${!!u.verified}, ${u.avatar || ''}, ${u.cover || ''}, ${u.bio || ''}, ${u.location || ''},
+        ${!!u.deletionRequested}, ${u.followers || 0}, ${u.following || 0}, ${u.createdAt})
       on conflict (username) do nothing
     `
     return u
@@ -661,7 +681,8 @@ export const neonRepo: Repo = {
     await sql`
       update users set name = ${next.name}, username = ${next.username}, password_hash = ${next.passwordHash || ''},
         email = ${next.email || ''}, role = ${next.role}, verified = ${!!next.verified}, avatar = ${next.avatar || ''},
-        bio = ${next.bio || ''}, location = ${next.location || ''}
+        cover = ${next.cover || ''}, bio = ${next.bio || ''}, location = ${next.location || ''},
+        deletion_requested = ${!!next.deletionRequested}
       where id = ${id}
     `
     return next
@@ -683,6 +704,9 @@ export const neonRepo: Repo = {
     }
     const cnt = await sql`select count(*)::int as c from follows where user_id = ${userId}`
     await sql`update users set followers = ${Number(asRows(cnt)[0]?.c || 0)} where id = ${userId}`
+    // যে অনুসরণ করছে সে লগইন-করা ব্যবহারকারী হলে তার “অনুসরণ” সংখ্যাও হালনাগাদ হয়
+    const mine = await sql`select count(*)::int as c from follows where follower_key = ${followerKey}`
+    await sql`update users set following = ${Number(asRows(mine)[0]?.c || 0)} where id = ${followerKey}`
     return !asRows(existing)[0]
   },
   async isFollowing(followerKey, userId) {
@@ -715,11 +739,15 @@ export const neonRepo: Repo = {
   async upsertNews(n) {
     const sql = getSql()
     await sql`
-      insert into news (id, slug, title, excerpt, body, cover, tags, published, pinned, views, created_at)
+      insert into news (id, slug, title, excerpt, body, cover, tags, published, pinned, kind, publisher,
+        source_url, published_at, views, created_at)
       values (${n.id}, ${n.slug}, ${n.title}, ${n.excerpt || ''}, ${n.body || ''}, ${n.cover || ''},
-        ${J(n.tags)}, ${!!n.published}, ${!!n.pinned}, ${n.views || 0}, ${n.createdAt})
+        ${J(n.tags)}, ${!!n.published}, ${!!n.pinned}, ${n.kind || 'news'}, ${n.publisher || ''},
+        ${n.sourceUrl || ''}, ${n.publishedAt || null}, ${n.views || 0}, ${n.createdAt})
       on conflict (slug) do update set title = excluded.title, excerpt = excluded.excerpt, body = excluded.body,
-        cover = excluded.cover, tags = excluded.tags, published = excluded.published, pinned = excluded.pinned
+        cover = excluded.cover, tags = excluded.tags, published = excluded.published, pinned = excluded.pinned,
+        kind = excluded.kind, publisher = excluded.publisher, source_url = excluded.source_url,
+        published_at = excluded.published_at
     `
     return n
   },
@@ -737,9 +765,9 @@ export const neonRepo: Repo = {
   async createJeno(j) {
     const sql = getSql()
     await sql`
-      insert into jeno (id, name, contact, topic, message, species_slug, status, created_at)
+      insert into jeno (id, name, contact, topic, message, species_slug, kind, status, created_at)
       values (${j.id}, ${j.name}, ${j.contact || ''}, ${j.topic || ''}, ${j.message || ''},
-        ${j.speciesSlug || ''}, ${j.status || 'new'}, ${j.createdAt})
+        ${j.speciesSlug || ''}, ${j.kind || ''}, ${j.status || 'new'}, ${j.createdAt})
     `
     return j
   },
@@ -748,7 +776,8 @@ export const neonRepo: Repo = {
     const cur = await sql`select * from jeno where id = ${id}`
     if (!asRows(cur)[0]) return null
     const next = { ...rowToJeno(asRows(cur)[0]), ...patch }
-    await sql`update jeno set status = ${next.status}, topic = ${next.topic}, message = ${next.message} where id = ${id}`
+    await sql`update jeno set status = ${next.status}, topic = ${next.topic}, message = ${next.message},
+      kind = ${next.kind || ''} where id = ${id}`
     return next
   },
   async deleteJeno(id) {
@@ -798,7 +827,8 @@ export const neonRepo: Repo = {
   // ---------- coverage ----------
   async coverage(): Promise<CoverageRow[]> {
     const sql = getSql()
-    const rows = await sql`
+    // ছাতা-ক্যাটাগরি (প্রাণীজগৎ) ও আলাদা রো — মোটে গোনা হয় না (lib/coverage.ts)
+    const aggregates = await sql`
       select "group",
              count(*)::int as total,
              count(*) filter (where data_status = 'verified')::int as verified,
@@ -806,6 +836,10 @@ export const neonRepo: Repo = {
              count(*) filter (where coalesce(name_bn,'') = '')::int as missing_name_bn,
              count(*) filter (where coalesce(image,'') = '')::int as missing_image,
              count(*) filter (where coalesce(sources,'[]') in ('[]',''))::int as missing_source,
+             count(*) filter (where type in ('prani','udbhid') and coalesce(other_names,'[]') in ('[]',''))::int as missing_other_names,
+             count(*) filter (where type in ('prani','udbhid') and coalesce(origin,'') = '')::int as missing_origin,
+             count(*) filter (where type in ('prani','udbhid','sthan') and coalesce(size_info,'') = '')::int as missing_size,
+             count(*) filter (where type in ('prani','udbhid') and coalesce(taxonomy,'{}') in ('{}',''))::int as missing_taxonomy,
              max(updated_at) as last_updated
       from species group by "group"
       union all
@@ -816,24 +850,33 @@ export const neonRepo: Repo = {
              count(*) filter (where coalesce(name_bn,'') = '')::int as missing_name_bn,
              count(*) filter (where coalesce(image,'') = '')::int as missing_image,
              count(*) filter (where coalesce(sources,'[]') in ('[]',''))::int as missing_source,
+             count(*) filter (where coalesce(other_names,'[]') in ('[]',''))::int as missing_other_names,
+             count(*) filter (where coalesce(origin,'') = '')::int as missing_origin,
+             count(*) filter (where coalesce(size_info,'') = '')::int as missing_size,
+             count(*) filter (where coalesce(taxonomy,'{}') in ('{}',''))::int as missing_taxonomy,
              max(updated_at) as last_updated
       from species where type = 'prani'`
-    const map = new Map<string, any>()
-    for (const r of asRows(rows)) map.set(r.group, r)
-    return CATEGORIES.map((c) => {
-      const r = map.get(c.id) as any
-      return {
-        group: c.id,
-        label: c.label,
-        total: Number(r?.total || 0),
-        verified: Number(r?.verified || 0),
-        partial: Number(r?.partial || 0),
-        missingNameBn: Number(r?.missing_name_bn || 0),
-        missingImage: Number(r?.missing_image || 0),
-        missingSource: Number(r?.missing_source || 0),
-        lastUpdated: r?.last_updated ? new Date(r.last_updated).toISOString() : undefined,
-      }
-    })
+
+    const byGroup = new Map<string, CoverageAggregate>()
+    for (const r of asRows(aggregates)) {
+      byGroup.set(String(r.group), {
+        group: r.group,
+        total: Number(r.total || 0),
+        verified: Number(r.verified || 0),
+        partial: Number(r.partial || 0),
+        missingNameBn: Number(r.missing_name_bn || 0),
+        missingImage: Number(r.missing_image || 0),
+        missingSource: Number(r.missing_source || 0),
+        missingFields: {
+          otherNames: Number(r.missing_other_names || 0),
+          origin: Number(r.missing_origin || 0),
+          sizeOrHeight: Number(r.missing_size || 0),
+          taxonomy: Number(r.missing_taxonomy || 0),
+        },
+        lastUpdated: r.last_updated ? new Date(r.last_updated).toISOString() : undefined,
+      })
+    }
+    return mapCoverageAggregates([...byGroup.values()])
   },
 
   // ---------- save ----------

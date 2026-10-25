@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
-  const _rl = rateGuard(req, RULES.upload, 'upload')
+  const _rl = await rateGuard(req, RULES.upload, 'upload')
   if (!_rl.ok) return tooManyRequests(_rl)
 
   const form = await req.formData().catch(() => null)

@@ -5,7 +5,8 @@ import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
-import { CATEGORIES, normalizeCategoryName } from '@/lib/categories'
+import { normalizeCategoryName } from '@/lib/categories'
+import { buildCoverageRows } from '@/lib/coverage'
 import { iucnInfo, normalizeConservationBn } from '@/lib/utils'
 import { ensureAdminUser } from '@/lib/bootstrap'
 import { DEFAULT_SETTINGS, SPECIES, SEED_POSTS, SEED_USERS, SEED_NEWS } from '@/data/seed'
@@ -190,13 +191,27 @@ function migrate(db: DB): DB {
   return db
 }
 
+/**
+ * ডেটা লেখা — কম্প্যাক্ট JSON (ইন্ডেন্টেশন ছাড়া) + অ্যাটমিক রিপ্লেস।
+ *
+ * কেন: ১৪০০+ রেকর্ডের ফাইলে প্রতিটি লাইক/মন্তব্যে পুরো ফাইল লেখা হয়; ইন্ডেন্ট-সহ
+ * ১৮MB+ লেখা ধীর ছিল এবং লেখার মাঝপথে প্রসেস মরে গেলে db.json অর্ধেক লেখা হয়ে
+ * নষ্ট হওয়ার ঝুঁকি ছিল। এখন টেম্প ফাইলে লিখে `rename` করা হয় (একই ডিস্কে অ্যাটমিক)।
+ */
 function write(db: DB) {
   globalAny.__pb_db = db
+  const tmp = `${DATA_FILE}.tmp`
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true })
-    fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2), 'utf8')
+    fs.writeFileSync(tmp, JSON.stringify(db), 'utf8')
+    fs.renameSync(tmp, DATA_FILE)
   } catch {
     /* read-only fs (e.g. serverless) — keep in memory */
+    try {
+      fs.rmSync(tmp, { force: true })
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -510,6 +525,9 @@ export const jsonRepo: Repo = {
     }
     const user = db.users.find((u) => u.id === userId)
     if (user) user.followers = db.follows.filter((f) => f.userId === userId).length
+    // যে অনুসরণ করছে সে ব্যবহারকারী হলে তার “অনুসরণ” সংখ্যাও হালনাগাদ
+    const me = db.users.find((u) => u.id === followerKey)
+    if (me) me.following = db.follows.filter((f) => f.followerKey === followerKey).length
     write(db)
     return following
   },
@@ -595,22 +613,8 @@ export const jsonRepo: Repo = {
 
   // ---------- coverage ----------
   async coverage(): Promise<CoverageRow[]> {
-    const db = read()
-    const rows = CATEGORIES.map((c) => {
-      const rows = db.species.filter((s) => (c.id === 'pranijogot' ? s.type === 'prani' : s.group === c.id))
-      return {
-        group: c.id,
-        label: c.label,
-        total: rows.length,
-        verified: rows.filter((s) => (s.dataStatus || 'partial') === 'verified').length,
-        partial: rows.filter((s) => (s.dataStatus || 'partial') !== 'verified').length,
-        missingNameBn: rows.filter((s) => !s.nameBn || !s.nameBn.trim()).length,
-        missingImage: rows.filter((s) => !s.image).length,
-        missingSource: rows.filter((s) => !s.sources || s.sources.length === 0).length,
-        lastUpdated: rows.map((s) => s.updatedAt || '').sort().pop() || undefined,
-      }
-    })
-    return rows
+    // ছাতা-ক্যাটাগরি (প্রাণীজগৎ) আলাদা রো-তে থাকে, কিন্তু মোটে গোনা হয় না — lib/coverage.ts দেখুন
+    return buildCoverageRows(read().species)
   },
 
   // ---------- save ----------
