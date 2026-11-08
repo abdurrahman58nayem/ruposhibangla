@@ -167,9 +167,10 @@ export const MORE_ANIMALS: Species[] = [
   },
   {
     slug: 'shatbhaya', type: 'prani', group: 'pakhi', category: 'পাখি',
-    nameBn: 'সাত ভাই', nameEn: 'Jungle Babbler', scientificName: 'Turdoides striata',
-    otherNames: ['সাতভায়া', 'সাত শালিক', 'সাত ভাই ছেলে'],
-    taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Aves', order: 'Passeriformes', family: 'Leiothrichidae', genus: 'Turdoides', species: 'Turdoides striata' },
+    nameBn: 'সাত ভাই', nameEn: 'Jungle Babbler', scientificName: 'Argya striata',
+    synonyms: ['Turdoides striata', 'jungle-satvai'],
+    otherNames: ['সাতভায়া', 'সাত শালিক', 'সাত ভাই ছেলে', 'জঙ্গল সাতভাই'],
+    taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Aves', order: 'Passeriformes', family: 'Leiothrichidae', genus: 'Argya', species: 'Argya striata' },
     summary: 'সবসময় দলে ঘুরে বেড়ানো কোলাহলপূর্ণ পাখি; গ্রামের ঝোপে-বাগানে সর্বত্র।',
     description:
       'সাত ভাই (সাতভায়া) সবসময় ৬-১০টি পাখির দলে থাকে; মাটিতে লাফিয়ে লাফিয়ে পাতা উল্টে পোকা খায়। এর নাম "সাত ভাই" হলেও দলে সাতটির বেশি-কমও হতে পারে। গ্রামের কবিতা ও ছড়ায় এই পাখির উল্লেখ আছে।',
@@ -187,8 +188,9 @@ export const MORE_ANIMALS: Species[] = [
     threats: 'কোনো বড় হুমকি নেই।',
     conservationActions: 'গ্রামীণ ঝোপ-জঙ্গল রক্ষা।',
     colorTags: ['#8a7f6a', '#5a5240', '#c8c0a8'],
-    image: '', dataStatus: 'partial',
-    sources: [IUCN, BIRDS_BD, GBIF],
+    image: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Jungle_Babbler_Turdoides_striata_by_Dr._Raju_Kasambe_DSCN7472_%2810%29.jpg',
+    gallery: ['/seed/prani/shatbhaya.jpg'], dataStatus: 'partial',
+    sources: [IUCN, BIRDS_BD, GBIF, { title: 'ছবির মূল ফাইল — Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Jungle_Babbler_Turdoides_striata_by_Dr._Raju_Kasambe_DSCN7472_%2810%29.jpg' }],
   },
   {
     slug: 'tuntuni', type: 'prani', group: 'pakhi', category: 'পাখি',
@@ -323,9 +325,9 @@ export const MORE_ANIMALS: Species[] = [
   },
   {
     slug: 'batashi', type: 'prani', group: 'pakhi', category: 'পাখি',
-    nameBn: 'বাতাসি', nameEn: 'House Swift', scientificName: 'Apus affinis',
-    otherNames: ['তেলে বাতাসি', 'গৃহ বাতাসি'],
-    taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Aves', order: 'Apodiformes', family: 'Apodidae', genus: 'Apus', species: 'Apus affinis' },
+    nameBn: 'বাতাসি', nameEn: 'Little Swift', scientificName: 'Apus affinis',
+    otherNames: ['তেলে বাতাসি', 'গৃহ বাতাসি', 'লিটল সুইফট'],
+    taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Aves', order: 'Caprimulgiformes', family: 'Apodidae', genus: 'Apus', species: 'Apus affinis' },
     summary: 'সারা দিন আকাশে চিৎকার করে উড়ে বেড়ানো ছোট কালো পাখি; শহরে-গ্রামে সর্বত্র।',
     description:
       'বাতাসি প্রায় কখনো মাটিতে বসে না — খাবার, জল ও সঙ্গী সবই আকাশেই খোঁজে। সন্ধ্যায় বড় বড় দলে বাড়ির চালের নিচে ও কংক্রিটের ফাঁকে বাসা বাঁধে। চিৎকার করে ডাকে।',
@@ -400,8 +402,8 @@ export const MORE_ANIMALS: Species[] = [
   },
   {
     slug: 'hutum-pecha', type: 'prani', group: 'pakhi', category: 'পাখি',
-    nameBn: 'হুতোম পেঁচা', nameEn: 'Collared Scops Owl', scientificName: 'Otus bakkamoena',
-    otherNames: ['হুতুম পেঁচা', 'কানপেঁচা'],
+    nameBn: 'হুতোম পেঁচা', nameEn: 'Indian Scops Owl', scientificName: 'Otus bakkamoena',
+    otherNames: ['হুতুম পেঁচা', 'কানপেঁচা', 'ইন্ডিয়ান স্কপস আউল'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Aves', order: 'Strigiformes', family: 'Strigidae', genus: 'Otus', species: 'Otus bakkamoena' },
     summary: 'রাতের ছোট পেঁচা; "হুতুম-হুতুম" ডাকে — বাংলার শিশু-কবিতায় প্রসিদ্ধ।',
     description:
@@ -863,8 +865,8 @@ export const MORE_ANIMALS: Species[] = [
   },
   {
     slug: 'batashi-machh', type: 'prani', group: 'machh', category: 'মাছ',
-    nameBn: 'বাতাসি', nameEn: 'Indian Potasi', scientificName: 'Pseudeutropius atherinoides',
-    otherNames: ['বাতাসি মাছ', 'বাচা পাতি', 'পাতাসি'],
+    nameBn: 'বাতাসি মাছ', nameEn: 'Indian Potasi', scientificName: 'Pseudeutropius atherinoides',
+    otherNames: ['বাতাসি', 'বাচা পাতি', 'পাতাসি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Actinopterygii', order: 'Siluriformes', family: 'Schilbeidae', genus: 'Pseudeutropius', species: 'Pseudeutropius atherinoides' },
     summary: 'ছোট চ্যাপ্টা রূপালি মাছ; ঝাঁকে ঝাঁকে জলের ওপরে চলে — বাতাসের মতো দ্রুত।',
     description:

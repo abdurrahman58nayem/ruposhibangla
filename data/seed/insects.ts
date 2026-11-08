@@ -56,7 +56,7 @@ export const INSECTS: Species[] = [
   },
   {
     slug: 'jonaki-poka', type: 'prani', group: 'kitpotongo', category: 'কীটপতঙ্গ',
-    nameBn: 'জোনাকি পোকা', nameEn: 'Firefly', scientificName: 'Luciola spp.',
+    nameBn: 'জোনাকি পোকা', nameEn: 'Firefly (Luciola genus)', scientificName: 'Luciola spp.',
     otherNames: ['জোনাকির আলো', 'জোনাকি'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Arthropoda', class: 'Insecta', order: 'Coleoptera', family: 'Lampyridae', genus: 'Luciola' },
     summary: 'রাতে আলো জ্বালিয়ে সঙ্গী খোঁজা পোকা — গ্রামবাংলার বর্ষার রাতের পরিচিত দৃশ্য।',

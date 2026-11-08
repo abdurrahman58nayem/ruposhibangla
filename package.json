@@ -11,7 +11,7 @@
     "test": "npm run test:unit && npm run test:contract",
     "audit:images": "node scripts/audit-species-images.cjs",
     "test:unit": "vitest run",
-    "test:contract": "node scripts/check-species-images.cjs && node scripts/check-smart-image.cjs && node scripts/check-seed-media.cjs && node scripts/check-species-media.cjs",
+    "test:contract": "node scripts/check-species-images.cjs && node scripts/check-smart-image.cjs && node scripts/check-seed-media.cjs && node scripts/check-species-media.cjs && node scripts/check-marine-fish-crosswalk12-14.cjs && node scripts/check-marine-fish-batch15.cjs && node scripts/check-marine-fish-batch16.cjs && node scripts/check-marine-fish-batch17.cjs && node scripts/check-marine-fish-batch18.cjs && node scripts/check-marine-fish-batch19.cjs && node scripts/check-marine-fish-batch20.cjs && node scripts/check-marine-fish-batch21.cjs && node scripts/check-marine-fish-batch22.cjs && node scripts/check-marine-fish-batch23.cjs && node scripts/check-marine-fish-batch24.cjs && node scripts/check-marine-fish-batch25.cjs && node scripts/check-marine-fish-batch26.cjs",
     "stats": "node scripts/site-stats.mjs"
   },
   "dependencies": {

@@ -549,7 +549,7 @@ export const ANIMALS: SpeciesSeed[] = [
     type: 'prani',
     category: 'কীটপতঙ্গ',
     nameBn: 'জোনাকি',
-    nameEn: 'Firefly',
+    nameEn: 'Fireflies (Luciolinae subfamily)',
     scientificName: 'Luciolinae spp.',
     otherNames: ['জোনাকি পোকা', 'জোনাকির আলো'],
     summary: 'রাতের অন্ধকারে নিজের আলোয় ডাক দেয়। বিজ্ঞানের ভাষায় শান্ত আলোর এক বিস্ময়।',
