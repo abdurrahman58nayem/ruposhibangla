@@ -166,7 +166,8 @@ export const MORE_BIRDS11: Species[] = [
   {
     slug: 'dagipet-hutompecha', type: 'prani', group: 'pakhi', category: 'পাখি',
     nameBn: 'দাগিপেট হুতোম পেঁচা', nameEn: 'Spot-bellied Eagle-Owl', scientificName: 'Ketupa nipalensis',
-    otherNames: ['পাহাড়ি হুতোম পেঁচা', 'বড় কান-তোলা পেঁচা'],
+    synonyms: ['Bubo nipalensis', 'spotbelly-eagleowl'],
+    otherNames: ['পাহাড়ি হুতোম পেঁচা', 'বড় কান-তোলা পেঁচা', 'দাগপেট হুতুমপেঁচা'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Aves', order: 'Strigiformes', family: 'Strigidae', genus: 'Ketupa', species: 'Ketupa nipalensis' },
     summary: 'পাহাড়ি চিরসবুজ বনের বিশাল পেঁচা; বুকে হৃদপিণ্ডের মতো দাগ ও মাথায় বড় কান-তুলি।',
     description: 'দাগিপেট হুতোম পেঁচা বাংলাদেশের সবচেয়ে বড় পেঁচাদের একটি — লম্বায় ৫০ সেমি ছাড়িয়ে যায়। দেহে গাঢ় বাদামি-কালচে রঙ, বুকে আর পেটে সাদা-কালো ডিম্বাকৃতি ছোপ, আর মাথায় দুই পাশে খাড়া কান-তুলি। হিমালয়ের পাদদেশসহ পাহাড়ি চিরসবুজ বনে বাস করে, তাই বাংলাদেশে একে দেখতে হলে সিলেট ও পার্বত্য চট্টগ্রামের গভীর বনে যেতে হয়। সন্ধ্যা নেমে রাত হলে গভীর ও লম্বা ডাকে বনের পরিবেশ আন্দোলিত করে — শুনতে অনেকটা দূরের ঢোলের মতো।',

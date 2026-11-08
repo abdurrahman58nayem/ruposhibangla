@@ -70,6 +70,37 @@ export const IUCN_VERIFIED_OVERRIDES: Record<
     conservationBn:
       'বৈশ্বিক IUCN: এখনো মূল্যায়ন করা হয়নি (NE); তবে পারস্য উপসাগরীয় আঞ্চলিক তালিকায় বিপন্ন (EN)',
   },
+  // --- আঞ্চলিকভাবে বিলুপ্ত (IUCN Bangladesh Red List 2015: RE) — বৈশ্বিক কোড অক্ষুণ্ণ রেখে দেশীয় অবস্থা স্পষ্ট করা ---
+  hyena: {
+    conservation: 'NT',
+    conservationBn:
+      'বৈশ্বিক IUCN: প্রায়-বিপদগ্রস্ত (NT); তবে IUCN Bangladesh Red List 2015 অনুযায়ী বাংলাদেশে আঞ্চলিকভাবে বিলুপ্ত (Regionally Extinct, RE) — কেবল ঐতিহাসিক রেকর্ড',
+  },
+  'sloth-bhalluk': {
+    conservation: 'VU',
+    conservationBn:
+      'বৈশ্বিক IUCN: ঝুঁকিপূর্ণ (VU); তবে IUCN Bangladesh Red List 2015 অনুযায়ী বাংলাদেশে আঞ্চলিকভাবে বিলুপ্ত (Regionally Extinct, RE) — কেবল ঐতিহাসিক রেকর্ড',
+  },
+  krishnosar: {
+    conservation: 'LC',
+    conservationBn:
+      'বৈশ্বিক IUCN: ন্যূনতম বিপদগ্রস্ত (LC); তবে IUCN Bangladesh Red List 2015 অনুযায়ী বাংলাদেশে আঞ্চলিকভাবে বিলুপ্ত (Regionally Extinct, RE) — কেবল ঐতিহাসিক রেকর্ড',
+  },
+  'buno-mohish': {
+    conservation: 'EN',
+    conservationBn:
+      'বৈশ্বিক IUCN: বিপন্ন (EN); IUCN Bangladesh Red List 2015 অনুযায়ী বাংলাদেশে আঞ্চলিকভাবে বিলুপ্ত (Regionally Extinct, RE) — কেবল ঐতিহাসিক রেকর্ড',
+  },
+  gonrar: {
+    conservation: 'VU',
+    conservationBn:
+      'বৈশ্বিক IUCN: ঝুঁকিপূর্ণ (VU); IUCN Bangladesh Red List 2015 অনুযায়ী বাংলাদেশে আঞ্চলিকভাবে বিলুপ্ত (Regionally Extinct, RE) — কেবল ঐতিহাসিক রেকর্ড',
+  },
+  gourh: {
+    conservation: 'VU',
+    conservationBn:
+      'বৈশ্বিক IUCN: ঝুঁকিপূর্ণ (VU); বাংলাদেশ ২০০০ রেড লিস্টে আঞ্চলিকভাবে বিলুপ্ত ছিল, ২০১৫ পুনর্মূল্যায়নে দেশে স্থায়ী বন্য জনসংখ্যার নিশ্চিত প্রমাণ নেই — উপস্থিতি অত্যন্ত অনিশ্চিত',
+  },
 }
 
 /**
@@ -102,7 +133,19 @@ export const UNVERIFIED_REASONS: Record<
     status: 'identity_uncertain',
     category: 'ছবি ও প্রজাতি-পরিচয় যাচাই বাকি',
     reason:
-      'এই রেকর্ডে আগে মাছের বৈজ্ঞানিক নাম (Pseudeutropius atherinoides) যুক্ত ছিল; বিবরণ অনুযায়ী তা সংশোধন করে গৃহ-বাতাসি পাখি (Apus affinis) করা হয়েছে, তবে সংযুক্ত ছবির প্রজাতি-পরিচয় চূড়ান্তভাবে যাচাই করা বাকি।',
+      'এই রেকর্ডে আগে মাছের বৈজ্ঞানিক নাম (Pseudeutropius atherinoides) ও ভুল ইংরেজি নাম (House Swift) ছিল; বর্তমানে সঠিক পরিচয় লিটল সুইফট (Apus affinis) হিসেবে সংশোধন করা হয়েছে (House Swift হলো Apus nipalensis — আলাদা রেকর্ডে আছে)। তবে সংযুক্ত স্থানীয় ছবির প্রজাতি-পরিচয় চূড়ান্তভাবে যাচাই করা বাকি।',
+  },
+  'dhusorchokh-bulbul': {
+    status: 'review',
+    category: 'বাংলাদেশে বন্য উপস্থিতির নিশ্চিত রেকর্ড নেই',
+    reason:
+      'Grey-eyed Bulbul (Iole propinqua) মূলত ইন্দোচীন-থাইল্যান্ড অঞ্চলের প্রজাতি; Avibase ও বাংলাদেশের প্রচলিত পাখি-চেকলিস্টে (Clements 2022, ৮২৭ প্রজাতি) এটি নেই। বাংলাদেশে এর ঘনিষ্ঠ সমজাতীয় প্রজাতি কাছাড় বুলবুল (Iole cacharensis) আলাদা রেকর্ডে রয়েছে — সম্ভাব্য ভুল শনাক্তকরণ; বিশেষজ্ঞ যাচাই বাকি।',
+  },
+  'sadapet-katthokra': {
+    status: 'review',
+    category: 'বাংলাদেশে বন্য উপস্থিতির নিশ্চিত রেকর্ড নেই',
+    reason:
+      'White-bellied Woodpecker (Dryocopus javensis)-এর বিস্তৃতি মূলত পশ্চিমঘাট, উত্তর-পূর্ব ভারতের কিয়দংশ ও দক্ষিণ-পূর্ব এশিয়া; Avibase ও বাংলাদেশের প্রচলিত পাখি-চেকলিস্টে (Clements 2022, ৮২৭ প্রজাতি) এর কোনো নিশ্চিত বাংলাদেশ রেকর্ড নেই। রেকর্ডটি বিশেষজ্ঞ যাচাইয়ের আগ পর্যন্ত পর্যালোচনাধীন রাখা হলো।',
   },
 
   // --- ২) বাংলাদেশে বর্তমান বন্য উপস্থিতি অনিশ্চিত বা ঐতিহাসিক ---
@@ -264,6 +307,33 @@ export const UNVERIFIED_REASONS: Record<
     reason:
       '“Scolopendra spp.” গণ-স্তরের নাম; বাংলাদেশে Scolopendra subspinipes ও S. morsitans-সহ একাধিক প্রজাতির কান পাঁচা বা তেঁতুলিয়া বিছা পাওয়া যায়। একক প্রজাতি নির্দিষ্ট না থাকায় যাচাই করা যায়নি।',
   },
+
+  // --- ৪) সরীসৃপ ধাপ ১১: সাম্প্রতিক প্রজাতি-বিভাজন ও উপস্থিতি-সতর্কতা (২০২৬-১০-২৬) ---
+  'northern-smooth-scaled-gecko': {
+    status: 'review',
+    category: 'প্রজাতি-বিভাজনে জনতা-ওভারল্যাপ',
+    reason:
+      'Hemidactylus aquilonius (McMahan & Zug, 2007) H. bowringii জট থেকে আলাদা করা প্রজাতি; RepFocus বাংলাদেশ চেকলিস্ট Bauer et al. (2010), Mahony (2011), Rabbe et al. (2017, 2022) রেফে একে তালিকাভুক্ত করে। বাংলাদেশের জাতীয় চেকলিস্ট ও বিদ্যমান “বাউরিং গেকো” (bowrings-gecko) রেকর্ডে ঐতিহাসিকভাবে একই জনতা bowringii নামে লিপিবদ্ধ—দুই রেকর্ডের আংশিক ওভারল্যাপ থাকায় নমুনাভিত্তিক চূড়ান্ত নাম-নিষ্পত্তি বাকি।',
+  },
+  'eastern-bronzeback': {
+    status: 'review',
+    category: 'প্রজাতি-বিভাজনে জনতা-ওভারল্যাপ',
+    reason:
+      'Dendrelaphis proarchos (Wall, 1909) দীর্ঘদিন D. pictus-এর সমার্থক থাকার পর Vogel & van Rooijen (2011) পুনঃপ্রতিষ্ঠা করেন; The Reptile Database-র বিন্যাসে বাংলাদেশ স্পষ্ট অন্তর্ভুক্ত এবং Haidar et al. (2025) রেফারেন্সে ব্যবহৃত। বিদ্যমান “চিত্রা দারুশ সাপ” (painted-bronzeback, D. pictus) রেকর্ডের সঙ্গে বাংলাদেশের জনতার ঐতিহাসিক ওভারল্যাপ থাকায় নমুনাভিত্তিক নাম-নিষ্পত্তি বাকি; IUCN-এ এখনো পৃথক মূল্যায়ন নেই (NE)।',
+  },
+  'russells-kukri-snake': {
+    status: 'review',
+    category: 'প্রজাতি-বিভাজনে জনতা-ওভারল্যাপ ও সাম্প্রতিক রেকর্ড',
+    reason:
+      'Oligodon russelius (Daudin, 1803) Bandara et al. (2022)-এর O. arnensis জট-সংশোধনে পুনঃপ্রতিষ্ঠিত; RepFocus বাংলাদেশে Barkat & Rabbe (2022)-এর “confirmed record” উদ্ধৃত করে। বিদ্যমান “কুকরি সাপ” (kukri-sap, O. arnensis) রেকর্ডের সঙ্গে জনতার ঐতিহাসিক ওভারল্যাপ এবং The Reptile Database-র বিন্যাস-বিবরণে বাংলাদেশ এখনো যুক্ত না হওয়ায় নমুনাভিত্তিক নাম-নিষ্পত্তি বাকি; IUCN-এ পৃথক মূল্যায়ন নেই (NE)।',
+  },
+  'east-indian-leopard-gecko': {
+    status: 'review',
+    category: 'বাংলাদেশে বন্য উপস্থিতির সাম্প্রতিক প্রমাণ অপ্রতুল',
+    reason:
+      'Eublepharis hardwickii Gray, 1827-এর type-locality চট্টগ্রাম এবং The Reptile Database-র বিন্যাসে বাংলাদেশ অন্তর্ভুক্ত; কিন্তু RepFocus-এর Eublepharis গণ-পাতা সাম্প্রতিক বাংলাদেশ নমুনার অভাবে উপস্থিতি “নিশ্চিতকরণ বাকি (needs confirmation)” বলে সতর্কতা দেয়। চট্টগ্রামের ঐতিহাসিক type-ভিত্তি বহাল রেখে রেকর্ডটি পর্যালোচনাধীন রাখা হলো; লক্ষ্যভিত্তিক নিশাচর-জরিপ ও ভাউচার-নমুনাই পরবর্তী নিষ্পত্তির পথ।',
+  },
+
 }
 
 /**

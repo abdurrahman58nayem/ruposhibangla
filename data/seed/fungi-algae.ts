@@ -51,7 +51,7 @@ export const FUNGI_ALGAE: Species[] = [
     sources: [GBIF],
   },
   {
-    slug: 'azolla', type: 'udbhid', group: 'chhatrak', category: 'শৈবাল',
+    slug: 'azolla', type: 'udbhid', group: 'udbhidful', category: 'জলজ উদ্ভিদ',
     nameBn: 'আজোল্লা', nameEn: 'Mosquito Fern', scientificName: 'Azolla pinnata',
     otherNames: ['জলের ফার্ন'],
     taxonomy: { kingdom: 'Plantae', phylum: 'Tracheophyta', class: 'Polypodiopsida', order: 'Salviniales', family: 'Salviniaceae', genus: 'Azolla', species: 'Azolla pinnata' },

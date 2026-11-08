@@ -115,8 +115,8 @@ export const MORE_FISH: Species[] = [
   },
   {
     slug: 'nuna-tengra', type: 'prani', group: 'machh', category: 'মাছ',
-    nameBn: 'নোনা টেংরা', nameEn: 'Long Whiskered Catfish', scientificName: 'Mystus gulio',
-    otherNames: ['নুনা টেংরা', 'নোনা কাবাসি'],
+    nameBn: 'নোনা টেংরা', nameEn: 'Gulio Catfish', scientificName: 'Mystus gulio',
+    otherNames: ['নুনা টেংরা', 'নোনা কাবাসি', 'Long Whiskered Catfish'],
     taxonomy: { kingdom: 'Animalia', phylum: 'Chordata', class: 'Actinopterygii', order: 'Siluriformes', family: 'Bagridae', genus: 'Mystus', species: 'Mystus gulio' },
     summary: 'লোনা ও মোহনার জলে বসবাস করা টেংরা জাতের মাছ; সুন্দরবন-উপকূলে সাধারণ।',
     description:
