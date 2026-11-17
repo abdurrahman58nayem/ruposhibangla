@@ -13,3 +13,9 @@ next-env.d.ts
 
 # image_search-এ ডাউনলোড হওয়া অস্থায়ী ছবি (রিসাইজ করার পর public/seed-এ যায়)
 image-search/
+
+# রিল রেন্ডারের মাঝপথের ফ্রেম ও বড় মিডিয়া (গিটে রাখা হয় না)
+.studio/render*/
+.studio/deliver*/*.mp4
+.studio/deliver*/*.zip
+.studio/deliver*/*.wav
