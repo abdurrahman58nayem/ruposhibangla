@@ -508,6 +508,9 @@ def _plate(s):
     return plates
 
 
+_PLACED = {}
+
+
 def placed_beats(s):
     """BEATS rows, with the lower block moved to the quietest readable strip.
 
@@ -515,12 +518,16 @@ def placed_beats(s):
     lines can never collide, and the block is slid as a unit to the place where
     the type has the most contrast, the least detail and no bird under it.
     """
+    hit = _PLACED.get(s["id"])
+    if hit is not None:
+        return hit
     rows = layout_beats(s["id"])
     plates = _plate(s)
     top_rows, low_rows = [], []
     for r in rows:
         (top_rows if r[0] == 0 else low_rows).append(r)
     if not low_rows:
+        _PLACED[s["id"]] = rows
         return rows
     rows2 = sorted(low_rows, key=lambda r: (r[0], r[4]))
     wid, hgt = 0, 0
@@ -547,6 +554,7 @@ def placed_beats(s):
         lay = T.flow(txt, key, px)
         out.append((i, style, txt, c, int(yy), al))
         yy += lay.image.height + 26
+    _PLACED[s["id"]] = out
     return out
 
 
