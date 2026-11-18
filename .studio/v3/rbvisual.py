@@ -11,7 +11,7 @@ Design notes
 from __future__ import annotations
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 import rbtext as T
 
@@ -75,38 +75,63 @@ def _vignette_strength(t):
     return 0.55
 
 
+_VIG_CACHE = {}
+
+
+def _vignette_mask(strength):
+    key = round(strength, 4)
+    if key not in _VIG_CACHE:
+        d = np.sqrt(((_NX - 0.5) * 1.15) ** 2 + ((_NY - 0.5) * 0.95) ** 2)
+        v = 1 - strength * smoothstep(0.28, 0.78, d)
+        _VIG_CACHE[key] = v.astype(np.float32)[:, :, None]
+    return _VIG_CACHE[key]
+
+
 def apply_grade(img, warm=0.0, cool=0.0, contrast=1.06, lift=0.0, vignette=0.0,
                 grain=0.0, t=0.0, sat=1.0, gamma=1.0):
     """Warm filmic grade.
 
-    gamma < 1 lifts the mid-tones (the reference reels sit around 108 mean
-    luma); sat restores the colour the scrims were eating.
+    Everything that only depends on a pixel value is precomputed as a
+    256-entry table per channel, so a frame costs two numpy passes instead of
+    seven. The look is unchanged: warm/cool -> gamma -> saturation -> contrast
+    -> vignette -> grain, same order as before.
     """
-    a = np.asarray(img, dtype=np.float32) / 255.0
-    if warm:
-        a[:, :, 0] *= 1 + 0.10 * warm
-        a[:, :, 1] *= 1 + 0.03 * warm
-        a[:, :, 2] *= 1 - 0.08 * warm
-    if cool:
-        a[:, :, 2] *= 1 + 0.12 * cool
-        a[:, :, 0] *= 1 - 0.05 * cool
-    a = np.clip(a, 0, 1)
+    u8 = np.arange(256, dtype=np.float32) / 255.0
+
+    # per-channel value curve: warm/cool tint, gamma, contrast, lift
+    m = np.stack([
+        np.clip(u8 * (1 + 0.10 * warm) * (1 - 0.05 * cool), 0, 1),
+        np.clip(u8 * (1 + 0.03 * warm), 0, 1),
+        np.clip(u8 * (1 - 0.08 * warm) * (1 + 0.12 * cool), 0, 1),
+    ])
     if gamma != 1.0:
-        a = np.power(a, gamma)
+        m = np.power(m, gamma)
+    m = (m - 0.5) * contrast + 0.5 + lift
+    lut = np.ascontiguousarray(np.clip(m, 0, 1).T) * 255.0   # (256, 3)
+    lut = lut.astype(np.uint8)
+
+    arr = np.asarray(img)
+    a = np.empty(arr.shape, dtype=np.uint8)
+    for c in range(3):                        # per-channel table lookup
+        a[..., c] = lut[:, c][arr[..., c]]
     if sat != 1.0:
-        g = a @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
-        a = g[:, :, None] + (a - g[:, :, None]) * sat
-    a = (a - 0.5) * contrast + 0.5 + lift
-    if vignette:
-        d = np.sqrt(((_NX - 0.5) * 1.15) ** 2 + ((_NY - 0.5) * 0.95) ** 2)
-        v = 1 - vignette * smoothstep(0.28, 0.78, d)
-        a *= v[:, :, None]
-    if grain:
-        rng = np.random.default_rng(int(t * 1000) + 7)
-        n = rng.standard_normal((H // 2, W // 2)).astype(np.float32)
-        n = np.repeat(np.repeat(n, 2, axis=0), 2, axis=1)[:H, :W]
-        a += (n * grain)[:, :, None]
-    return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8), "RGB")
+        f = a.astype(np.float32)
+        g = f @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
+        f = g[:, :, None] + (f - g[:, :, None]) * sat
+        a = np.clip(f, 0, 255).astype(np.uint8)
+
+    if vignette or grain:
+        f = a.astype(np.float32)
+        if vignette:
+            f *= _vignette_mask(vignette)
+        if grain:
+            rng = np.random.default_rng(int(t * 1000) + 7)
+            n = rng.standard_normal((H // 2, W // 2)).astype(np.float32)
+            n = np.repeat(np.repeat(n, 2, axis=0), 2, axis=1)[:H, :W]
+            f += (n * grain * 255.0)[:, :, None]
+        a = np.clip(f, 0, 255).astype(np.uint8)
+
+    return Image.fromarray(a, "RGB")
 
 
 def mist_layer(t, density=0.35, speed=0.03, height=0.45):
@@ -129,13 +154,26 @@ def blend_mist(img, t, density=0.35, colour=(198, 220, 210)):
 
 
 def light_sweep(img, t, angle=0.35, speed=1.0):
-    """Animated god-ray style sweep across the frame."""
+    """Animated god-ray style sweep across the frame.
+
+    The band is built at 1/6 resolution and upscaled - a smooth gradient costs
+    nothing visually at that size, and it turns a full-frame float add into a
+    small array plus one C-level image add.
+    """
     pos = (t * speed) % 1.6 - 0.3
-    proj = _NX * np.cos(angle) + _NY * np.sin(angle)
-    band = np.exp(-((proj - pos) ** 2) / (2 * 0.10 ** 2))
-    arr = np.asarray(img, dtype=np.float32)
-    arr += band[:, :, None] * np.array([28, 24, 12], dtype=np.float32)
-    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB")
+    h, w = H // 6, W // 6
+    nx = (np.arange(w, dtype=np.float32) + 0.5) / w
+    ny = (np.arange(h, dtype=np.float32) + 0.5) / h
+    proj = nx[None, :] * np.cos(angle) + ny[:, None] * np.sin(angle)
+    band = np.exp(-((proj - pos) ** 2) / (2 * 0.10 ** 2)) * 255.0
+    band = np.ascontiguousarray(np.clip(band, 0, 255)).astype(np.uint8)
+    small = Image.fromarray(band, "L").resize((W, H), Image.BILINEAR)
+    add = Image.merge("RGB", (
+        small.point(lambda v: int(v * 28 / 255)),
+        small.point(lambda v: int(v * 24 / 255)),
+        small.point(lambda v: int(v * 12 / 255)),
+    ))
+    return ImageChops.add(img, add)
 
 
 def head_scrim(img, strength=0.3, height=0.42):
@@ -427,3 +465,63 @@ def finish(img, target=108.0, sat=1.30, sharp=0.42):
     img = sharpen(img, sharp, 2.0)
     img = match_exposure(img, target)
     return img
+
+
+# ------------------------------------------------------------ fast pipeline --
+_LUT = np.arange(256, dtype=np.float32) / 255.0
+
+
+def _box_blur(a, r=2):
+    """Separable box blur on a float32 HxWx3 array.
+
+    Built from cumulative sums; the padding is done with edge-clamped index
+    arrays instead of np.pad, which was the slowest line in this pass.
+    """
+    k = 2 * r + 1
+    h, w = a.shape[:2]
+    iy = np.concatenate([np.zeros(r, int), np.arange(h), np.full(r, h - 1)])
+    c = np.cumsum(a[iy], axis=0, dtype=np.float32)
+    c = np.concatenate([np.zeros((1, w, 3), np.float32), c], axis=0)
+    a = (c[k:] - c[:-k]) * (1.0 / k)
+    ix = np.concatenate([np.zeros(r, int), np.arange(w), np.full(r, w - 1)])
+    c = np.cumsum(a[:, ix], axis=1, dtype=np.float32)
+    c = np.concatenate([np.zeros((h, 1, 3), np.float32), c], axis=1)
+    return (c[:, k:] - c[:, :-k]) * (1.0 / k)
+
+
+def finish_fast(img, target=108.0, sat=1.28, sharp=0.9):
+    """The `finish()` look in three vectorised passes.
+
+    Shadow lift and exposure compose into a single 256-entry table, so the
+    frame is touched once; saturation and unsharp then share one float pass.
+    """
+    arr = np.asarray(img)
+    u8 = np.arange(256, dtype=np.float32)
+    w = np.array([0.299, 0.587, 0.114], dtype=np.float32)
+
+    lift = 0.13
+    v = np.clip(u8 / 255.0 * (1 - lift) + lift * np.power(u8 / 255.0, 0.72), 0, 1)
+    tbl = v * 255.0                                  # values 0..255, float
+
+    for _ in range(3):
+        # measure on a 1/8 sampling of the frame through the current table
+        cur = float(tbl[arr[::8, ::8]].astype(np.float32).mean()) / 255.0
+        if abs(cur * 255.0 - target) < 1.2:
+            break
+        g = np.log(max(target, 1.0) / 255.0) / np.log(max(min(cur, 0.999), 0.002))
+        g = float(np.clip(g, 1.0 / 2.6, 2.6))
+        tbl = np.power(tbl / 255.0, g) * 255.0
+
+    lut = np.clip(tbl, 0, 255).astype(np.uint8)
+    out = np.empty(arr.shape, dtype=np.uint8)
+    out[..., 0] = lut[arr[..., 0]]
+    out[..., 1] = lut[arr[..., 1]]
+    out[..., 2] = lut[arr[..., 2]]
+
+    f = out.astype(np.float32)
+    if sat != 1.0:
+        g = f @ w
+        f = g[:, :, None] + (f - g[:, :, None]) * sat
+    if sharp:
+        f = f + (f - _box_blur(f, 2)) * sharp
+    return Image.fromarray(np.clip(f, 0, 255).astype(np.uint8), "RGB")

@@ -513,7 +513,7 @@ def render_frame(s, p, t_global):
     # exposure / saturation / crispness are settled on the clean plate, BEFORE
     # the type goes on: matching after the dissolve used to re-lift black frames
     # and made the cuts flash.
-    img = V.finish(img, target=108.0, sat=1.28, sharp=0.42)
+    img = V.finish_fast(img, target=108.0, sat=1.28, sharp=1.05)
     img = overlay(s, p, img)
     img = dissolve_in(img, p, 0.42 / s["dur"])
     img = dissolve_out(img, p, 0.52 / s["dur"])
@@ -591,7 +591,23 @@ def build_audio(scenes):
     return total
 
 
-def main(fast=False):
+def _scene_job(job):
+    """Render one scene's frames. Runs in a worker process."""
+    scene, start, fast = job
+    init_cams()
+    frames = os.path.join(OUT, "frames")
+    os.makedirs(frames, exist_ok=True)
+    n = int(round(scene["dur"] * FPS))
+    for k in range(n):
+        p = k / max(1, n - 1)
+        img = render_frame(scene, p, (start + k) / FPS)
+        if fast:
+            img = img.resize((W // 2, H // 2), Image.LANCZOS)
+        img.save(os.path.join(frames, f"{start + k:05d}.jpg"), quality=92)
+    return scene["id"], start, n
+
+
+def main(fast=False, workers=None):
     scenes = resolve_cues()
     only = os.environ.get("RB_ONLY")
     if only:
@@ -603,20 +619,30 @@ def main(fast=False):
     os.makedirs(frames, exist_ok=True)
     print("scenes", [(s["id"], round(s["dur"], 2)) for s in scenes],
           "total", round(total, 2), flush=True)
+
+    starts, idx = [], 0
     for s in scenes:
-        print("  cue", s["id"], {k: round(x, 2) for k, x in s["cue"].items()}, flush=True)
-    idx = 0
-    for s in scenes:
-        n = int(round(s["dur"] * FPS))
-        for k in range(n):
-            p = k / max(1, n - 1)
-            img = render_frame(s, p, idx / FPS)
-            if fast:
-                img = img.resize((W // 2, H // 2), Image.LANCZOS)
-            img.save(os.path.join(frames, f"{idx:05d}.jpg"), quality=93)
-            idx += 1
-        print(" scene", s["id"], "frames", idx, flush=True)
-    print("total frames", idx)
+        starts.append(idx)
+        idx += int(round(s["dur"] * FPS))
+    total_frames = idx
+
+    if workers is None:
+        workers = int(os.environ.get("RB_WORKERS", os.cpu_count() or 1))
+    workers = max(1, min(workers, len(scenes)))
+
+    if workers == 1:
+        for s, st in zip(scenes, starts):
+            _scene_job((s, st, fast))
+            print(" scene", s["id"], "frames", st + int(round(s["dur"] * FPS)), flush=True)
+    else:
+        # scenes are independent and write disjoint frame numbers, so handing a
+        # whole scene to each worker keeps every core busy with no sync cost
+        import multiprocessing as mp
+        with mp.get_context("fork").Pool(workers) as pool:
+            for sid, st, n in pool.imap_unordered(
+                    _scene_job, [(s, st, fast) for s, st in zip(scenes, starts)]):
+                print(" scene", sid, "done", n, "frames from", st, flush=True)
+    print("total frames", total_frames)
 
 
 if __name__ == "__main__":
