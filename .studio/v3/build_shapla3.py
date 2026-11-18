@@ -149,74 +149,74 @@ def scene_frame(s, p, t):
         z = 1.05 + 0.13 * K.eo(p * 1.15)
         img = cam.frame(zoom=z, pan=(0, 0.014 - 0.024 * p),
                         shake=(0.5 * np.sin(p * 7), 0.4 * np.cos(p * 6)))
-        img = V.apply_grade(img, warm=0.30, cool=0.10, contrast=1.13,
-                            vignette=0.60, grain=0.022, t=t)
+        img = V.apply_grade(img, warm=0.38, cool=0.04, contrast=1.07,
+                            vignette=0.34, grain=0.014, gamma=0.90, sat=1.10, t=t)
         img = V.spotlight(img, W * 0.48, H * 0.44, W * 0.78, 0.22)
         img = V.light_sweep(img, p * 0.5, 0.34, 0.7)
     elif kind == "portrait":
         z = 1.24 - 0.16 * K.eio(p)
         img = cam.frame(zoom=z, pan=(0.02 - 0.03 * p, 0.012))
-        img = V.apply_grade(img, warm=0.34, contrast=1.10, vignette=0.52, grain=0.020, t=t)
+        img = V.apply_grade(img, warm=0.40, contrast=1.06, vignette=0.28, grain=0.013, gamma=0.90, sat=1.10, t=t)
         img = V.light_sweep(img, p * 0.45, 0.38, 0.8)
     elif kind == "leaf":
         z = 1.32 - 0.20 * K.eio(p)
         img = cam.frame(zoom=z, pan=(-0.05 + 0.09 * p, 0.03 - 0.04 * p),
                         rot=0.9 * np.sin(p * 1.9))
-        img = V.apply_grade(img, warm=0.26, cool=0.12, contrast=1.16,
-                            vignette=0.60, grain=0.024, t=t)
+        img = V.apply_grade(img, warm=0.36, cool=0.05, contrast=1.07,
+                            vignette=0.32, grain=0.014, gamma=0.90, sat=1.10, t=t)
         img = V.spotlight(img, W * 0.5, H * 0.52, W * 0.72, 0.20)
     elif kind == "detail":
         z = 1.30 - 0.15 * K.eio(p)
         img = cam.frame(zoom=z, pan=(0.0, 0.02 - 0.03 * p))
-        img = V.apply_grade(img, warm=0.28, contrast=1.15, vignette=0.58, grain=0.023, t=t)
+        img = V.apply_grade(img, warm=0.38, contrast=1.06, vignette=0.28, grain=0.013, gamma=0.90, sat=1.10, t=t)
         img = V.spotlight(img, W * 0.5, H * 0.5, W * 0.6, 0.28)
     elif kind == "nation":
         z = 1.12 + 0.10 * p
         img = cam.frame(zoom=z, pan=(-0.02 + 0.04 * p, 0.01))
-        img = V.apply_grade(img, warm=0.30, cool=0.08, contrast=1.12,
-                            vignette=0.56, grain=0.022, t=t)
+        img = V.apply_grade(img, warm=0.42, cool=0.02, contrast=1.06,
+                            vignette=0.30, grain=0.013, gamma=0.89, sat=1.12, t=t)
         img = V.light_sweep(img, p * 0.6, 0.30, 0.85)
     elif kind == "home":
         z = 1.20 - 0.16 * K.eio(p)
         img = cam.frame(zoom=z, pan=(-0.03 + 0.06 * p, 0.02))
-        img = V.apply_grade(img, warm=0.34, contrast=1.09, vignette=0.46, grain=0.018, t=t)
+        img = V.apply_grade(img, warm=0.44, contrast=1.05, vignette=0.26, grain=0.012, gamma=0.89, sat=1.10, t=t)
         img = V.blend_mist(img, p * 1.1, density=0.15)
         img = V.light_sweep(img, p * 0.5, 0.35, 0.8)
     elif kind == "cycle":
         z = 1.24 - 0.14 * K.eio(p)
         img = cam.frame(zoom=z, pan=(0.015 - 0.03 * p, -0.01))
-        img = V.apply_grade(img, warm=0.30, contrast=1.12, vignette=0.58, grain=0.021, t=t)
+        img = V.apply_grade(img, warm=0.42, contrast=1.06, vignette=0.28, grain=0.013, gamma=0.90, sat=1.10, t=t)
         img = V.spotlight(img, W * 0.52, H * 0.48, W * 0.7, 0.22)
     elif kind == "role":
         z = 1.18 - 0.10 * p
         img = cam.frame(zoom=z, pan=(0.02 - 0.04 * p, 0.01))
-        img = V.apply_grade(img, cool=0.18, warm=0.10, contrast=1.12,
-                            vignette=0.54, grain=0.021, t=t)
+        img = V.apply_grade(img, cool=0.10, warm=0.22, contrast=1.06,
+                            vignette=0.26, grain=0.012, gamma=0.92, sat=1.06, t=t)
         img = V.blend_mist(img, p * 1.6, density=0.20)
     elif kind == "use":
         z = 1.14 + 0.08 * p
         img = cam.frame(zoom=z, pan=(0.02 - 0.03 * p, 0.008))
-        img = V.apply_grade(img, warm=0.30, contrast=1.08, vignette=0.52, grain=0.019, t=t)
+        img = V.apply_grade(img, warm=0.40, contrast=1.05, vignette=0.26, grain=0.012, gamma=0.90, sat=1.10, t=t)
     elif kind == "threats":
         z = 1.22 - 0.13 * p
         img = cam.frame(zoom=z, pan=(-0.02 + 0.05 * p, 0.02),
                         shake=(0.9 * np.sin(p * 18), 0.7 * np.cos(p * 15)))
-        img = V.apply_grade(img, cool=0.34, contrast=1.15, vignette=0.68, grain=0.028, t=t)
+        img = V.apply_grade(img, cool=0.22, warm=0.06, contrast=1.07, vignette=0.34, grain=0.014, gamma=0.92, sat=1.02, t=t)
     elif kind == "poem":
         z = 1.10 + 0.07 * p
         img = cam.frame(zoom=z, pan=(0.0, 0.02 - 0.03 * p))
-        img = V.apply_grade(img, warm=0.26, cool=0.14, contrast=1.12,
-                            vignette=0.62, grain=0.022, t=t)
+        img = V.apply_grade(img, warm=0.34, cool=0.06, contrast=1.07,
+                            vignette=0.34, grain=0.013, gamma=0.92, sat=1.06, t=t)
         img = V.light_sweep(img, 0.10 + p * 0.25, 0.28, 0.5)
     elif kind == "outro":
         z = 1.14 - 0.06 * K.eio(p)
         img = cam.frame(zoom=z, pan=(0, -0.015))
-        img = V.apply_grade(img, warm=0.28, cool=0.10, contrast=1.08,
-                            vignette=0.60, grain=0.018, t=t)
+        img = V.apply_grade(img, warm=0.42, cool=0.02, contrast=1.05,
+                            vignette=0.30, grain=0.012, gamma=0.90, sat=1.10, t=t)
     else:
         z = 1.06 + 0.12 * K.eo(p)
         img = cam.frame(zoom=z, pan=(0, 0.01))
-        img = V.apply_grade(img, warm=0.2, contrast=1.1, vignette=0.6, grain=0.02, t=t)
+        img = V.apply_grade(img, warm=0.38, contrast=1.05, vignette=0.30, grain=0.012, gamma=0.90, sat=1.10, t=t)
     return img
 
 
@@ -369,8 +369,8 @@ BEATS = {
     ],
     "s11": [
         (0, "chip", "কবির কথা", C_GOLD, 296, "left"),
-        (0, "attr", "কাজী নজরুল ইসলাম", C_MINT, 358, "left"),
-        (0, "quote", "শাপলা শালুকে সাজাইয়া সাজি", C_CREAM, 418, "left"),
+        (0, "attr", "কাজী নজরুল ইসলাম", C_MINT, 382, "left"),
+        (0, "quote", "শাপলা শালুকে সাজাইয়া সাজি", C_CREAM, 470, "left"),
         (1, "quote", "শরতে শিশিরে নাহিয়া", C_CREAM, 1120, "left"),
         (2, "quote", "এনেছি শাপলা-পদ্মের মধু", C_GOLD, 1260, "left"),
     ],
@@ -398,17 +398,22 @@ def draw_beat(img, style, txt, colour, y, align, e, x0=110):
         K.chip(img, txt, (x0, y), e, px=30, colour=colour, icon="dot", slide=40)
         return
     center = align == "mid"
+    lay = T.flow(txt, key, px)
+    # glyph-shaped soft shadow: keeps white type legible on white petals
+    # without the pasted-on rectangle the user rejected.
+    xx = (W - lay.width) / 2 if center else x0
+    V.text_backing(img, lay.image, (int(xx), y),
+                   strength=0.88 if style in ("title", "num", "quote") else 0.74,
+                   blur=12 + px // 16, offset=(3, 7))
     if anim == "word":
-        lay = T.flow(txt, key, px)
-        base = y + lay.baseline
+        # `y` is the ink TOP, same as the rise path: word_line takes a baseline
+        base = y + T.baseline_offset(lay)
         K.word_line(img, txt, key, px, (x0, base), colour, min(1.0, e * 1.4),
                     stagger=0.15, dur=0.34, rise=30, center_x=center, x0=x0)
     else:
-        lay = T.flow(txt, key, px)
-        xx = (W - lay.width) / 2 if center else x0
         yy = y + 18 * (1 - K.eo(e))
         T.paint(img, lay.image, (int(xx), int(yy)), colour, min(1.0, e * 1.5),
-                shadow=(5, 6, (0, 0, 0), 0.70), glow=(6.0, 0.16))
+                shadow=(4, 5, (0, 0, 0), 0.88), glow=(7.0, 0.18))
 
 # ------------------------------------------------------------------- overlays --
 def dissolve_out(img, p, dur=0.30):
@@ -427,6 +432,39 @@ def dissolve_in(img, p, dur=0.28):
     return Image.fromarray(a.astype(np.uint8), "RGB")
 
 
+INK_PAD = {"chip": 74, "title": 118, "num": 122, "sub": 62, "quote": 84, "attr": 48}
+GAP = 18
+
+
+def layout_beats(scene_id):
+    """Stack the lines of one beat so they can never sit on top of each other.
+
+    The BEATS table states intent (which line belongs to which spoken sentence,
+    roughly where it should sit); this resolves it into real y positions, one
+    below the other, inside the safe area.
+    """
+    rows = BEATS.get(scene_id, [])
+    out, by_idx = [], {}
+    for idx, style, txt, colour, y, align in rows:
+        by_idx.setdefault(idx, []).append([y, style, txt, colour, align])
+    for idx in sorted(by_idx):
+        stack = sorted(by_idx[idx], key=lambda r: r[0])
+        prev_bottom = -999
+        for row in stack:
+            y, style, txt, colour, align = row
+            if y < prev_bottom + GAP:
+                y = prev_bottom + GAP
+            # real ink height of this line (shape it once), not a guess
+            key_, px_, _ = STYLE.get(style, ("sans-semi", 40, "rise"))
+            try:
+                h = T.flow(txt, key_, px_).image.height + 12
+            except Exception:
+                h = INK_PAD.get(style, 80)
+            prev_bottom = y + h
+            out.append((idx, style, txt, colour, int(y), align))
+    return out
+
+
 def overlay(s, p, img):
     """Draw the lines that belong to the sentence being spoken right now."""
     t = p * s["dur"]
@@ -435,7 +473,7 @@ def overlay(s, p, img):
     segs = s.get("segs") or []
     kind = s["kind"]
 
-    for idx, style, txt, colour, y, align in BEATS.get(s["id"], []):
+    for idx, style, txt, colour, y, align in layout_beats(s["id"]):
         if idx >= len(segs):
             continue
         a0, b0 = segs[idx]
@@ -467,15 +505,18 @@ def overlay(s, p, img):
 
 def render_frame(s, p, t_global):
     img = scene_frame(s, p, t_global)
-    img = V.scrim(img, top=0.34, bottom=0.40)
-    img = V.head_scrim(img, 0.18, 0.42)
+    img = V.scrim(img, top=0.14, bottom=0.18)
+    img = V.head_scrim(img, 0.08, 0.26)
     if s["kind"] == "poem":
-        img = band_scrim(img, 0.14, 0.36, 0.30, 0.10)
-        img = band_scrim(img, 0.58, 0.74, 0.28, 0.10)
+        img = band_scrim(img, 0.12, 0.34, 0.14, 0.14)
+        img = band_scrim(img, 0.58, 0.76, 0.13, 0.14)
+    # exposure / saturation / crispness are settled on the clean plate, BEFORE
+    # the type goes on: matching after the dissolve used to re-lift black frames
+    # and made the cuts flash.
+    img = V.finish(img, target=108.0, sat=1.28, sharp=0.42)
     img = overlay(s, p, img)
     img = dissolve_in(img, p, 0.42 / s["dur"])
     img = dissolve_out(img, p, 0.52 / s["dur"])
-    img = V.apply_grade(img, contrast=1.02, lift=0.003, t=t_global)
     return img
 
 

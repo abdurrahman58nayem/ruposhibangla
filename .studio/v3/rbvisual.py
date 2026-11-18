@@ -76,7 +76,12 @@ def _vignette_strength(t):
 
 
 def apply_grade(img, warm=0.0, cool=0.0, contrast=1.06, lift=0.0, vignette=0.0,
-                grain=0.0, t=0.0):
+                grain=0.0, t=0.0, sat=1.0, gamma=1.0):
+    """Warm filmic grade.
+
+    gamma < 1 lifts the mid-tones (the reference reels sit around 108 mean
+    luma); sat restores the colour the scrims were eating.
+    """
     a = np.asarray(img, dtype=np.float32) / 255.0
     if warm:
         a[:, :, 0] *= 1 + 0.10 * warm
@@ -85,6 +90,12 @@ def apply_grade(img, warm=0.0, cool=0.0, contrast=1.06, lift=0.0, vignette=0.0,
     if cool:
         a[:, :, 2] *= 1 + 0.12 * cool
         a[:, :, 0] *= 1 - 0.05 * cool
+    a = np.clip(a, 0, 1)
+    if gamma != 1.0:
+        a = np.power(a, gamma)
+    if sat != 1.0:
+        g = a @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
+        a = g[:, :, None] + (a - g[:, :, None]) * sat
     a = (a - 0.5) * contrast + 0.5 + lift
     if vignette:
         d = np.sqrt(((_NX - 0.5) * 1.15) ** 2 + ((_NY - 0.5) * 0.95) ** 2)
@@ -318,3 +329,101 @@ def zoom_rings(canvas, cx, cy, t, alpha=0.5, count=3):
         d.ellipse([cx - r, cy - r * 1.1, cx + r, cy + r * 1.1],
                   outline=(255, 222, 150, a), width=3)
     return canvas
+
+
+def match_exposure(img, target=108.0, max_gamma=2.6, iters=3):
+    """Pull every frame onto the reference reels' average brightness.
+
+    Gamma on the mean is not the mean after gamma, so the correction is
+    applied iteratively until the measured frame actually lands on target.
+    """
+    a = np.asarray(img, dtype=np.float32) / 255.0
+    w = np.array([0.299, 0.587, 0.114], dtype=np.float32)
+    for _ in range(iters):
+        cur = float((a @ w).mean()) * 255.0
+        if abs(cur - target) < 1.5:
+            break
+        g = np.log(max(target, 1.0) / 255.0) / np.log(max(min(cur / 255.0, 0.999), 0.002))
+        a = np.power(np.clip(a, 0, 1), float(np.clip(g, 1.0 / max_gamma, max_gamma)))
+    return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8), "RGB")
+
+
+def vibrance(img, amount=0.18):
+    """Lift weak colours without pushing the already-saturated petals."""
+    a = np.asarray(img, dtype=np.float32) / 255.0
+    mx = a.max(axis=2)
+    mn = a.min(axis=2)
+    sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0.0)[:, :, None]
+    boost = 1.0 + amount * (1.0 - sat) ** 2
+    g = a @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
+    out = g[:, :, None] + (a - g[:, :, None]) * boost
+    return Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8), "RGB")
+
+
+def text_backing(img, mask, xy, strength=0.62, blur=16, offset=(4, 7), spread=34):
+    """Text-shaped soft shade behind type - never a rectangular plate.
+
+    Two passes: a tight pass that holds the glyph edges, and a wide, very soft
+    pass that calms the busy photo under the line. Both follow the glyph
+    silhouette, so it reads as depth of field rather than a pasted box.
+    """
+    x, y = int(xy[0] + offset[0]), int(xy[1] + offset[1])
+    tight = mask.filter(ImageFilter.GaussianBlur(blur))
+    m1 = Image.new("L", tight.size, 0)
+    m1.paste(Image.new("L", tight.size, int(255 * strength)), (0, 0), tight)
+    img = shade_patch(img, m1, (x, y))
+    wide = mask.filter(ImageFilter.MaxFilter(5)).filter(
+        ImageFilter.GaussianBlur(blur * 2.4))
+    m2 = Image.new("L", wide.size, 0)
+    m2.paste(Image.new("L", wide.size, int(255 * strength * 0.55)), (0, 0), wide)
+    return shade_patch(img, m2, (x - spread // 3, y - spread // 3))
+
+
+def shade_patch(img, mask, xy):
+    """Multiply a mask-shaped darkening onto the frame at xy."""
+    x, y = int(xy[0]), int(xy[1])
+    w, h = mask.size
+    x0, y0 = max(0, x), max(0, y)
+    x1, y1 = min(img.width, x + w), min(img.height, y + h)
+    if x1 <= x0 or y1 <= y0:
+        return img
+    sub = mask.crop((x0 - x, y0 - y, x1 - x, y1 - y))
+    a = np.asarray(img.crop((x0, y0, x1, y1)), dtype=np.float32)
+    k = np.asarray(sub, dtype=np.float32)[:, :, None] / 255.0
+    a *= (1.0 - k)
+    out = img.copy()
+    out.paste(Image.fromarray(a.astype(np.uint8), "RGB"), (x0, y0))
+    return out
+
+
+def sharpen(img, amount=0.42, radius=2.0):
+    """Unsharp mask - the reference reels look crisp, ours looked soft."""
+    a = np.asarray(img, dtype=np.float32)
+    b = np.asarray(img.filter(ImageFilter.GaussianBlur(radius)), dtype=np.float32)
+    return Image.fromarray(np.clip(a + (a - b) * amount, 0, 255).astype(np.uint8), "RGB")
+
+
+def sat_boost(img, k=1.30):
+    a = np.asarray(img, dtype=np.float32) / 255.0
+    g = a @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
+    return Image.fromarray(
+        (np.clip(g[:, :, None] + (a - g[:, :, None]) * k, 0, 1) * 255).astype(np.uint8), "RGB")
+
+
+def lift_shadows(img, amount=0.14, pivot=0.42):
+    """Open the bottom end so nothing reads as a black hole."""
+    a = np.asarray(img, dtype=np.float32) / 255.0
+    k = 1.0 - amount
+    a = a * k + amount * (a ** 0.72)
+    a = np.clip(a * (1.0 - 0.0), 0, 1)
+    return Image.fromarray((a * 255).astype(np.uint8), "RGB")
+
+
+def finish(img, target=108.0, sat=1.30, sharp=0.42):
+    """Final look: open shadows, saturate, sharpen, land on reference exposure."""
+    img = lift_shadows(img, 0.13)
+    img = sat_boost(img, sat)
+    img = img.filter(ImageFilter.GaussianBlur(0))  # no-op keeps PIL API happy
+    img = sharpen(img, sharp, 2.0)
+    img = match_exposure(img, target)
+    return img

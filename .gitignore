@@ -19,3 +19,6 @@ image-search/
 .studio/deliver*/*.mp4
 .studio/deliver*/*.zip
 .studio/deliver*/*.wav
+
+# পাইথন ক্যাশ
+__pycache__/
