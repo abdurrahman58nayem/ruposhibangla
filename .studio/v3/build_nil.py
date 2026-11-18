@@ -77,10 +77,10 @@ SCENES = [
          cues={"post": 0.0, "wait": 0.52}),
     dict(id="s06", art="n06_hunt.png", amb="wind", pre=0.45, post=0.75, kind="cycle",
          fx=[("tick", 0.10, 0.35), ("whoosh_down", 0.55, 0.4)],
-         cues={"insects": 0.0, "friend": 0.50}),
+         lowfloor=1400, cues={"insects": 0.0, "friend": 0.50}),
     dict(id="s07", art="n07_nest.png", amb="still", pre=0.45, post=0.80, kind="role",
          fx=[("drip", 0.10, 0.3), ("chime", 0.45, 0.3)],
-         cues={"nest": 0.0, "eggs": 0.42, "both": 0.74}),
+         lowfloor=1200, cues={"nest": 0.0, "eggs": 0.42, "both": 0.74}),
     dict(id="s08", art="n08_wire.png", amb="wind", pre=0.45, post=0.80, kind="threats",
          fx=[("tension", 0.10, 0.45), ("boom", 0.45, 0.4)],
          cues={"pest": 0.0, "wire": 0.32, "iucn": 0.62}),
@@ -88,6 +88,7 @@ SCENES = [
          fx=[("chime", 0.15, 0.3), ("whoosh", 0.60, 0.35)],
          cues={"country": 0.0, "open": 0.50}),
     dict(id="s10", art="n09_poem.png", amb="still", pre=0.55, post=2.40, kind="outro",
+         lowceil=1180,
          fx=[("chime", 0.20, 0.35), ("boom", 0.55, 0.35), ("whoosh", 0.85, 0.3)],
          cues={"poem": 0.0, "hope": 0.42, "logo": 0.62, "cta": 0.76, "url": 0.86}),
 ]
@@ -530,12 +531,13 @@ def placed_beats(s):
         hgt += lay.image.height + 26
     mid = rows2[0][5] == "mid"
     x0 = (W - wid) / 2 if mid else 110
-    floor = 980
+    floor = max(980, int(s.get("lowfloor", 0)))
     if top_rows:
         last = max(top_rows, key=lambda r: r[4])
         key0, px0, _ = STYLE.get(last[1], ("sans-semi", 40, "rise"))
         floor = max(floor, last[4] + T.flow(last[2], key0, px0).image.height + 90)
-    hi = max(floor, 1460 - hgt)
+    ceil = int(s.get("lowceil", 1650))
+    hi = max(floor, ceil - hgt)
     top, _sc = V.best_band_both(plates, int(x0), wid, hgt, int(floor), int(hi), step=10)
 
     out = list(top_rows)
