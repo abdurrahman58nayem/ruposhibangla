@@ -343,20 +343,28 @@ def render_frame(s, p, t_global):
     img = soft_shade(img, top=0.20, bottom=0.24, head=0.10, head_h=0.26)
     img = natural_finish(img, vignette=0.16, grain=0.006)
     img = overlay(s, p, img)
-    img = dissolve_in(img, p, 0.42 / s["dur"])
-    img = dissolve_out(img, p, 0.52 / s["dur"])
+    # Fade only at the very edges of the reel. Between scenes a hard cut is
+    # clean; fading every cut to black produced a 4-frame black blink.
+    if s.get("id") == "s01":
+        img = dissolve_in(img, p, 0.42 / s["dur"])
+    if s.get("id") == SCENES[-1]["id"]:
+        img = dissolve_out(img, p, 0.52 / s["dur"])
     return img
 
 
+FLOOR = 0.20      # never fade fully to black: a 4-frame black blink at every
+                  # cut reads as a flicker, a dark dip reads as a transition
+
+
 def dissolve_out(img, p, dur=0.30):
-    k = min(1.0, max(0.0, (1.0 - p) / max(dur, 1e-6)))
+    k = FLOOR + (1.0 - FLOOR) * min(1.0, max(0.0, (1.0 - p) / max(dur, 1e-6)))
     if k >= 1:
         return img
     return Image.fromarray((np.asarray(img, dtype=np.float32) * k).astype(np.uint8), "RGB")
 
 
 def dissolve_in(img, p, dur=0.28):
-    k = min(1.0, p / max(dur, 1e-6)) if dur > 0 else 1.0
+    k = FLOOR + (1.0 - FLOOR) * (min(1.0, p / max(dur, 1e-6)) if dur > 0 else 1.0)
     if k >= 1:
         return img
     return Image.fromarray((np.asarray(img, dtype=np.float32) * k).astype(np.uint8), "RGB")
