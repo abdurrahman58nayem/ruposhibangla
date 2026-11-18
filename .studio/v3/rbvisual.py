@@ -525,3 +525,174 @@ def finish_fast(img, target=108.0, sat=1.28, sharp=0.9):
     if sharp:
         f = f + (f - _box_blur(f, 2)) * sharp
     return Image.fromarray(np.clip(f, 0, 255).astype(np.uint8), "RGB")
+
+
+# ------------------------------------------------------- adaptive text colour --
+# A cream headline over a bright sky and a cream headline over a dark canopy
+# cannot both work. These flattenings pick an ink (and only then a shade) from
+# the actual pixels the line sits on, so bright areas get deep tones and dark
+# areas stay light - and no extra plate/scrim is added to "cover" the photo.
+INK_DEEP = {
+    "deep_blue":   (18, 54, 84),
+    "deep_teal":   (14, 62, 62),
+    "deep_green":  (26, 62, 34),
+    "deep_plum":   (58, 30, 62),
+    "deep_brown":  (62, 42, 24),
+    "deep_rose":   (86, 26, 44),
+    "ink":         (24, 28, 30),
+}
+INK_LIGHT = {
+    "cream":       (255, 250, 238),
+    "sand":        (255, 231, 190),
+    "gold":        (255, 214, 122),
+    "mint":        (176, 248, 210),
+    "sky":         (176, 232, 245),
+    "peach":       (255, 206, 178),
+}
+
+
+def region_stats(img, x0, y0, x1, y1):
+    """Mean luma/sat/RGB of the area a line of type will occupy."""
+    x0, y0 = max(0, int(x0)), max(0, int(y0))
+    x1, y1 = min(img.width, int(x1)), min(img.height, int(y1))
+    if x1 - x0 < 4 or y1 - y0 < 4:
+        return 128.0, 0.0, (128, 128, 128)
+    a = np.asarray(img.crop((x0, y0, x1, y1)), dtype=np.float32)
+    lum = float((a @ np.array([0.299, 0.587, 0.114], dtype=np.float32)).mean())
+    mx, mn = a.max(axis=2), a.min(axis=2)
+    sat = float(np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0).mean())
+    rgb = tuple(int(v) for v in a.reshape(-1, 3).mean(axis=0))
+    return lum, sat, rgb
+
+
+def pick_ink(img, box, hue_hint=None, min_contrast=112.0):
+    """Choose a readable ink for this patch of photo.
+
+    Two candidates: a light ink (cream family) and a deep *shade of the patch
+    itself* - the photo's own colour darkened, never a foreign black or plum on
+    gold. Whichever clears the contrast bar by more wins, so bright sky gets a
+    deep shade and dark canopy gets cream. Nothing is drawn that is not needed:
+    the caller only paints either the glyph halo or a soft backing.
+    """
+    lum, sat, (r, g, b) = region_stats(img, *box)
+    m = np.array([r, g, b], dtype=np.float32)
+    m = np.clip(m + (m - m.mean()) * 1.45, 0, 255)      # richer, not muddier
+    base = float(0.299 * m[0] + 0.587 * m[1] + 0.114 * m[2])
+    target = float(np.clip(lum * 0.34, 18.0, 62.0))
+    k = target / max(base, 1e-3)
+    ink = np.clip(m * k, 0, 255)
+    for _ in range(5):
+        got = 0.299 * ink[0] + 0.587 * ink[1] + 0.114 * ink[2]
+        if lum - got >= min_contrast:
+            break
+        k *= 0.86
+        ink = np.clip(m * k, 0, 255)
+    deep = tuple(int(v) for v in ink)
+    deep_c = lum - (0.299 * deep[0] + 0.587 * deep[1] + 0.114 * deep[2])
+
+    light = INK_LIGHT["cream"]
+    light_c = (0.299 * light[0] + 0.587 * light[1] + 0.114 * light[2]) - lum
+
+    if light_c >= min_contrast and light_c >= deep_c:
+        if hue_hint and hue_hint in INK_LIGHT:
+            light = INK_LIGHT[hue_hint]
+            lc = (0.299 * light[0] + 0.587 * light[1] + 0.114 * light[2]) - lum
+            if lc >= min_contrast:
+                return light, hue_hint
+        return light, "cream"
+    if deep_c >= min_contrast:
+        return deep, "deep_shade"
+    # neither reaches the bar: take whatever is furthest from the patch
+    if light_c > deep_c:
+        return light, "cream"
+    for name in ("ink", "deep_blue", "deep_brown"):
+        if _contrast(lum, INK_DEEP[name]) > deep_c:
+            return INK_DEEP[name], name
+    return deep, "deep_shade"
+
+
+def _contrast(lum, colour):
+    """Rough perceptual gap between a photo patch and an ink colour."""
+    ink = 0.299 * colour[0] + 0.587 * colour[1] + 0.114 * colour[2]
+    return abs(lum - ink)
+
+
+def _edge_energy(img, box):
+    """How busy the picture is under a line (0 = flat, 1 = very detailed)."""
+    x0, y0, x1, y1 = [int(v) for v in box]
+    x0, y0 = max(0, x0), max(0, y0)
+    x1, y1 = min(img.width, x1), min(img.height, y1)
+    if x1 - x0 < 8 or y1 - y0 < 8:
+        return 1.0
+    g = np.asarray(img.crop((x0, y0, x1, y1)).convert("L"), dtype=np.float32)
+    dx = np.abs(np.diff(g, axis=1)).mean()
+    dy = np.abs(np.diff(g, axis=0)).mean()
+    return float((dx + dy) / 255.0 * 2.4)
+
+
+def clean_score(img, box, min_contrast=112.0):
+    """Readability of putting type in this box: contrast first, quiet second."""
+    ink, _ = pick_ink(img, box, min_contrast=min_contrast)
+    lum, _, _ = region_stats(img, *box)
+    ink_l = 0.299 * ink[0] + 0.587 * ink[1] + 0.114 * ink[2]
+    return abs(lum - ink_l) - 900.0 * _edge_energy(img, box)
+
+
+def subject_density(img, box, sat_min=0.30):
+    """Fraction of the box that looks like the bird itself (vivid cool plumage).
+
+    Every subject in this series is a teal / turquoise bird on warm ground, so
+    vivid cool pixels are a reliable stand-in for "do not put words here".
+    """
+    x0, y0, x1, y1 = [int(v) for v in box]
+    x0, y0 = max(0, x0), max(0, y0)
+    x1, y1 = min(img.width, x1), min(img.height, y1)
+    if x1 - x0 < 6 or y1 - y0 < 6:
+        return 1.0
+    a = np.asarray(img.crop((x0, y0, x1, y1)), dtype=np.float32)
+    mx, mn = a.max(axis=2), a.min(axis=2)
+    sat = np.where(mx > 1, (mx - mn) / np.maximum(mx, 1e-6), 0)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]
+    cool = (b > r + 22) | ((g > r + 26) & (b > r + 6))
+    bird_like = (sat > sat_min) & cool
+    return float(bird_like.mean())
+
+
+def best_band(img, x0, width, height, lo, hi, step=12):
+    """Topmost y in [lo, hi] where a line of this size stays readable."""
+    best, besty = -1e9, lo
+    free_best, free_y = -1e9, lo
+    y = lo
+    while y <= hi:
+        box = (x0 - 6, y, x0 + width + 6, y + height)
+        sc = clean_score(img, box)
+        dens = subject_density(img, box)
+        if sc > free_best:
+            free_best, free_y = sc, y
+        # words never go on top of the bird: only patches that are barely
+        # subject at all are eligible, and among those the most readable wins
+        if dens <= 0.06 and sc > best:
+            best, besty = sc, y
+        y += step
+    if best <= -1e8:
+        return free_y, free_best
+    return besty, best
+
+
+def best_band_both(plates, x0, width, height, lo, hi, step=10, max_density=0.06):
+    """Best band that is free of the subject in *every* framing of the scene."""
+    best, besty = -1e9, lo
+    free_best, free_y = -1e9, lo
+    y = lo
+    while y <= hi:
+        box = (x0 - 6, y, x0 + width + 6, y + height)
+        dens = max(subject_density(pl, box) for pl in plates)
+        sc = min(clean_score(pl, box) for pl in plates)
+        if sc > free_best:
+            free_best, free_y = sc, y
+        if dens <= max_density and sc > best:
+            best, besty = sc, y
+        y += step
+    if best <= -1e8:
+        return free_y, free_best
+    return besty, best

@@ -380,29 +380,62 @@ STYLE = {
 
 
 def draw_beat(img, style, txt, colour, y, align, e, x0=110):
+    """Draw one line, with the ink chosen from the pixels underneath it.
+
+    The BEATS colours are now only a *hint* for the hue family; the actual
+    value (light vs deep) comes from measuring the photo where the line sits.
+    That is what keeps bright type from disappearing on a bright sky, and
+    keeps a dark shade from eating a dark frame.
+    """
     if e <= 0.004:
         return
     key, px, anim = STYLE[style]
+    center = align == "mid"
+    lay = T.flow(txt, key, px)
+    xx = (W - lay.width) / 2 if center else x0
+
     if style == "chip":
         K.chip(img, txt, (x0, y), e, px=30, colour=colour, icon="dot", slide=40)
         return
-    center = align == "mid"
-    lay = T.flow(txt, key, px)
-    # glyph-shaped soft shadow: keeps white type legible on white petals
-    # without the pasted-on rectangle the user rejected.
-    xx = (W - lay.width) / 2 if center else x0
-    V.text_backing(img, lay.image, (int(xx), y),
-                   strength=0.88 if style in ("title", "num", "quote") else 0.74,
-                   blur=12 + px // 16, offset=(3, 7))
+
+    # measure the strip this line covers and pick a readable ink from it
+    ink, ink_name = V.pick_ink(img, (xx - 8, y - 6, xx + lay.width + 8,
+                                     y + lay.image.height + 10))
+    deep = ink_name.startswith("deep") or ink_name == "ink"
+
+    if deep:
+        # dark type on a bright patch: no plate, no glow - just a light halo
+        # traced from the glyphs so the letter edges stay crisp
+        # how busy is the patch? a flat sky needs almost no help, rough ground
+        # needs a firmer halo or the letters drown in the texture
+        busy = V._edge_energy(img, (xx, y, xx + lay.width, y + lay.image.height))
+        halo_a = int(min(196, 96 + 150 * busy))
+        soft = lay.image.filter(ImageFilter.GaussianBlur(max(7, px // 7)))
+        halo = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        halo.paste(Image.new("RGBA", lay.image.size, (255, 251, 242, halo_a)),
+                   (int(xx), int(y)), soft)
+        base = img if img.mode == "RGBA" else img.convert("RGBA")
+        base.alpha_composite(halo)
+        img.paste(base.convert("RGB"), (0, 0))
+        shadow = (0, 3, (255, 255, 255), 0.30)
+        glow = None
+    else:
+        V.text_backing(img, lay.image, (int(xx), y),
+                       strength=0.82 if style in ("title", "num", "quote") else 0.68,
+                       blur=12 + px // 16, offset=(3, 7))
+        shadow = (4, 5, (0, 0, 0), 0.88)
+        glow = (7.0, 0.16)
+
     if anim == "word":
-        # `y` is the ink TOP, same as the rise path: word_line takes a baseline
         base = y + T.baseline_offset(lay)
-        K.word_line(img, txt, key, px, (x0, base), colour, min(1.0, e * 1.4),
-                    stagger=0.15, dur=0.34, rise=30, center_x=center, x0=x0)
+        K.word_line(img, txt, key, px, (x0, base), ink, min(1.0, e * 1.4),
+                    stagger=0.15, dur=0.34, rise=30, center_x=center, x0=x0,
+                    shadow=shadow)
     else:
         yy = y + 18 * (1 - K.eo(e))
-        T.paint(img, lay.image, (int(xx), int(yy)), colour, min(1.0, e * 1.5),
-                shadow=(4, 5, (0, 0, 0), 0.88), glow=(7.0, 0.18))
+        T.paint(img, lay.image, (int(xx), int(yy)), ink, min(1.0, e * 1.5),
+                shadow=shadow, glow=glow)
+
 
 # ------------------------------------------------------------------- overlays --
 def dissolve_out(img, p, dur=0.30):
