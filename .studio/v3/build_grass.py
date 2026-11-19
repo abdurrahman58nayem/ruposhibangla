@@ -151,6 +151,8 @@ STYLE = {
     "sub":   ("sans-semi", 44 * SCALE, "rise"),
     "attr":  ("sans-semi", 32 * SCALE, "rise"),
     "quote": ("serif-bold", 54 * SCALE, "word"),
+    "list":  ("sans-semi", 40 * SCALE, "rise"),   # bullet row inside a panel
+    "list2": ("sans-semi", 30 * SCALE, "rise"),   # its grey-green sub-line
 }
 
 
@@ -189,7 +191,93 @@ def pick_ink(img, box, hint=None):
     return (18, 20, 22), "flat"
 
 
-def draw_line(img, style, txt, colour, y, align, e, x0=None):
+PANEL_RGBA = (9, 13, 15)        # near-black, carries no colour cast
+PANEL_A = 176
+PANEL_RADIUS = 34 * SCALE
+PANEL_PAD = (52 * SCALE, 40 * SCALE)
+
+
+def glyph_box(lay, x, y):
+    """True ink box of a text layer (T.flow pads the mask heavily)."""
+    bb = lay.image.getbbox()
+    if not bb:
+        return None
+    return (x + bb[0], y + bb[1], x + bb[2], y + bb[3])
+
+
+def panel(img, box, e, radius=None, alpha=None, fill=None):
+    """A rounded, softly feathered dark plate that hugs the type block.
+
+    This is the reference style: the caption sits on its own small plate so the
+    photograph keeps its quality everywhere else in the frame — no full-frame
+    scrim, no glow, no gradient wash.
+    """
+    if e <= 0.004:
+        return
+    x0, y0, x1, y1 = [int(v) for v in box]
+    r = PANEL_RADIUS if radius is None else radius
+    a = int((PANEL_A if alpha is None else alpha) * e)
+    fill = PANEL_RGBA if fill is None else fill
+    # a 26px feather keeps the plate from reading as a hard "box"
+    pad = 26 * SCALE
+    w, h = (x1 - x0) + pad * 2, (y1 - y0) + pad * 2
+    plate = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(plate)
+    d.rounded_rectangle([pad // 2, pad // 2, w - pad // 2 - 1, h - pad // 2 - 1],
+                        radius=r, fill=fill + (a,))
+    plate = plate.filter(ImageFilter.GaussianBlur(14 * SCALE))
+    # paste the small plate at its own position — the canvas is far larger
+    base = img.convert("RGBA")
+    base.alpha_composite(plate, (x0 - pad, y0 - pad))
+    img.paste(base.convert("RGB"), (0, 0))
+
+
+def bullet_row(img, txt, sub, x, y, e, colour, bar=C_GOLD):
+    """Reference list row: colour bar, cream title, grey-green sub-line."""
+    if e <= 0.004:
+        return
+    lay = T.flow(txt, "sans-semi", 40 * SCALE)
+    sub_lay = T.flow(sub, "sans-semi", 30 * SCALE) if sub else None
+    bb = lay.image.getbbox() or (0, 0, lay.width, lay.image.height)
+    bh = int(bb[3] - bb[1])
+    bar_w = 10 * SCALE
+    d = ImageDraw.Draw(img, "RGBA")
+    d.rounded_rectangle([x, y + bb[1] + 6 * SCALE, x + bar_w, y + bb[3] - 6 * SCALE],
+                        radius=bar_w // 2, fill=bar + (int(235 * e),))
+    T.paint(img, lay.image, (int(x + 34 * SCALE), int(y)), C_CREAM, e,
+            shadow=(0, 3 * SCALE, (0, 0, 0), 0.30))
+    if sub_lay is not None:
+        T.paint(img, sub_lay.image, (int(x + 34 * SCALE), int(y + bh + 26 * SCALE)),
+                (176, 206, 190), e, shadow=(0, 2 * SCALE, (0, 0, 0), 0.24))
+
+
+def draw_twotone(img, head, tail, accent, y, align, e):
+    """Reference display line: cream first half, accent second half, one row."""
+    if e <= 0.004:
+        return
+    key, px, _a = STYLE["title"]
+    head_lay = T.flow(head + " ", key, px)
+    full_lay = T.flow(head + " " + tail, key, px)
+    xx = int((W - full_lay.width) / 2) if align == "mid" else int(W * 0.075)
+    ink = (255, 252, 245)
+    shadow = (0, 3 * SCALE, (0, 0, 0), 0.34)
+    T.paint(img, head_lay.image, (xx, y), ink, e, shadow=shadow)
+    tail_mask = full_lay.image.crop((head_lay.width, 0, full_lay.image.width,
+                                     full_lay.image.height))
+    T.paint(img, tail_mask, (xx + head_lay.width, y), accent, e, shadow=shadow)
+
+
+def _group_rows(rows):
+    out = []
+    for r in rows:
+        if out and out[-1][0][0] == r[0]:
+            out[-1].append(r)
+        else:
+            out.append([r])
+    return out
+
+
+def draw_line(img, style, txt, colour, y, align, e, x0=None, plated=False):
     if e <= 0.004:
         return
     key, px, anim = STYLE[style]
@@ -201,10 +289,16 @@ def draw_line(img, style, txt, colour, y, align, e, x0=None):
         K.chip(img, txt, (x0, y), e, px=30 * SCALE, colour=colour, icon="dot",
                slide=40 * SCALE)
         return
+    if style == "list":                       # txt may carry "head|sub"
+        head, _, sub = txt.partition("|")
+        bullet_row(img, head, sub, x0 + 8 * SCALE, y, e, colour)
+        return
 
     ink, kind = pick_ink(img, (xx - 8, y - 8, xx + lay.width + 8,
                                y + lay.image.height + 12), hint=colour)
-    if kind == "light":
+    if plated:
+        ink, kind = ((255, 252, 245), "light")
+    if kind == "light" and not plated:
         # white type on a busy photo: a *dark* feather behind the glyphs, made
         # from the photo's own average tone, kept well clear of the letters
         busy = V._edge_energy(img, (xx, y, xx + lay.width, y + lay.image.height))
@@ -218,7 +312,7 @@ def draw_line(img, style, txt, colour, y, align, e, x0=None):
         img.paste(Image.alpha_composite(base, halo).convert("RGB"), (0, 0))
         shadow = (0, 4 * SCALE, (0, 0, 0), 0.34)
         glow = None
-    else:
+    elif kind != "light":
         # dark type on bright plumage: a pale feather behind the glyphs
         busy = V._edge_energy(img, (xx, y, xx + lay.width, y + lay.image.height))
         a = int(min(190, 96 + 150 * busy))
@@ -229,6 +323,9 @@ def draw_line(img, style, txt, colour, y, align, e, x0=None):
         base = img.convert("RGBA")
         img.paste(Image.alpha_composite(base, halo).convert("RGB"), (0, 0))
         shadow = (0, 3 * SCALE, (255, 255, 255), 0.22)
+        glow = None
+    else:
+        shadow = (0, 3 * SCALE, (0, 0, 0), 0.34)
         glow = None
 
     if center:
@@ -432,64 +529,64 @@ def resolve_cues():
 BEATS = {
     "s01": [
         (0, "chip", "ঘাসের ডগা", C_SKY, 268, "left"),
-        (0, "title", "আঁশঠুঁটি ঘাসপাখি", C_CREAM, 340, "left"),
-        (1, "title", "ডাক শুনে খুঁজে পেতে হয়", C_GOLD, 1180, "left"),
+        (0, "title", "আঁশঠুঁটি|ঘাসপাখি", C_GOLD, 340, "left"),
+        (1, "title", "ডাক শুনেই|খুঁজে পেতে হয়", C_GOLD, 1140, "left"),
         (2, "sub", "কর্কশ ঘর্ঘর, তারপর নীরবতা", C_CREAM, 1300, "left"),
     ],
     "s02": [
         (0, "chip", "পরিচয়", C_MINT, 268, "left"),
-        (0, "title", "আঁশঠুঁটি ঘাসপাখি", C_CREAM, 340, "left"),
+        (0, "title", "আঁশঠুঁটি|ঘাসপাখি", C_GOLD, 340, "left"),
         (1, "attr", "ইংরেজিতে Bristled Grassbird", C_MINT, 1180, "left"),
         (2, "attr", "Schoenicola striatus", C_MINT, 1288, "left"),
     ],
     "s03": [
         (0, "chip", "শনাক্তকরণ", C_SAND, 268, "left"),
-        (0, "title", "লম্বা-মোটা ঠোঁট", C_CREAM, 340, "left"),
-        (1, "title", "ঘাড়ে টানা আঁশ-পালক", C_GOLD, 1180, "left"),
+        (0, "title", "লম্বা-মোটা|ঠোঁট", C_GOLD, 340, "left"),
+        (1, "title", "ঘাড়ে|টানা আঁশ-পালক", C_GOLD, 1180, "left"),
         (2, "sub", "পিঠে বাদামি ডোরা", C_CREAM, 1300, "left"),
     ],
     "s04": [
         (0, "chip", "আকার", C_SKY, 268, "left"),
-        (0, "title", "১৮–২০ সেন্টিমিটার", C_CREAM, 340, "left"),
-        (1, "title", "অর্ধেকটাই লেজ", C_GOLD, 1180, "left"),
-        (1, "sub", "তবু ঘাসেই লুকিয়ে থাকে", C_CREAM, 1300, "left"),
+        (0, "title", "১৮–২০|সেন্টিমিটার", C_GOLD, 340, "left"),
+        (1, "list", "অর্ধেকটাই লেজ|লম্বা, ধাপে ধাপে", C_GOLD, 1180, "left"),
+        (1, "list", "ঘাসেই লুকিয়ে|খাড়া ডগায় বসে", C_GOLD, -1, "left"),
     ],
     "s05": [
         (0, "chip", "বাংলাদেশে", C_MINT, 268, "left"),
-        (0, "title", "শীতে দুর্লভ অতিথি", C_CREAM, 340, "left"),
-        (1, "title", "হাওর, চর, খাগড়ার ঝোপ", C_GOLD, 1180, "left"),
+        (0, "title", "শীতে|দুর্লভ অতিথি", C_GOLD, 340, "left"),
+        (1, "title", "হাওর, চর,|খাগড়ার ঝোপ", C_GOLD, 1180, "left"),
         (1, "sub", "পদ্মা-যমুনার চরাঞ্চলে", C_CREAM, 1300, "left"),
     ],
     "s06": [
         (0, "chip", "আচরণ", C_SAND, 268, "left"),
-        (0, "title", "ঘাসে লুকিয়ে হাঁটে", C_CREAM, 340, "left"),
-        (1, "title", "ডাকতে ডাকতে ডগায় ওঠে", C_GOLD, 1180, "left"),
+        (0, "title", "ঘাসে লুকিয়ে|হাঁটে", C_GOLD, 340, "left"),
+        (1, "title", "ডাকতে ডাকতে|ডগায় ওঠে", C_GOLD, 1180, "left"),
         (2, "sub", "মানুষ দেখলে মিলিয়ে যায়", C_CREAM, 1300, "left"),
     ],
     "s07": [
         (0, "chip", "প্রজনন", C_MINT, 268, "left"),
-        (0, "title", "মে থেকে সেপ্টেম্বর", C_CREAM, 340, "left"),
-        (1, "title", "ঘাস বুনে বাসা", C_GOLD, 1180, "left"),
+        (0, "title", "মে থেকে|সেপ্টেম্বর", C_GOLD, 340, "left"),
+        (1, "title", "ঘাস বুনে|বাসা", C_GOLD, 1180, "left"),
         (2, "sub", "২–৩টি ডিম, বর্ষার ভেতর", C_CREAM, 1300, "left"),
     ],
     "s08": [
         (0, "chip", "প্রকৃতিতে ভূমিকা", C_MINT, 268, "left"),
-        (0, "title", "পোকা আর বীজ খায়", C_CREAM, 340, "left"),
-        (1, "title", "তৃণভূমির ছোট্ট রক্ষী", C_GOLD, 1180, "left"),
-        (2, "sub", "ঘাসফড়িং নিয়ন্ত্রণে রাখে", C_CREAM, 1300, "left"),
+        (0, "title", "পোকা আর|বীজ খায়", C_GOLD, 340, "left"),
+        (1, "list", "ঘাসফড়িং|ঠোঁটে ধরে", C_GOLD, 1180, "left"),
+        (1, "list", "তৃণভূমির রক্ষী|ছোট পতঙ্গ নিয়ন্ত্রণে", C_GOLD, -1, "left"),
     ],
     "s09": [
         (0, "chip", "হুমকি", C_CORAL, 268, "left"),
-        (0, "title", "তৃণভূমি কমছে", C_CORAL, 340, "left"),
-        (1, "title", "চরে চলছে বালু উত্তোলন", C_CORAL, 1180, "left"),
+        (0, "title", "তৃণভূমি|কমছে", C_CORAL, 340, "left"),
+        (1, "title", "চরে চলছে|বালু উত্তোলন", C_CORAL, 1180, "left"),
         (2, "attr", "IUCN: NT · প্রায়-বিপন্ন", C_SAND, 1300, "left"),
     ],
     "s10": [
         (0, "chip", "শেষ কথা", C_GOLD, 268, "left"),
         (0, "attr", "প্রায়-বিপন্ন মানে এখনো সময় আছে", C_MINT, 350, "left"),
         (0, "quote", "ঘাস বাঁচলে ঘাসপাখিও বাঁচবে", C_CREAM, 440, "left"),
-        (1, "title", "তৃণভূমি বাঁচান", C_CREAM, 1050, "left"),
-        (2, "title", "বালু উত্তোলন বন্ধ করুন", C_GOLD, 1166, "left"),
+        (1, "title", "তৃণভূমি|বাঁচান", C_GOLD, 1050, "left"),
+        (2, "title", "বালু উত্তোলন|বন্ধ করুন", C_GOLD, 1166, "left"),
     ],
 }
 
@@ -627,14 +724,39 @@ def overlay(s, p, img):
     # A row index beyond the measured sentence windows must still be drawn — it
     # rides on the last window. Dropping it silently left whole captions missing
     # on short scenes (a 2-sentence line under 4 type rows).
-    for idx, style, txt, colour, y, align in placed_beats(s):
-        if idx >= len(segs):
-            idx = len(segs) - 1
-        a0, b0 = segs[idx]
+    # A group of rows that share a beat index shares ONE plate — that is the
+    # reference look (chip on its own pill, then title + sub on one soft panel).
+    for grp in _group_rows(placed_beats(s)):
+        idx0 = grp[0][0]
+        if idx0 >= len(segs):
+            idx0 = len(segs) - 1
+        a0, b0 = segs[idx0]
         e_in = K.ss(a0 - 0.08, a0 + 0.34, v)
-        e_out = 1.0 if idx + 1 >= len(segs) or style in ("chip", "attr") \
+        e_out = 1.0 if idx0 + 1 >= len(segs) or any(
+            r[1] in ("chip", "attr") for r in grp) \
             else 1.0 - K.ss(b0 + 0.04, b0 + 0.40, v)
-        draw_line(img, style, txt, colour, y, align, e_in * e_out * fade_all)
+        e = e_in * e_out * fade_all
+        boxes = []
+        for _i, style, txt, colour, y, align in grp:
+            if style == "chip":
+                continue
+            _k, _px, _a = STYLE.get(style, ("sans-semi", 40, "rise"))
+            lay = T.flow(txt.replace("|", " "), _k, _px)
+            x = int((W - lay.width) / 2) if align == "mid" else int(W * 0.075)
+            bb = lay.image.getbbox()
+            if bb:
+                boxes.append((x + bb[0] - 62 * SCALE, y + bb[1] - 30 * SCALE,
+                              x + bb[2] + 62 * SCALE, y + bb[3] + 26 * SCALE))
+        if boxes:
+            panel(img, (min(b[0] for b in boxes), min(b[1] for b in boxes),
+                        max(b[2] for b in boxes), max(b[3] for b in boxes)), e)
+        for _i, style, txt, colour, y, align in grp:
+            if style in ("title", "num") and "|" in txt:
+                # two-tone display line: "first part|accent part", laid on one line
+                head, _, tail = txt.partition("|")
+                draw_twotone(img, head, tail, colour, y, align, e)
+                continue
+            draw_line(img, style, txt, colour, y, align, e, plated=True)
 
     if kind == "outro":
         cue = s["cue"]
