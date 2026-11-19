@@ -496,14 +496,32 @@ BEATS = {
 _INK_PAD = {"chip": 60, "title": 110, "num": 120, "sub": 66, "attr": 54, "quote": 84}
 
 
+CHIP_PADY = 16          # K.chip's inner padding, in full-res px
+GAP_TEXT = 26 * SCALE   # ordinary line spacing between two type rows
+GAP_CHIP = 46 * SCALE   # a chip already carries its own padding box
+
+
 def layout_beats(sid):
-    out, prev_bottom = [], 0
+    """Lay the rows out so two pieces of type can never touch.
+
+    The chip is drawn inside a rounded box that is taller than its glyphs, so a
+    title starting a fixed 72px below the chip's *y* lands inside that box. Every
+    row is therefore pushed below the true bottom of the previous one (box
+    included) whenever it would otherwise come closer than the gap. Big jumps
+    down the frame — the lower caption block — are left exactly where they were.
+    """
+    out, prev_bottom, prev_style = [], 0, None
     for idx, style, txt, colour, y, align in BEATS.get(sid, []):
-        if y < 0:
-            y = prev_bottom + 26
         key, px, _a = STYLE.get(style, ("sans-semi", 40, "rise"))
         lay = T.flow(txt, key, px)
-        prev_bottom = y + lay.image.height
+        box_h = lay.image.height + (2 * CHIP_PADY if prev_style == "chip" else 0)
+        gap = GAP_CHIP if prev_style == "chip" else GAP_TEXT
+        if y < 0:
+            y = prev_bottom + gap
+        elif prev_style is not None and y - prev_bottom < gap and y > prev_bottom - 460:
+            y = prev_bottom + gap
+        prev_bottom = y + box_h
+        prev_style = style
         out.append((idx, style, txt, colour, int(y), align))
     return out
 
