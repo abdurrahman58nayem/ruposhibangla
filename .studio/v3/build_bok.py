@@ -97,26 +97,28 @@ def soft_shade(img, top=0.0, bottom=0.0, head=0.0, head_h=0.30):
     return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB")
 
 
-def natural_finish(img, vignette=0.16, grain=0.006, lift=0.045):
-    """Exposure-match + very light shadow lift + vignette + grain.
+def natural_finish(img, vignette=0.16, grain=0.006, lift=0.012):
+    """Gain-based exposure match that keeps the photograph's own contrast.
 
-    Deliberately no saturation, no contrast stretch, no white-balance shift:
-    the brief is that the photograph keeps the colour it was shot with.
+    An earlier version matched the frame mean with a *gamma* curve. Gamma lifts
+    the midtones far more than the highlights, so every scene came out milky and
+    flat — the "glow" that made the bird look low quality. A plain gain keeps the
+    contrast ratio: darks stay dark, the whites stay white.
+
+    No saturation, no contrast stretch, no white-balance shift — and the shadow
+    lift only touches the bottom of the curve, never the whole image.
     """
     import numpy as _np
     arr = np.asarray(img)
     u8 = _np.arange(256, dtype=_np.float32) / 255.0
-    # pure exposure match on the mid-tone: no per-channel curve at all
-    tbl = u8.copy()
-    for _ in range(4):
-        cur = float(tbl[arr[::16, ::16]].mean())
-        if abs(cur - 0.455) < 0.006:
-            break
-        g = float(_np.clip(_np.log(0.455) / _np.log(max(min(cur, 0.98), 0.02)),
-                           1 / 2.2, 2.2))
-        tbl = _np.power(tbl, g)
+
+    mean = float(arr[::16, ::16].mean()) / 255.0
+    gain = float(_np.clip(0.415 / max(mean, 0.02), 0.94, 1.10))
+    tbl = _np.clip(u8 * gain, 0, 1)
     if lift:
-        tbl = tbl * (1 - lift) + lift * _np.power(tbl, 0.85)
+        # open only the deepest shadows; fades out completely by 25% grey
+        sh = _np.clip((0.25 - tbl) / 0.25, 0, 1) ** 2
+        tbl = _np.clip(tbl + lift * sh, 0, 1)
     lut = _np.clip(tbl * 255.0, 0, 255).astype(_np.uint8)
     out = _np.empty(arr.shape, dtype=_np.uint8)
     for c in range(3):

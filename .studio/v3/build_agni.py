@@ -65,14 +65,17 @@ _NX, _NY = _XX / W, _YY / H
 _VIG = None
 
 
+_VIG_D = None
+
+
 def _vignette(strength):
-    global _VIG
+    global _VIG, _VIG_D
     if _VIG is None:
-        d = np.sqrt(((_NX - 0.5) * 1.10) ** 2 + ((_NY - 0.5) * 0.92) ** 2)
+        _VIG_D = np.sqrt(((_NX - 0.5) * 1.10) ** 2 + ((_NY - 0.5) * 0.92) ** 2)
         _VIG = {}
     key = round(strength, 3)
     if key not in _VIG:
-        _VIG[key] = (1 - strength * V.smoothstep(0.34, 0.86, d)).astype(np.float32)[:, :, None]
+        _VIG[key] = (1 - strength * V.smoothstep(0.34, 0.86, _VIG_D)).astype(np.float32)[:, :, None]
     return _VIG[key]
 
 
@@ -97,31 +100,39 @@ def soft_shade(img, top=0.0, bottom=0.0, head=0.0, head_h=0.30):
     return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB")
 
 
-def natural_finish(img, vignette=0.16, grain=0.006, lift=0.045):
-    """Exposure-match + very light shadow lift + vignette + grain.
+def natural_finish(img, vignette=0.16, grain=0.006, lift=0.012, sharp=0.55):
+    """Flat exposure match + a *shadows-only* lift + vignette + fine grain.
 
-    Deliberately no saturation, no contrast stretch, no white-balance shift:
-    the brief is that the photograph keeps the colour it was shot with.
+    The old version matched the frame mean with a gamma curve. Gamma lifts the
+    midtones far more than the highlights, so every scene came out milky and
+    flat — the "glow" that made the photographs look low quality. A plain gain
+    keeps the contrast ratio of the shot: darks stay dark, the whites stay white.
+
+    No saturation, no contrast stretch, no white-balance shift, and the lift is
+    confined to the bottom of the curve so it can never grey the whole frame.
     """
     import numpy as _np
     arr = np.asarray(img)
     u8 = _np.arange(256, dtype=_np.float32) / 255.0
-    # pure exposure match on the mid-tone: no per-channel curve at all
-    tbl = u8.copy()
-    for _ in range(4):
-        cur = float(tbl[arr[::16, ::16]].mean())
-        if abs(cur - 0.455) < 0.006:
-            break
-        g = float(_np.clip(_np.log(0.455) / _np.log(max(min(cur, 0.98), 0.02)),
-                           1 / 2.2, 2.2))
-        tbl = _np.power(tbl, g)
+
+    mean = float(arr[::16, ::16].mean()) / 255.0
+    gain = float(_np.clip(0.415 / max(mean, 0.02), 0.94, 1.10))
+    tbl = _np.clip(u8 * gain, 0, 1)
     if lift:
-        tbl = tbl * (1 - lift) + lift * _np.power(tbl, 0.85)
-    lut = _np.clip(tbl * 255.0, 0, 255).astype(_np.uint8)
-    out = _np.empty(arr.shape, dtype=_np.uint8)
-    for c in range(3):
-        out[..., c] = lut[arr[..., c]]
-    f = out.astype(_np.float32)
+        sh = _np.clip((0.25 - tbl) / 0.25, 0, 1) ** 2      # fades out by 25% grey
+        tbl = _np.clip(tbl + lift * sh, 0, 1)
+    lut = [int(round(v)) for v in _np.clip(tbl * 255.0, 0, 255).tolist()]
+    # the curve is applied per channel by PIL (C speed) rather than a numpy LUT
+    f = _np.asarray(Image.merge("RGB", [ch.point(lut) for ch in img.split()]),
+                    dtype=_np.float32)
+    if sharp:
+        # luma-only unsharp: the art is 768px wide, the reel is 4K, so the edges
+        # need their definition back. The blur runs in PIL so it stays fast, and
+        # the colour channels are left untouched.
+        lum = f @ _np.array([0.299, 0.587, 0.114], dtype=_np.float32)
+        blur = _np.asarray(Image.fromarray(_np.clip(lum, 0, 255).astype(_np.uint8), "L")
+                           .filter(ImageFilter.GaussianBlur(1.6)), dtype=_np.float32)
+        f = _np.clip(f + _np.clip((lum - blur) * sharp, -42, 42)[:, :, None], 0, 255)
     if vignette:
         f *= _vignette(vignette)
     if grain:
