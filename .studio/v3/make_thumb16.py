@@ -68,9 +68,8 @@ def build(src, chip, t1, t2, sub, out, zoom=1.0, y_shift=0.0, px=150, px2=None,
     px2 = px if px2 is None else int(px2 * S)
     top = int(1000 * S) if top is None else int(top * S)
 
-    # small bordered pill chip, centred, above the title
-    cl = T.flow(chip, "sans-semibold" if False else "sans-semi", 30 * S)
-    K.chip(img, chip, (int((W - cl.width - 60) / 2), top - 150 * S), 1.0,
+    # chip sits top-left like every frame of the reel
+    K.chip(img, chip, (int(W * 0.075), 96 * S), 1.0,
            px=30 * S, colour=FLAME, slide=0)
 
     h1 = centred(img, t1, "serif-bold", px, top, CREAM).image.height

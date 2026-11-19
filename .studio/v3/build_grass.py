@@ -21,7 +21,7 @@ import kinetic as K
 import rbtext as T
 import rbvisual as V
 
-OUT = "../render16"
+OUT = "../render17"
 VO = "../vo_grass"
 ART = "../art_grass"
 FPS = 30
@@ -145,18 +145,18 @@ def natural_finish(img, vignette=0.16, grain=0.006, lift=0.012, sharp=0.55):
 
 # --------------------------------------------------------------- type helpers --
 STYLE = {
-    "chip":  ("sans-semi", 34 * SCALE, "chip"),
+    "chip":  ("sans-semi", 38 * SCALE, "chip"),
     "title": ("serif-bold", 78 * SCALE, "word"),
     "num":   ("serif-bold", 84 * SCALE, "word"),
     "sub":   ("sans-semi", 44 * SCALE, "rise"),
     "attr":  ("sans-semi", 32 * SCALE, "rise"),
     "quote": ("serif-bold", 54 * SCALE, "word"),
-    "list":  ("sans-semi", 40 * SCALE, "rise"),   # bullet row inside a panel
-    "list2": ("sans-semi", 30 * SCALE, "rise"),   # its grey-green sub-line
-    "stack": ("serif-bold", 74 * SCALE, "word"),  # "line1|line2" centred, 2 rows
-    "label": ("sans-semi", 38 * SCALE, "rise"),   # small caption above a value
-    "value": ("serif-bold", 92 * SCALE, "word"),  # the gold number / name
-    "pill":  ("sans-semi", 34 * SCALE, "rise"),   # bordered capsule
+    "list":  ("sans-semi", 46 * SCALE, "rise"),   # bullet row inside a panel
+    "list2": ("sans-semi", 34 * SCALE, "rise"),   # its grey-green sub-line
+    "stack": ("serif-bold", 88 * SCALE, "word"),  # "line1|line2" centred, 2 rows
+    "label": ("sans-semi", 40 * SCALE, "rise"),   # small caption above a value
+    "value": ("serif-bold", 112 * SCALE, "word"),  # the gold number / name
+    "pill":  ("sans-semi", 40 * SCALE, "rise"),   # bordered capsule
 }
 
 
@@ -240,27 +240,37 @@ def bullet_row(img, txt, sub, x, y, e, colour, bar=C_GOLD):
     """Reference list row: colour bar, cream title, grey-green sub-line."""
     if e <= 0.004:
         return
-    lay = T.flow(txt, "sans-semi", 40 * SCALE)
-    sub_lay = T.flow(sub, "sans-semi", 30 * SCALE) if sub else None
+    lay = T.flow(txt, "sans-semi", fit_px("sans-semi", txt, 46 * SCALE, MAXW - 90 * SCALE))
+    sub_lay = T.flow(sub, "sans-semi",
+                     fit_px("sans-semi", sub, 34 * SCALE, MAXW - 90 * SCALE)) if sub else None
     # centred rows are painted on the 1080 canvas and pasted back at 2x, so every
     # measurement here has to be made in 1x space (this was drawing list rows at
     # half size and pushing their plates off-frame)
     if img.width != W:
         x, y = x / SCALE, y / SCALE
-        lay = T.flow(txt, "sans-semi", 40)
-        sub_lay = T.flow(sub, "sans-semi", 30) if sub else None
+        lay = T.flow(txt, "sans-semi", fit_px("sans-semi", txt, 46, MAXW // SCALE - 45))
+        sub_lay = T.flow(sub, "sans-semi",
+                         fit_px("sans-semi", sub, 34, MAXW // SCALE - 45)) if sub else None
     bb = lay.image.getbbox() or (0, 0, lay.width, lay.image.height)
     bh = int(bb[3] - bb[1])
     sc = 1 if img.width == W else 1 / SCALE
     bar_w = int(10 * SCALE * (1 if img.width == W else 1 / SCALE))
+    # the colour bar draws itself down first, then the head, then the sub-line
+    e_bar = min(1.0, e * 2.2)
+    e_head = _stag(e, 1, 3, 0.40)
+    e_sub = _stag(e, 2, 3, 0.40)
     d = ImageDraw.Draw(img, "RGBA")
-    d.rounded_rectangle([x, y + bb[1] + 6 * sc, x + bar_w, y + bb[3] - 6 * sc],
-                        radius=bar_w // 2, fill=bar + (int(235 * e),))
-    T.paint(img, lay.image, (int(x + 34 * sc), int(y)), C_CREAM, e,
-            shadow=(0, 3 * SCALE, (0, 0, 0), 0.30))
-    if sub_lay is not None:
+    bar_top = y + bb[1] + 6 * sc
+    bar_bot = bar_top + (bb[3] - bb[1] - 12 * sc) * K.eo(e_bar)
+    if bar_bot > bar_top + 2:
+        d.rounded_rectangle([x, bar_top, x + bar_w, bar_bot],
+                            radius=bar_w // 2, fill=bar + (int(235 * e_bar),))
+    if e_head > 0.004:
+        T.paint(img, lay.image, (int(x + 34 * sc), int(y)), C_CREAM, e_head,
+                shadow=(0, 3 * SCALE, (0, 0, 0), 0.30))
+    if sub_lay is not None and e_sub > 0.004:
         T.paint(img, sub_lay.image, (int(x + 34 * sc), int(y + bh + 34 * sc)),
-                (176, 206, 190), e, shadow=(0, 2 * SCALE, (0, 0, 0), 0.24))
+                (176, 206, 190), e_sub, shadow=(0, 2 * SCALE, (0, 0, 0), 0.24))
 
 
 def draw_twotone(img, head, tail, accent, y, align, e):
@@ -279,13 +289,67 @@ def draw_twotone(img, head, tail, accent, y, align, e):
     T.paint(img, tail_mask, (xx + head_lay.width, y), accent, e, shadow=shadow)
 
 
+def _patch_bright(canvas, box, thr=158):
+    """Brightness of the brightest 12% of a type box on the live frame."""
+    x0, y0, x1, y1 = [int(v) for v in box]
+    x0, y0 = max(0, x0), max(0, y0)
+    x1, y1 = min(canvas.width, x1), min(canvas.height, y1)
+    if x1 - x0 < 8 or y1 - y0 < 8:
+        return False
+    a = np.asarray(canvas.crop((x0, y0, x1, y1)), dtype=np.float32)
+    lum = a @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
+    return float(np.percentile(lum, 88)) >= thr
+
+
+MAXW = int(W * 0.845)      # safe type width (ref-7's panel is 84% of the frame)
+MINX = int(W * 0.075)      # safe left edge — same gutter the chips sit on
+
+
+def fit_px(key, txt, px, maxw=None):
+    """Shrink a type size until the line fits the frame.
+
+    Bengali line widths are not predictable from a character count, so the size
+    is measured and stepped down; this is what stops a long value like
+    '১৮–২০ সেন্টিমিটার' from running off the right edge.
+    """
+    maxw = MAXW if maxw is None else maxw
+    px = float(px)
+    while px > 12:
+        if T.flow(txt, key, int(px)).width <= maxw:
+            break
+        px *= 0.955
+    return int(px)
+
+
+def stack_px(txt):
+    """One size for both title rows, set by the wider of the two."""
+    key, px, _a = STYLE["stack"]
+    l1, _sep, l2 = txt.partition("|")
+    worst = max((l1, l2), key=lambda t: T.flow(t, key, px).width)
+    return fit_px(key, worst, px)
+
+
+def _stag(e, i, n, total=0.34):
+    """Reveal progress for item i of n — the rows come in one after another.
+
+    This is the machranga grammar: nothing appears as a finished card, each
+    element lands on its own beat (chip, row 1, row 2 ...).
+    """
+    if n <= 1:
+        return e
+    step = total / (n - 1)
+    q = (e - step * i) / (1.0 - step * (n - 1))
+    return max(0.0, min(1.0, q))
+
+
 def _mid_x(lay):
     return int((W - lay.width) / 2)
 
 
 def stack_box(txt, y):
     """Geometry for a two-row display line: (l1, l2, x, y, h)."""
-    key, px, _a = STYLE["stack"]
+    key, _px0, _a = STYLE["stack"]
+    px = stack_px(txt)
     l1_txt, _, l2_txt = txt.partition("|")
     l1 = T.flow(l1_txt, key, px)
     l2 = T.flow(l2_txt, key, px) if l2_txt else None
@@ -305,22 +369,30 @@ def draw_stack(img, txt, accent, y, e, e1=None, e2=None):
     """
     if e <= 0.004:
         return
-    e1 = e if e1 is None else min(e, e1)
-    e2 = e if e2 is None else min(e, e2)
-    key, px, _a = STYLE["stack"]
+    # row 2 waits for row 1 — the reference never drops a two-line title at once
+    e1 = _stag(e, 0, 2, 0.30) if e1 is None else min(e, e1)
+    e2 = _stag(e, 1, 2, 0.30) if e2 is None else min(e, e2)
+    key, _px0, _a = STYLE["stack"]
+    px = stack_px(txt)
     l1_txt, _, l2_txt = txt.partition("|")
+    # ink follows the ground: cream/gold on a dark patch, a deep shade of the
+    # photo's own colour on a bright one — the same switch the reference uses
+    l1_ref = T.flow(l1_txt, key, px)
+    ink1, kind = pick_ink(img, ((W - l1_ref.width) // 2, y - 8 * SCALE,
+                                (W + l1_ref.width) // 2, y + 2 * px))
+    ink1, ink2 = C_CREAM, accent
+    shadow = (0, 2 * (SCALE - 1) + 2, (0, 0, 0), 0.42)
     small = img.resize((W // SCALE, H // SCALE), Image.LANCZOS)
-    shadow = (0, 2, (0, 0, 0), 0.42)
     y1 = y // SCALE
     K.word_line(small, l1_txt, key, px // SCALE, (0, y1 + T.baseline_offset(T.flow(l1_txt, key, px)) // SCALE),
-                C_CREAM, e1, stagger=0.12, dur=0.30, rise=22, center_x=True, x0=0,
+                ink1, e1, stagger=0.12, dur=0.30, rise=22, center_x=True, x0=0,
                 shadow=shadow)
     if l2_txt:
         gap = px // 6
         dy = (T.flow(l1_txt, key, px).image.getbbox()[3]
               - T.flow(l1_txt, key, px).image.getbbox()[1]) // SCALE + gap // SCALE
         K.word_line(small, l2_txt, key, px // SCALE, (0, y1 + dy + T.baseline_offset(T.flow(l2_txt, key, px)) // SCALE),
-                    accent, e2, stagger=0.12, dur=0.30, rise=22, center_x=True, x0=0,
+                    ink2, e2, stagger=0.12, dur=0.30, rise=22, center_x=True, x0=0,
                     shadow=shadow)
     img.paste(small.resize((W, H), Image.LANCZOS), (0, 0))
 
@@ -339,19 +411,50 @@ def draw_stack_static(img, txt, accent, y, e):
                 accent, e, shadow=shadow)
 
 
-def draw_label_value(img, label, value, accent, y, e):
-    """Small cream caption above a big accent value — both centred."""
+_BN_DIGITS = "০১২৩৪৫৬৭৮৯"
+
+
+def count_up(value, q):
+    """Digits tick up to their final number — the stat lands, it does not appear.
+
+    Non-digit characters (dashes, units, letters) are left alone, so
+    "১৮–২০ সেন্টিমিটার" counts the two numbers and keeps the text intact.
+    """
+    if q >= 0.999:
+        return value
+    out = []
+    for ch in value:
+        if ch in _BN_DIGITS:
+            i = _BN_DIGITS.index(ch)
+            # each digit spins through, eased, and settles on its own value last
+            spin = (q * 1.7) % 1.0
+            out.append(_BN_DIGITS[min(i, int(spin * (i + 1)))] if i else ch)
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def draw_label_value(img, label, value, accent, y, e, align="mid"):
+    """Small cream caption above a big accent value, revealed in two steps."""
     if e <= 0.004:
         return
     k_l, px_l, _ = STYLE["label"]
     k_v, px_v, _ = STYLE["value"]
+    px_v = fit_px(k_v, value, px_v)
+    e_lab = _stag(e, 0, 2, 0.30)
+    e_val = _stag(e, 1, 2, 0.30)
     ll = T.flow(label, k_l, px_l)
-    vl = T.flow(value, k_v, px_v)
-    T.paint(img, ll.image, (_mid_x(ll), y), C_CREAM, e,
-            shadow=(0, 3 * SCALE, (0, 0, 0), 0.34))
+    vl = T.flow(count_up(value, e_val), k_v, px_v)
+    lx = _mid_x(ll) if align == "mid" else MINX
+    vx = _mid_x(vl) if align == "mid" else MINX
     hb = ll.image.getbbox()
-    T.paint(img, vl.image, (_mid_x(vl), y + hb[3] - hb[1] + 12 * SCALE), accent, e,
-            shadow=(0, 4 * SCALE, (0, 0, 0), 0.42))
+    hb3 = hb[3] - hb[1] + 12 * SCALE
+    ink_l, ink_v = C_CREAM, accent
+    sh_d = (0, 3 * SCALE, (0, 0, 0), 0.34)
+    T.paint(img, ll.image, (lx, y), ink_l, e_lab, shadow=sh_d)
+    # the value rises the last few pixels into place
+    rise = int(16 * SCALE * (1 - K.eo(e_val)))
+    T.paint(img, vl.image, (vx, y + hb3 + rise), ink_v, e_val, shadow=sh_d)
 
 
 PILLS = [C_GOLD, C_MINT, C_SKY, C_CORAL]
@@ -362,25 +465,36 @@ def draw_pills(img, txt, y, e, x_left=None):
     if e <= 0.004:
         return
     items = [t.strip() for t in txt.split("|") if t.strip()]
-    key, px, _a = STYLE["pill"]
+    key, _px0, _a = STYLE["pill"]
+    px = _px0
+    while px > 18 and sum(T.flow(t, key, px).width + 34 * SCALE
+                          for t in items) + 22 * SCALE * (len(items) - 1) > MAXW:
+        px = int(px * 0.94)
     lays = [T.flow(t, key, px) for t in items]
     padx, gap_y = 30 * SCALE, 22 * SCALE
     wid = [lay.width + padx for lay in lays]
     total = sum(wid) + gap_y * (len(lays) - 1)
+    n = len(lays)
     x = int((W - total) / 2) if x_left is None else x_left
     for i, (lay, wi) in enumerate(zip(lays, wid)):
+        # one capsule at a time, left to right — a row of pills never flashes in
+        ep = _stag(e, i, n, 0.42)
+        if ep <= 0.004:
+            x += wi + gap_y
+            continue
         h = lay.image.getbbox()[3] - lay.image.getbbox()[1] + 26 * SCALE
         col = PILLS[i % len(PILLS)]
         box = Image.new("RGBA", (int(wi), int(h)), (0, 0, 0, 0))
         d = ImageDraw.Draw(box)
         d.rounded_rectangle([0, 0, wi - 1, h - 1], radius=int(h // 2),
-                            fill=(8, 14, 14, int(150 * e)),
-                            outline=col + (int(210 * e),), width=3 * SCALE)
-        base = img.crop((int(x), int(y), int(x + wi), int(y + h))).convert("RGBA")
+                            fill=(8, 14, 14, int(150 * ep)),
+                            outline=col + (int(210 * ep),), width=3 * SCALE)
+        dy = int(12 * SCALE * (1 - K.eo(ep)))
+        base = img.crop((int(x), int(y + dy), int(x + wi), int(y + dy + h))).convert("RGBA")
         if base.size == box.size:
             box = Image.alpha_composite(base, box)
-        img.paste(box.convert("RGB"), (int(x), int(y)))
-        T.paint(img, lay.image, (int(x + padx / 2), int(y + 13 * SCALE)), col, e)
+        img.paste(box.convert("RGB"), (int(x), int(y + dy)))
+        T.paint(img, lay.image, (int(x + padx / 2), int(y + 13 * SCALE + dy)), col, ep)
         x += wi + gap_y
 
 
@@ -416,12 +530,16 @@ def draw_line(img, style, txt, colour, y, align, e, x0=None, plated=False):
         return
     key, px, anim = STYLE[style]
     center = align == "mid"
+    px = fit_px(key, txt.replace("|", " "), px, MAXW if center else W - 2 * MINX)
     lay = T.flow(txt, key, px)
-    x0 = int(W * 0.075) if x0 is None else x0
+    x0 = MINX if x0 is None else x0
     xx = (W - lay.width) / 2 if center else x0
     if style == "chip":
-        K.chip(img, txt, (x0, y), e, px=30 * SCALE, colour=colour, icon="dot",
-               slide=40 * SCALE)
+        # machranga chip: slides in from the left and settles, never centred
+        ee = min(1.0, e * 1.25)
+        dx = int(56 * SCALE * (1 - K.eo(ee)))
+        K.chip(img, txt, (x0 + dx, y), ee, px=30 * SCALE, colour=colour, icon="dot",
+               slide=0)
         return
     if style == "list":                       # txt may carry "head|sub"
         head, _, sub = txt.partition("|")
@@ -678,9 +796,9 @@ BEATS = {
         (2, "attr", "Schoenicola striatus", C_MINT, -1, "mid"),
     ],
     "s03": [
-        (0, "chip", "শনাক্তকরণ", C_SAND, 250, "mid"),
-        (0, "stack", "লম্বা-মোটা|ঠোঁট", C_GOLD, 330, "mid"),
-        (1, "stack", "ঘাড়ে|টানা আঁশ-পালক", C_GOLD, 2000, "mid"),
+        (0, "chip", "শনাক্তকরণ", C_SAND, 2500, "mid"),
+        (0, "stack", "লম্বা-মোটা|ঠোঁট", C_GOLD, 2620, "mid"),
+        (1, "stack", "ঘাড়ে|টানা আঁশ-পালক", C_GOLD, -1, "mid"),
         (2, "sub", "পিঠে বাদামি ডোরা", C_CREAM, -1, "mid"),
     ],
     "s04": [
@@ -710,9 +828,9 @@ BEATS = {
         (2, "sub", "২–৩টি ডিম, বর্ষার ভেতর", C_CREAM, -1, "mid"),
     ],
     "s08": [
-        (0, "chip", "প্রকৃতিতে ভূমিকা", C_MINT, 250, "mid"),
-        (0, "stack", "পোকা আর|বীজ খায়", C_GOLD, 330, "mid"),
-        (1, "list", "ঘাসফড়িং|ঠোঁটে ধরে", C_GOLD, 2020, "left"),
+        (0, "chip", "প্রকৃতিতে ভূমিকা", C_MINT, 2260, "mid"),
+        (0, "stack", "পোকা আর|বীজ খায়", C_GOLD, 2380, "mid"),
+        (1, "list", "ঘাসফড়িং|ঠোঁটে ধরে", C_GOLD, 2740, "left"),
         (1, "list", "তৃণভূমির রক্ষী|ছোট পতঙ্গ নিয়ন্ত্রণে", C_GOLD, -1, "left"),
     ],
     "s09": [
@@ -837,7 +955,7 @@ def placed_beats(s):
         wid = max(wid, lay.width)
         hgt += lay.image.height + 26 * SCALE
         if style == "list" and "|" in txt:
-            hgt += T.flow(txt.split("|", 1)[1], "sans-semi", 30 * SCALE).image.height + 40 * SCALE
+            hgt += T.flow(txt.split("|", 1)[1], "sans-semi", 34 * SCALE).image.height + 40 * SCALE
     mid = rows2[0][5] == "mid"
     x0 = (W - wid) / 2 if mid else W * 0.075
     floor = max(980 * SCALE, int(s.get("lowfloor", 0)) * SCALE)
@@ -857,11 +975,11 @@ def placed_beats(s):
         out.append((i, style, txt, c, int(yy), al))
         yy += lay.image.height + 26 * SCALE
         if style == "list" and "|" in txt:
-            yy += T.flow(txt.split("|", 1)[1], "sans-semi", 30 * SCALE).image.height + 40 * SCALE
+            yy += T.flow(txt.split("|", 1)[1], "sans-semi", 34 * SCALE).image.height + 40 * SCALE
     _PLACED[s["id"]] = out
     return out
 
-def _row_geom(style, txt, y, align):
+def _row_geom(style, txt, y, align, colour=C_MINT):
     """Box and draw closure for one row — geometry measured on the real layout."""
     if style == "stack":
         l1, l2, x1, yy, h = stack_box(txt, y)
@@ -878,25 +996,19 @@ def _row_geom(style, txt, y, align):
     if style == "label":                              # "label|value", one unit
         lab, _, val = txt.partition("|")
         k_l, px_l, _ = STYLE["label"]
-        k_v, px_v, _ = STYLE["value"]
+        k_v, _pxv, _ = STYLE["value"]
+        px_l = fit_px(k_l, lab, px_l, MAXW if align == "mid" else W - 2 * MINX)
+        px_v = fit_px(k_v, val, _pxv, MAXW if align == "mid" else W - 2 * MINX)
         ll = T.flow(lab, k_l, px_l)
         vl = T.flow(val, k_v, px_v)
         hb = ll.image.getbbox()
         h1 = hb[3] - hb[1]
-        box = (_mid_x(vl) + vl.image.getbbox()[0], y + hb[1],
-               _mid_x(vl) + vl.image.getbbox()[2], y + h1 + 12 * SCALE + vl.image.height)
-
-        def _draw(im, e, lab=lab, val=val, y=y):
-            small = im.resize((W // SCALE, H // SCALE), Image.LANCZOS)
-            l1 = T.flow(lab, k_l, px_l // SCALE)
-            v1 = T.flow(val, k_v, px_v // SCALE)
-            hh = l1.image.getbbox()[3] - l1.image.getbbox()[1]
-            T.paint(small, l1.image, (_mid_x(l1) // SCALE, y // SCALE), C_CREAM, e,
-                    shadow=(0, 2, (0, 0, 0), 0.34))
-            T.paint(small, v1.image, (_mid_x(v1) // SCALE, (y + hh + 6 * SCALE) // SCALE),
-                    C_GOLD, e, shadow=(0, 3, (0, 0, 0), 0.42))
-            im.paste(small.resize((W, H), Image.LANCZOS), (0, 0))
-        return box, _draw, True
+        vx = _mid_x(vl) if align == "mid" else MINX
+        lx = _mid_x(ll) if align == "mid" else MINX
+        box = (min(vx + vl.image.getbbox()[0], lx + hb[0]), y + hb[1],
+               max(vx + vl.image.getbbox()[2], lx + ll.image.getbbox()[2]),
+               y + h1 + 12 * SCALE + vl.image.height)
+        return box, (lambda im, e: draw_label_value(im, lab, val, C_GOLD, y, e, align)), True
 
     if style == "value":
         return None, None, False
@@ -914,7 +1026,9 @@ def _row_geom(style, txt, y, align):
             (lambda im, e: draw_pills(im, txt, y, e)), False
 
     if style == "chip":
-        return None, None, False                      # K.chip draws its own pill
+        # K.chip draws its own pill; it is returned as a draw with no plate and
+        # no geometry, otherwise the row was measured but never painted at all
+        return None, (lambda im, e: draw_line(im, "chip", txt, colour, y, align, e)), False
 
     key, px, _a = STYLE.get(style, ("sans-semi", 40, "rise"))
     lay = T.flow(txt.replace("|", " "), key, px)
@@ -967,7 +1081,7 @@ def overlay(s, p, img):
 
         geom, plates = [], False
         for _i, style, txt, colour, y, align in grp:
-            box, fn, wants_plate = _row_geom(style, txt, y, align)
+            box, fn, wants_plate = _row_geom(style, txt, y, align, colour)
             if box:
                 geom.append(box)
             if fn:
@@ -978,10 +1092,21 @@ def overlay(s, p, img):
         draws = overlay._pending
         overlay._pending = []
 
+        # bright ground under a row earns it a real plate — the reference never
+        # sets pale type straight onto sunlit grass; it puts a panel behind it
+        if geom and not plates:
+            for b in geom:
+                if _patch_bright(img, b):
+                    plates = True
+                    break
+
         # a label + value pair is one unit: it gets the plate too
         if geom and (plates or any(g[1] == "label" for g in draws)):
-            pbox = (min(b[0] for b in geom) - 62 * SCALE, min(b[1] for b in geom) - 34 * SCALE,
-                    max(b[2] for b in geom) + 62 * SCALE, max(b[3] for b in geom) + 30 * SCALE)
+            pad_x, pad_y = 56 * SCALE, 34 * SCALE
+            pbox = (max(pad_x, min(b[0] for b in geom) - pad_x),
+                    max(pad_y, min(b[1] for b in geom) - pad_y),
+                    min(W - pad_x, max(b[2] for b in geom) + pad_x),
+                    min(H - pad_y, max(b[3] for b in geom) + 30 * SCALE))
             panel(img, pbox, e)
 
         for fn, style, txt, colour, y, align in draws:
@@ -1003,7 +1128,9 @@ def overlay(s, p, img):
                        url="ruposhibangla.vercel.app", e_url=eu * fade_all)
 
     if kind != "outro":
-        be = K.ss(0.55, 1.25, t) * fade_all
+        # the logo is a stamp: it lands late, holds, and gets out of the way
+        # (ref-5 carries no brand mark at all, so it must never sit on the type)
+        be = K.ss(1.05, 1.75, t) * fade_all
         if be > 0:
             K.brand_lockup(img, (W - 250 * SCALE, 62 * SCALE), be,
                            size=54 * SCALE, name_px=26 * SCALE)
