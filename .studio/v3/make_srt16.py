@@ -23,7 +23,7 @@ for s in scenes:
         if style == "chip" and cues and cues[-1][0] == round(t0, 2):
             cues[-1] = (round(t0, 2), cues[-1][1], cues[-1][2] + " · " + txt)
             continue
-        cues.append((round(t0, 2), round(t1, 2), txt))
+        cues.append((round(t0, 2), round(t1, 2), txt.replace("|", " · ") if style != "label" else txt.replace("|", " ")))
     pos += s["dur"]
 
 # merge near-identical duplicate windows (chip rides with the first line)
@@ -41,5 +41,5 @@ if prev:
 lines = []
 for i, (t0, t1, txt) in enumerate(out, 1):
     lines.append(f"{i}\n{tc(t0)} --> {tc(max(t1, t0 + 0.9))}\n{txt}\n")
-open("../deliver15/04-subtitles.srt", "w", encoding="utf-8").write("\n".join(lines))
+open("../deliver16/04-subtitles.srt", "w", encoding="utf-8").write("\n".join(lines))
 print("cues", len(out), "end", tc(out[-1][1]))

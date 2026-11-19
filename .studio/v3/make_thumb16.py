@@ -51,44 +51,58 @@ def line(img, txt, key, px, y, fill, a=1.0, center=True, x=0):
     return lay
 
 
-def build(src, chip, t1, t2, sub, out, zoom=1.0, y_shift=0.0, px=180, px2=None,
-          top=None, sub_y=None, sub_top=False):
+def centred(img, txt, key, px, y, fill, a=1.0, shadow=(0, 5 * S, (0, 0, 0), 0.46)):
+    lay = T.flow(txt, key, px)
+    xx = int((W - lay.width) // 2)
+    T.paint(img, lay.image, (xx, int(y)), fill, a, shadow=shadow)
+    return lay
+
+
+def build(src, chip, t1, t2, sub, out, zoom=1.0, y_shift=0.0, px=150, px2=None,
+          top=None, sub_y=None, sub_top=False, label=None):
+    """Reference layout: centred chip, centred cream/gold title stack, small caption."""
     img = base(src, zoom=zoom, y_shift=y_shift)
-    img = bottom_scrim(img, start=0.50, strength=0.46)
-    K.chip(img, chip, (int(W * 0.075), 230 * S), 1.0, px=30 * S, colour=FLAME, slide=0)
+    # text sits in the empty lower part of the frame, never on the bird
+    img = bottom_scrim(img, start=0.52, strength=0.42)
     px = int(px * S)
     px2 = px if px2 is None else int(px2 * S)
-    top = int(1180 * S) if top is None else int(top * S)
-    sub_y = int(1560 * S) if sub_y is None else int(sub_y)
-    line(img, t1, "serif-bold", px, top, CREAM)
-    line(img, t2, "serif-bold", px2, top + int(px * 1.16), GOLD)
-    if sub_top:
-        line(img, sub, "sans-semi", 36 * S, 300 * S, SOFT, center=False,
-             x=int(W * 0.075))
-    else:
-        line(img, sub, "sans-semi", 40 * S, sub_y, SOFT)
+    top = int(1000 * S) if top is None else int(top * S)
+
+    # small bordered pill chip, centred, above the title
+    cl = T.flow(chip, "sans-semibold" if False else "sans-semi", 30 * S)
+    K.chip(img, chip, (int((W - cl.width - 60) / 2), top - 150 * S), 1.0,
+           px=30 * S, colour=FLAME, slide=0)
+
+    h1 = centred(img, t1, "serif-bold", px, top, CREAM).image.height
+    centred(img, t2, "serif-bold", px2, top + h1 + 8 * S, GOLD)
+
+    sub_lay = T.flow(sub, "sans-semi", 34 * S)
+    sy = int(sub_y * S) if sub_y else int(top + h1 + 8 * S + px2 * 1.14 + 46 * S)
+    T.paint(img, sub_lay.image, (int((W - sub_lay.width) / 2), sy), SOFT, 1.0,
+            shadow=(0, 4 * S, (0, 0, 0), 0.44))
+
     K.brand_lockup(img, (W - 250 * S, 54 * S), 1.0, size=50 * S, name_px=24 * S)
     img.save(os.path.join(OUT, out), quality=94)
     print("wrote", out)
 
 
-build("../art_grass/g02_portrait.png", "উঁচু ঘাসের বাসিন্দা",
+build("../art_grass/g02_portrait.png", "প্রায়-বিপন্ন · NT",
       "আঁশঠুঁটি", "ঘাসপাখি",
-      "Schoenicola striatus · প্রায়-বিপন্ন (NT)",
-      "06b-thumbnail-grass.jpg", zoom=1.02, y_shift=0.08, px=176,
-      px2=112, top=1120, sub_top=True)
+      "Schoenicola striatus · Bristled Grassbird",
+      "06b-thumbnail-grass.jpg", zoom=1.02, y_shift=0.10, px=118,
+      px2=104, top=1220)
 
-build("../art_grass/g04_size.png", "দৈর্ঘ্য ১৮–২০ সেমি",
+build("../art_grass/g04_size.png", "শীতে দুর্লভ অতিথি",
       "অর্ধেকটাই", "লেজ",
-      "আঁশঠুঁটি ঘাসপাখি · শীতে দুর্লভ",
-      "06c-thumbnail-size.jpg", zoom=1.05, y_shift=-0.06, px=158, px2=132,
-      top=1200)
-
-build("../art_grass/g03_detail.png", "লম্বা-মোটা ঠোঁট",
-      "ঘাড়ে আঁশের", "টানা পালক",
-      "পিঠে বাদামি ডোরা",
-      "06d-thumbnail-detail.jpg", zoom=1.10, y_shift=0.02, px=150, px2=120,
+      "দৈর্ঘ্য ১৮–২০ সেন্টিমিটার",
+      "06c-thumbnail-size.jpg", zoom=1.05, y_shift=-0.04, px=120, px2=118,
       top=1180)
+
+build("../art_grass/g03_detail.png", "শনাক্তকরণ",
+      "ঘাড়ে আঁশের", "টানা পালক",
+      "লম্বা-মোটা, সরু ঠোঁট",
+      "06d-thumbnail-detail.jpg", zoom=1.06, y_shift=0.04, px=112, px2=106,
+      top=1200)
 
 # 16:9 for the site / article header
 im = Image.open("../art_grass/g10_outro.png").convert("RGB")
