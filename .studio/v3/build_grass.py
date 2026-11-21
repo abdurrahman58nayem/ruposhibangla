@@ -36,6 +36,7 @@ C_MINT = (196, 232, 208)
 C_SKY = (186, 214, 232)
 C_CORAL = (255, 156, 120)        # flame — the bird's own throat colour
 C_SAND = (238, 214, 186)
+SUB_INK = (150, 178, 168)        # list sub-lines in the reference
 
 
 # ------------------------------------------------------------------ geometry --
@@ -195,9 +196,10 @@ def pick_ink(img, box, hint=None):
     return (18, 20, 22), "flat"
 
 
-PANEL_RGBA = (9, 13, 15)        # near-black, carries no colour cast
-PANEL_A = 176
-PANEL_RADIUS = 34 * SCALE
+# measured from ref-13/ref-14/ref-15: a dark neutral-green panel, not pure black
+PANEL_FILL = (17, 23, 21)
+PANEL_A = 224                    # 88% — the photo still breathes through it
+PANEL_RADIUS = 26 * SCALE        # ~3.5% of the frame width
 PANEL_PAD = (52 * SCALE, 40 * SCALE)
 
 
@@ -210,33 +212,33 @@ def glyph_box(lay, x, y):
 
 
 def panel(img, box, e, radius=None, alpha=None, fill=None):
-    """A rounded, softly feathered dark plate that hugs the type block.
+    """A DARK ROUNDED PANEL — crisp edge, flat fill, no blur.
 
-    This is the reference style: the caption sits on its own small plate so the
-    photograph keeps its quality everywhere else in the frame — no full-frame
-    scrim, no glow, no gradient wash.
+    The reference pans are hard-edged rectangles with a small corner radius and
+    a very soft vertical gradient inside them; they are never a blurred smudge.
+    An earlier version Gaussian-blurred the plate by 14px, which is exactly what
+    read as a "black shade" over the photograph. Measured reference values:
+    fill ≈ rgb(18,24,22) at ~88% opacity, radius ≈ 3.5% of the frame width.
     """
     if e <= 0.004:
         return
     x0, y0, x1, y1 = [int(v) for v in box]
-    r = PANEL_RADIUS if radius is None else radius
+    r = int(PANEL_RADIUS) if radius is None else int(radius)
     a = int((PANEL_A if alpha is None else alpha) * e)
-    fill = PANEL_RGBA if fill is None else fill
-    # a 26px feather keeps the plate from reading as a hard "box"
-    pad = 26 * SCALE
-    w, h = (x1 - x0) + pad * 2, (y1 - y0) + pad * 2
+    fill = PANEL_FILL if fill is None else fill
+    w, h = max(4, x1 - x0), max(4, y1 - y0)
     plate = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     d = ImageDraw.Draw(plate)
-    d.rounded_rectangle([pad // 2, pad // 2, w - pad // 2 - 1, h - pad // 2 - 1],
-                        radius=r, fill=fill + (a,))
-    plate = plate.filter(ImageFilter.GaussianBlur(14 * SCALE))
-    # paste the small plate at its own position — the canvas is far larger
-    base = img.convert("RGBA")
-    base.alpha_composite(plate, (x0 - pad, y0 - pad))
-    img.paste(base.convert("RGB"), (0, 0))
+    d.rounded_rectangle([0, 0, w - 1, h - 1], radius=r, fill=fill + (a,))
+    # 2px of feather only — enough to avoid a staircase edge, not a smear
+    plate = plate.filter(ImageFilter.GaussianBlur(1.6 * SCALE))
+    img.paste(plate, (x0, y0), plate)
 
 
-def bullet_row(img, txt, sub, x, y, e, colour, bar=C_GOLD):
+SUB_GAP = 30 * SCALE        # head → sub-line gap in a bullet row
+
+
+def bullet_row(img, txt, sub, x, y, e, colour, bar=None):
     """Reference list row: colour bar, cream title, grey-green sub-line."""
     if e <= 0.004:
         return
@@ -256,6 +258,7 @@ def bullet_row(img, txt, sub, x, y, e, colour, bar=C_GOLD):
     sc = 1 if img.width == W else 1 / SCALE
     bar_w = int(10 * SCALE * (1 if img.width == W else 1 / SCALE))
     # the colour bar draws itself down first, then the head, then the sub-line
+    bar = colour if bar is None else bar
     e_bar = min(1.0, e * 2.2)
     e_head = _stag(e, 1, 3, 0.40)
     e_sub = _stag(e, 2, 3, 0.40)
@@ -266,11 +269,16 @@ def bullet_row(img, txt, sub, x, y, e, colour, bar=C_GOLD):
         d.rounded_rectangle([x, bar_top, x + bar_w, bar_bot],
                             radius=bar_w // 2, fill=bar + (int(235 * e_bar),))
     if e_head > 0.004:
-        T.paint(img, lay.image, (int(x + 34 * sc), int(y)), C_CREAM, e_head,
+        # the head takes the row's own colour (white / mint / sky / gold), which
+        # is what gives the reference its colour variation row to row
+        T.paint(img, lay.image, (int(x + 34 * sc), int(y)), colour, e_head,
                 shadow=(0, 3 * SCALE, (0, 0, 0), 0.30))
     if sub_lay is not None and e_sub > 0.004:
-        T.paint(img, sub_lay.image, (int(x + 34 * sc), int(y + bh + 34 * sc)),
-                (176, 206, 190), e_sub, shadow=(0, 2 * SCALE, (0, 0, 0), 0.24))
+        # the sub sits under the head's REAL ink height; row_bottom() uses the
+        # same expression so the panel can never clip it
+        sub_y = y + bb[1] + bh + SUB_GAP * sc
+        T.paint(img, sub_lay.image, (int(x + 34 * sc), int(sub_y)),
+                SUB_INK, e_sub, shadow=(0, 2 * SCALE, (0, 0, 0), 0.24))
 
 
 def draw_twotone(img, head, tail, accent, y, align, e):
@@ -289,8 +297,13 @@ def draw_twotone(img, head, tail, accent, y, align, e):
     T.paint(img, tail_mask, (xx + head_lay.width, y), accent, e, shadow=shadow)
 
 
-def _patch_bright(canvas, box, thr=158):
-    """Brightness of the brightest 12% of a type box on the live frame."""
+def _patch_bright(canvas, box, thr=150, busy_thr=0.11):
+    """A panel is needed when the ground is bright OR busy behind the type.
+
+    The reference does exactly this: paler type gets a panel on dry grass, on a
+    mud bank, on pond water — all the mid-tone, high-detail grounds — and goes
+    straight onto the picture only where the frame is genuinely dark and calm.
+    """
     x0, y0, x1, y1 = [int(v) for v in box]
     x0, y0 = max(0, x0), max(0, y0)
     x1, y1 = min(canvas.width, x1), min(canvas.height, y1)
@@ -298,7 +311,11 @@ def _patch_bright(canvas, box, thr=158):
         return False
     a = np.asarray(canvas.crop((x0, y0, x1, y1)), dtype=np.float32)
     lum = a @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
-    return float(np.percentile(lum, 88)) >= thr
+    if float(np.percentile(lum, 88)) >= thr:
+        return True
+    # edge energy over the same patch (a reed bed is "busy" even when it is dim)
+    g = lum[1:, :] - lum[:-1, :]
+    return float(np.abs(g).mean()) / 255.0 >= busy_thr
 
 
 MAXW = int(W * 0.845)      # safe type width (ref-7's panel is 84% of the frame)
@@ -359,7 +376,7 @@ def stack_box(txt, y):
     return l1, l2, _mid_x(l1), y, h
 
 
-def draw_stack(img, txt, accent, y, e, e1=None, e2=None):
+def draw_stack(img, txt, accent, y, e, e1=None, e2=None, ink1=None):
     """Animated two-row hero line.
 
     Row one reveals word by word; row two follows. To animate at the right size
@@ -380,7 +397,8 @@ def draw_stack(img, txt, accent, y, e, e1=None, e2=None):
     l1_ref = T.flow(l1_txt, key, px)
     ink1, kind = pick_ink(img, ((W - l1_ref.width) // 2, y - 8 * SCALE,
                                 (W + l1_ref.width) // 2, y + 2 * px))
-    ink1, ink2 = C_CREAM, accent
+    ink1 = C_CREAM if ink1 is None else ink1
+    ink2 = accent
     shadow = (0, 2 * (SCALE - 1) + 2, (0, 0, 0), 0.42)
     small = img.resize((W // SCALE, H // SCALE), Image.LANCZOS)
     y1 = y // SCALE
@@ -457,7 +475,7 @@ def draw_label_value(img, label, value, accent, y, e, align="mid"):
     T.paint(img, vl.image, (vx, y + hb3 + rise), ink_v, e_val, shadow=sh_d)
 
 
-PILLS = [C_GOLD, C_MINT, C_SKY, C_CORAL]
+PILLS = [C_GOLD, C_MINT, C_SKY, C_WHITE]
 
 
 def draw_pills(img, txt, y, e, x_left=None):
@@ -516,11 +534,11 @@ def _animated_row(small, style, txt, colour, y_s, e, shadow):
     x = int((W // SCALE - lay.width) / 2)
     if anim == "word":
         K.word_line(small, txt, key, px_s, (0, y_s + T.baseline_offset(lay)),
-                    C_CREAM, min(1.0, e * 1.4), stagger=0.12, dur=0.30, rise=18,
+                    colour, min(1.0, e * 1.4), stagger=0.12, dur=0.30, rise=18,
                     center_x=True, x0=0, shadow=(0, 2, (0, 0, 0), 0.34))
     else:
         yy = y_s + 12 * (1 - K.eo(min(1.0, e * 1.5)))
-        T.paint(small, lay.image, (x, int(yy)), C_CREAM, min(1.0, e * 1.5),
+        T.paint(small, lay.image, (x, int(yy)), colour, min(1.0, e * 1.5),
                 shadow=(0, 2, (0, 0, 0), 0.34))
     return small
 
@@ -580,6 +598,7 @@ def draw_line(img, style, txt, colour, y, align, e, x0=None, plated=False):
         shadow = (0, 3 * SCALE, (0, 0, 0), 0.34)
         glow = None
 
+    ink = colour          # every row carries its own ink colour
     if center:
         # Centred rows animate on the 1080 canvas and are pasted back at 2x: that
         # keeps the type scale right AND keeps the word-by-word reveal (drawing
@@ -783,55 +802,60 @@ def resolve_cues():
 
 # --------------------------------------------------------------------- beats ---
 BEATS = {
+    # Colour varies frame to frame in the reference: a mint chip on one screen,
+    # sky on the next, gold on the value, coral on the threat. Each row names its
+    # own ink and that ink is what gets painted — never one flat cream everywhere.
     "s01": [
-        (0, "chip", "ঘাসের ডগা", C_SKY, 430, "mid"),
+        (0, "chip", "ঘাসের ডগা", C_MINT, 430, "mid"),
         (0, "stack", "আঁশঠুঁটি|ঘাসপাখি", C_GOLD, 560, "mid"),
         (1, "stack", "ডাক শুনেই|খুঁজে পেতে হয়", C_GOLD, 2020, "mid"),
         (2, "sub", "কর্কশ ঘর্ঘর, তারপর নীরবতা", C_CREAM, -1, "mid"),
     ],
     "s02": [
         (0, "chip", "পরিচয়", C_MINT, 430, "mid"),
-        (0, "stack", "আঁশঠুঁটি|ঘাসপাখি", C_GOLD, 560, "mid"),
-        (1, "attr", "ইংরেজিতে Bristled Grassbird", C_MINT, 2000, "mid"),
-        (2, "attr", "Schoenicola striatus", C_MINT, -1, "mid"),
+        (0, "label", "বৈজ্ঞানিক নাম", C_SKY, 545, "mid"),
+        (0, "value", "Schoenicola striatus", C_CREAM, -1, "mid"),
+        (1, "pill", "ইংরেজিতে · Bristled Grassbird", C_MINT, 2020, "left"),
     ],
     "s03": [
-        (0, "chip", "শনাক্তকরণ", C_SAND, 2500, "mid"),
+        (0, "chip", "শনাক্তকরণ", C_MINT, 2500, "mid"),
         (0, "stack", "লম্বা-মোটা|ঠোঁট", C_GOLD, 2620, "mid"),
-        (1, "stack", "ঘাড়ে|টানা আঁশ-পালক", C_GOLD, -1, "mid"),
+        (1, "stack", "ঘাড়ে|টানা আঁশ-পালক", C_MINT, -1, "mid"),
         (2, "sub", "পিঠে বাদামি ডোরা", C_CREAM, -1, "mid"),
     ],
     "s04": [
-        (0, "chip", "আকার", C_SKY, 400, "mid"),
+        (0, "chip", "আকার", C_MINT, 400, "mid"),
         (0, "label", "দৈর্ঘ্য মাত্র", C_CREAM, 545, "mid"),
         (0, "value", "১৮–২০ সেন্টিমিটার", C_GOLD, -1, "mid"),
-        (1, "list", "অর্ধেকটাই লেজ|লম্বা, ধাপে ধাপে", C_GOLD, 2020, "left"),
-        (1, "list", "ঘাসেই লুকিয়ে|খাড়া ডগায় বসে", C_GOLD, -1, "left"),
+        (1, "list", "অর্ধেকটাই লেজ|লম্বা, ধাপে ধাপে", C_WHITE, 2020, "left"),
+        (1, "list", "ঘাসেই লুকিয়ে|খাড়া ডগায় বসে", C_MINT, -1, "left"),
     ],
     "s05": [
         (0, "chip", "বাংলাদেশে", C_MINT, 430, "mid"),
         (0, "stack", "শীতে|দুর্লভ অতিথি", C_GOLD, 560, "mid"),
-        (1, "pills", "হাওর|চর|খাগড়ার ঝোপ", C_GOLD, 2020, "mid"),
-        (2, "pills", "পদ্মা|যমুনা|মধুপুর", C_GOLD, 2300, "mid"),
+        (1, "pill", "হাওর", C_GOLD, 2020, "left"),
+        (1, "pill", "চর", C_MINT, 2020, "right"),
+        (2, "pill", "খাগড়ার ঝোপ", C_SKY, 2160, "left"),
+        (2, "pill", "পদ্মা–যমুনা", C_WHITE, 2160, "right"),
     ],
     "s06": [
-        (0, "chip", "আচরণ", C_SAND, 430, "mid"),
+        (0, "chip", "আচরণ", C_MINT, 430, "mid"),
         (0, "stack", "ঘাসে লুকিয়ে|হাঁটে", C_GOLD, 560, "mid"),
-        (1, "stack", "ডাকতে ডাকতে|ডগায় ওঠে", C_GOLD, 2020, "mid"),
+        (1, "stack", "ডাকতে ডাকতে|ডগায় ওঠে", C_MINT, 2020, "mid"),
         (2, "sub", "মানুষ দেখলে মিলিয়ে যায়", C_CREAM, -1, "mid"),
     ],
     "s07": [
-        (0, "chip", "প্রজনন", C_MINT, 400, "mid"),
+        (0, "chip", "প্রজননকাল", C_MINT, 400, "mid"),
         (0, "label", "মৌসুম", C_CREAM, 545, "mid"),
         (0, "value", "মে–সেপ্টেম্বর", C_GOLD, -1, "mid"),
-        (1, "list", "ঘাস বুনে বাসা|জীবন্ত ঘাসের ডগায়", C_GOLD, 2020, "left"),
-        (2, "sub", "২–৩টি ডিম, বর্ষার ভেতর", C_CREAM, -1, "mid"),
+        (1, "list", "ঘাস বুনে বাসা|জীবন্ত ঘাসের ডগায়", C_WHITE, 2020, "left"),
+        (2, "list", "২–৩টি ডিম|বর্ষার ভেতর", C_MINT, -1, "left"),
     ],
     "s08": [
-        (0, "chip", "প্রকৃতিতে ভূমিকা", C_MINT, 2260, "mid"),
-        (0, "stack", "পোকা আর|বীজ খায়", C_GOLD, 2380, "mid"),
-        (1, "list", "ঘাসফড়িং|ঠোঁটে ধরে", C_GOLD, 2740, "left"),
-        (1, "list", "তৃণভূমির রক্ষী|ছোট পতঙ্গ নিয়ন্ত্রণে", C_GOLD, -1, "left"),
+        (0, "chip", "প্রকৃতিতে ভূমিকা", C_MINT, 1960, "mid"),
+        (0, "stack", "পোকা আর|বীজ খায়", C_GOLD, 2070, "mid"),
+        (1, "list", "ঘাসফড়িং|ঠোঁটে ধরে", C_WHITE, 2880, "left"),
+        (1, "list", "তৃণভূমির রক্ষী|ছোট পতঙ্গ নিয়ন্ত্রণে", C_MINT, -1, "left"),
     ],
     "s09": [
         (0, "chip", "হুমকি", C_CORAL, 430, "mid"),
@@ -840,10 +864,10 @@ BEATS = {
         (2, "attr", "IUCN: NT · প্রায়-বিপন্ন", C_SAND, -1, "mid"),
     ],
     "s10": [
-        (0, "chip", "শেষ কথা", C_GOLD, 430, "mid"),
+        (0, "chip", "শেষ কথা", C_MINT, 430, "mid"),
         (0, "stack", "ঘাস বাঁচলে|ঘাসপাখিও বাঁচবে", C_GOLD, 560, "mid"),
         (1, "stack", "তৃণভূমি|বাঁচান", C_GOLD, 1980, "mid"),
-        (2, "stack", "বালু উত্তোলন|বন্ধ করুন", C_GOLD, -1, "mid"),
+        (2, "stack", "বালু উত্তোলন|বন্ধ করুন", C_MINT, -1, "mid"),
     ],
 }
 
@@ -869,11 +893,9 @@ def layout_beats(sid):
         key, px, _a = STYLE.get(style, ("sans-semi", 40, "rise"))
         lay = T.flow(txt, key, px)
         box_h = lay.image.height + (2 * CHIP_PADY if prev_style == "chip" else 0)
-        if style == "list" and "|" in txt:
-            # a bullet row is head + sub-line; the next row must clear both,
-            # otherwise the second row sits on the first one's caption
-            sub_lay = T.flow(txt.split("|", 1)[1], "sans-semi", 30 * SCALE)
-            box_h += sub_lay.image.height + 40 * SCALE
+        # measure the row the way it is drawn — a bullet row carries a sub-line
+        # that a plain text-box height does not know about
+        box_h = row_bottom(style, txt, 0, align)
         gap = GAP_CHIP if prev_style == "chip" else GAP_TEXT
         if y < 0:
             y = prev_bottom + gap
@@ -953,9 +975,7 @@ def placed_beats(s):
         key, px, _a = STYLE.get(style, ("sans-semi", 40, "rise"))
         lay = T.flow(txt.replace("|", " "), key, px)
         wid = max(wid, lay.width)
-        hgt += lay.image.height + 26 * SCALE
-        if style == "list" and "|" in txt:
-            hgt += T.flow(txt.split("|", 1)[1], "sans-semi", 34 * SCALE).image.height + 40 * SCALE
+        hgt += row_bottom(style, txt, 0) + 26 * SCALE
     mid = rows2[0][5] == "mid"
     x0 = (W - wid) / 2 if mid else W * 0.075
     floor = max(980 * SCALE, int(s.get("lowfloor", 0)) * SCALE)
@@ -969,17 +989,98 @@ def placed_beats(s):
 
     out = list(top_rows)
     yy = top
+    prev_bottom = None
     for i, style, txt, c, _y, al in rows2:
-        key, px, _a = STYLE.get(style, ("sans-semi", 40, "rise"))
-        lay = T.flow(txt.replace("|", " "), key, px)
-        out.append((i, style, txt, c, int(yy), al))
-        yy += lay.image.height + 26 * SCALE
-        if style == "list" and "|" in txt:
-            yy += T.flow(txt.split("|", 1)[1], "sans-semi", 34 * SCALE).image.height + 40 * SCALE
+        if _y > 0:
+            y_row = int(_y)
+            if prev_bottom is not None:            # never overlap the row above
+                y_row = max(y_row, prev_bottom + 26 * SCALE)
+        else:
+            y_row = int(yy)
+        out.append((i, style, txt, c, y_row, al))
+        prev_bottom = row_bottom(style, txt, y_row)   # already absolute
+        yy = prev_bottom + 26 * SCALE
     _PLACED[s["id"]] = out
     return out
 
-def _row_geom(style, txt, y, align, colour=C_MINT):
+def _pill_geom(txt, y, align):
+    """A single bordered capsule — ref-6's 'ইংরেজিতে · Common Kingfisher'."""
+    key, _px0, _a = STYLE["pill"]
+    px = fit_px(key, txt, _px0, MAXW - 80 * SCALE)
+    lay = T.flow(txt, key, px)
+    pad_x, pad_y = 34 * SCALE, 20 * SCALE
+    w = lay.width + pad_x * 2
+    h = lay.image.height + pad_y * 2
+    x = int((W - w) / 2) if align == "mid" else MINX
+
+    def _draw(im, e, x=x, y=y, w=w, h=h, lay=lay, px=px):
+        col = _pill_colour(txt)
+        box = Image.new("RGBA", (int(w), int(h)), (0, 0, 0, 0))
+        d = ImageDraw.Draw(box)
+        d.rounded_rectangle([0, 0, w - 1, h - 1], radius=int(h // 2),
+                            fill=PANEL_FILL + (int(PANEL_A * 0.86 * e),),
+                            outline=col + (int(200 * e),), width=3 * SCALE)
+        im.paste(box, (x, y), box)
+        T.paint(im, lay.image, (int(x + 34 * SCALE), int(y + 20 * SCALE)),
+                col, e, shadow=(0, 3 * SCALE, (0, 0, 0), 0.30))
+    return (x, y, x + w, y + h), _draw, False
+
+
+def _pill_colour(txt, seed=0):
+    """Pill colours cycle in the reference: gold, mint, sky, cream."""
+    return PILLS[(len(txt) + seed) % len(PILLS)]
+
+
+def row_bottom(style, txt, y, align="left"):
+    """True bottom edge of a row, measured the way it is actually painted.
+
+    Every branch here mirrors a drawing branch in ``_row_geom``/``bullet_row`` —
+    when these two disagree the panel is a few pixels short and a sub-line pokes
+    out underneath it. That is exactly what happened once; keep them in step.
+    """
+    if style == "list":
+        head, _, sub = txt.partition("|")
+        lay = T.flow(head, "sans-semi",
+                     fit_px("sans-semi", head, 46 * SCALE, MAXW - 90 * SCALE))
+        bb = lay.image.getbbox() or (0, 0, lay.width, lay.image.height)
+        h = bb[1] + (bb[3] - bb[1])
+        if sub:
+            sub_lay = T.flow(sub, "sans-semi",
+                             fit_px("sans-semi", sub, 34 * SCALE, MAXW - 90 * SCALE))
+            h += SUB_GAP + sub_lay.image.height
+        return int(y + h)
+
+    if style == "stack":
+        _l1, _l2, _x, _yy, h = stack_box(txt, y)
+        return int(y + h)
+
+    if style == "label":
+        lab, _sep, val = txt.partition("|")
+        k_l, px_l, _a = STYLE["label"]
+        ll = T.flow(lab, k_l, fit_px(k_l, lab, px_l))
+        bb = ll.image.getbbox() or (0, 0, ll.width, ll.image.height)
+        h = bb[3]
+        if val.strip():
+            k_v, px_v, _b = STYLE["value"]
+            h += 12 * SCALE + T.flow(val, k_v, fit_px(k_v, val, px_v)).image.height
+        return int(y + h)
+
+    if style in ("chip", "pill", "pills"):
+        key, _px, _a = STYLE.get(style, ("sans-semi", 40 * SCALE, "rise"))
+        if style == "chip":
+            # K.chip draws its own box; its height is padding + glyphs
+            return int(y + 30 * SCALE * 2 + 38 * SCALE * 1.15)
+        lay = T.flow(txt.split("|")[0].strip(), key,
+                     fit_px(key, txt.split("|")[0].strip(), _px, MAXW - 80 * SCALE))
+        return int(y + lay.image.height + 20 * SCALE * 2)
+
+    key, px, _a = STYLE.get(style, ("sans-semi", 40 * SCALE, "rise"))
+    bare = txt.replace("|", " ")
+    lay = T.flow(bare, key, fit_px(key, bare, px))
+    return int(y + lay.image.height)
+
+
+def _row_geom(style, txt, y, align, colour=C_GOLD):
     """Box and draw closure for one row — geometry measured on the real layout."""
     if style == "stack":
         l1, l2, x1, yy, h = stack_box(txt, y)
@@ -989,12 +1090,19 @@ def _row_geom(style, txt, y, align, colour=C_MINT):
             bb2 = l2.image.getbbox()
             x2 = _mid_x(l2)
             xa, xb = min(xa, x2 + bb2[0]), max(xb, x2 + bb2[2])
-        box = (xa, yy + bb1[1], xb, yy + bb1[1] + h)
-        # no plate behind hero type — the reference keeps it on the photograph
-        return box, (lambda im, e: draw_stack(im, txt, C_GOLD, y, e)), False
+        box = (xa, yy + bb1[1], xb, yy + bb1[1] + h + 18 * SCALE)
+        # hero type sits straight on the photograph unless the patch is bright
+        return box, (lambda im, e: draw_stack(im, txt, colour, y, e)), False
 
     if style == "label":                              # "label|value", one unit
         lab, _, val = txt.partition("|")
+        if not val.strip():
+            # measured before the value row was merged in (layout pass) — the
+            # label alone is enough to size the box
+            k_l0, px_l0, _ = STYLE["label"]
+            ll0 = T.flow(lab, k_l0, fit_px(k_l0, lab, px_l0))
+            bb0 = ll0.image.getbbox()
+            return (MINX + bb0[0], y + bb0[1], MINX + bb0[2], y + bb0[3]), None, False
         k_l, px_l, _ = STYLE["label"]
         k_v, _pxv, _ = STYLE["value"]
         px_l = fit_px(k_l, lab, px_l, MAXW if align == "mid" else W - 2 * MINX)
@@ -1005,13 +1113,17 @@ def _row_geom(style, txt, y, align, colour=C_MINT):
         h1 = hb[3] - hb[1]
         vx = _mid_x(vl) if align == "mid" else MINX
         lx = _mid_x(ll) if align == "mid" else MINX
-        box = (min(vx + vl.image.getbbox()[0], lx + hb[0]), y + hb[1],
-               max(vx + vl.image.getbbox()[2], lx + ll.image.getbbox()[2]),
-               y + h1 + 12 * SCALE + vl.image.height)
+        vbb = vl.image.getbbox() or (0, 0, vl.width, vl.image.height)
+        box = (min(vx + vbb[0], lx + hb[0]), y + hb[1],
+               max(vx + vbb[2], lx + ll.image.getbbox()[2]),
+               y + h1 + 12 * SCALE + vbb[3])
         return box, (lambda im, e: draw_label_value(im, lab, val, C_GOLD, y, e, align)), True
 
     if style == "value":
         return None, None, False
+
+    if style == "pill":
+        return _pill_geom(txt, y, align)
 
     if style == "pills":
         key, px, _a = STYLE["pill"]
@@ -1030,6 +1142,12 @@ def _row_geom(style, txt, y, align, colour=C_MINT):
         # no geometry, otherwise the row was measured but never painted at all
         return None, (lambda im, e: draw_line(im, "chip", txt, colour, y, align, e)), False
 
+    if style == "list":
+        head, _, sub = txt.partition("|")
+        bottom = row_bottom("list", txt, y)
+        return (MINX, y, W - MINX, bottom), \
+            (lambda im, e: draw_line(im, "list", txt, colour, y, align, e)), True
+
     key, px, _a = STYLE.get(style, ("sans-semi", 40, "rise"))
     lay = T.flow(txt.replace("|", " "), key, px)
     bb = lay.image.getbbox()
@@ -1038,11 +1156,11 @@ def _row_geom(style, txt, y, align, colour=C_MINT):
     if align == "mid":                                # centred: drawn at 2x on the 4K canvas
         x = int((W - lay.width) / 2)
         box = (x + bb[0], y + bb[1], x + bb[2], y + bb[3])
-        return box, (lambda im, e: draw_line(im, style, txt, C_CREAM, y, align, e,
+        return box, (lambda im, e: draw_line(im, style, txt, colour, y, align, e,
                                              plated=True)), True
     x = int(W * 0.075)
     return (x + bb[0], y + bb[1], x + bb[2], y + bb[3]), \
-        (lambda im, e: draw_line(im, style, txt, C_CREAM, y, align, e, plated=True)), True
+        (lambda im, e: draw_line(im, style, txt, colour, y, align, e, plated=True)), True
 
 
 def overlay(s, p, img):
@@ -1082,6 +1200,9 @@ def overlay(s, p, img):
         geom, plates = [], False
         for _i, style, txt, colour, y, align in grp:
             box, fn, wants_plate = _row_geom(style, txt, y, align, colour)
+            # pills and chips draw their own box — they never ask for a plate
+            if style in ("chip", "pill", "pills"):
+                wants_plate = False
             if box:
                 geom.append(box)
             if fn:
@@ -1100,14 +1221,37 @@ def overlay(s, p, img):
                     plates = True
                     break
 
-        # a label + value pair is one unit: it gets the plate too
+        # ONE panel per group: every row it contains must sit inside it, with a
+        # real padding — a panel that only covers one row leaves the next row's
+        # type floating on bare photograph (this shipped once; never again)
         if geom and (plates or any(g[1] == "label" for g in draws)):
-            pad_x, pad_y = 56 * SCALE, 34 * SCALE
+            pad_x, pad_y = 44 * SCALE, 40 * SCALE
+            # a plate that runs past the bottom edge is worse than a small lift:
+            # shift this group up until its panel fits (never more than 120px)
+            # never let this plate cover a row from an earlier group
+            top_lim = max(b[3] for b in geom) - 4
+            bottom = max(b[3] for b in geom) + pad_y
+            overshoot = int(bottom - (H - 54 * SCALE))
+            if overshoot > 0:
+                lift = min(overshoot, 120 * SCALE)
+                geom = [(b[0], b[1] - lift, b[2], b[3] - lift) for b in geom]
+                draws = [(fn, st, tx, co, yy - lift, al)
+                         for fn, st, tx, co, yy, al in draws]
+            # a chip/pill row in the same group must not be swallowed by the
+            # plate — the plate starts below the last capsule instead, but only
+            # when the capsule really is above the text it belongs to
+            y_top = min(b[1] for b in geom) - pad_y
+            for gstyle, gy in [(g[1], g[4]) for g in draws]:
+                if gstyle == "chip":
+                    chip_bot = int(gy + row_bottom("chip", "", gy)) + pad_y // 2
+                    if chip_bot < min(b[1] for b in geom):
+                        y_top = max(y_top, chip_bot)
             pbox = (max(pad_x, min(b[0] for b in geom) - pad_x),
-                    max(pad_y, min(b[1] for b in geom) - pad_y),
+                    max(pad_y, y_top),
                     min(W - pad_x, max(b[2] for b in geom) + pad_x),
-                    min(H - pad_y, max(b[3] for b in geom) + 30 * SCALE))
-            panel(img, pbox, e)
+                    min(H - pad_y, max(b[3] for b in geom) + pad_y))
+            if pbox[3] - pbox[1] > 8:
+                panel(img, pbox, e)
 
         for fn, style, txt, colour, y, align in draws:
             if fn:

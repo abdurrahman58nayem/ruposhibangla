@@ -5,6 +5,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 os.chdir(HERE)
 import numpy as np
+from PIL import ImageDraw
 from PIL import Image
 import kinetic as K
 import rbtext as T
@@ -58,25 +59,43 @@ def centred(img, txt, key, px, y, fill, a=1.0, shadow=(0, 5 * S, (0, 0, 0), 0.46
     return lay
 
 
+def panel(img, box, radius=None, alpha=224):
+    """Crisp dark plate — the same one the reel uses, never a blurred smear."""
+    x0, y0, x1, y1 = [int(v) for v in box]
+    w, h = max(4, x1 - x0), max(4, y1 - y0)
+    plate = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(plate)
+    d.rounded_rectangle([0, 0, w - 1, h - 1],
+                        radius=int(radius if radius else 26 * S),
+                        fill=B.PANEL_FILL + (alpha,))
+    img.paste(plate, (x0, y0), plate)
+
+
 def build(src, chip, t1, t2, sub, out, zoom=1.0, y_shift=0.0, px=150, px2=None,
           top=None, sub_y=None, sub_top=False, label=None):
-    """Reference layout: centred chip, centred cream/gold title stack, small caption."""
+    """Reference layout: left chip, crisp panel behind the two-tone title."""
     img = base(src, zoom=zoom, y_shift=y_shift)
-    # text sits in the empty lower part of the frame, never on the bird
-    img = bottom_scrim(img, start=0.52, strength=0.42)
     px = int(px * S)
     px2 = px if px2 is None else int(px2 * S)
-    top = int(1000 * S) if top is None else int(top * S)
+    top = int(1180 * S) if top is None else int(top * S)
 
-    # chip sits top-left like every frame of the reel
-    K.chip(img, chip, (int(W * 0.075), 96 * S), 1.0,
-           px=30 * S, colour=FLAME, slide=0)
+    K.chip(img, chip, (int(W * 0.075), 96 * S), 1.0, px=30 * S, colour=FLAME, slide=0)
+
+    lay1 = T.flow(t1, "serif-bold", px)
+    lay2 = T.flow(t2, "serif-bold", px2)
+    bb1, bb2 = lay1.image.getbbox(), lay2.image.getbbox()
+    gap = 8 * S
+    block_top = top + bb1[1] - 44 * S
+    block_bot = top + bb1[1] + (bb1[3] - bb1[1]) + gap + bb2[3] + 40 * S
+    wid = max(lay1.width + bb1[0] * 2, lay2.width + bb2[0] * 2)
+    panel(img, (int((W - wid) / 2) - 46 * S, block_top,
+                int((W + wid) / 2) + 46 * S, block_bot))
 
     h1 = centred(img, t1, "serif-bold", px, top, CREAM).image.height
-    centred(img, t2, "serif-bold", px2, top + h1 + 8 * S, GOLD)
+    centred(img, t2, "serif-bold", px2, top + h1 + gap, GOLD)
 
     sub_lay = T.flow(sub, "sans-semi", 34 * S)
-    sy = int(sub_y * S) if sub_y else int(top + h1 + 8 * S + px2 * 1.14 + 46 * S)
+    sy = int(sub_y * S) if sub_y else int(block_bot + 30 * S)
     T.paint(img, sub_lay.image, (int((W - sub_lay.width) / 2), sy), SOFT, 1.0,
             shadow=(0, 4 * S, (0, 0, 0), 0.44))
 
