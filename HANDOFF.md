@@ -1,7 +1,7 @@
 # HANDOFF — রূপসী বাংলা (Ruposhi Bangla)
 
 > **পরের সেশনের AI এজেন্টের জন্য নির্দেশাবলি।** প্রথমে রুটের `AGENTS.md` পড়ুন, তারপর এই ফাইল,
-> তারপর `git log --oneline -20` ও `MASTER-PROMPT.md`। রিল/ভিডিও বানাতে হলে `.studio/STUDIO-PROMPT.md`
+> তারপর `git log --oneline -20` ও `MASTER-PROMPT.md`। রিল/ভিডিও বানাতে হলে রুটের `রূপসী.md`
 > (ব্যবহারকারীর চূড়ান্ত স্টুডিও প্রম্পট) ও `.studio/TEXT-STYLE.md` (ভেরিফায়েড টাইপ স্পেক) বাধ্যতামূলক।
 > Arena-প্রদত্ত বর্তমান শাখাই ব্যবহার করুন; শাখা বদলাবেন না। ব্যবহারকারীর স্পষ্ট অনুমতি ছাড়া commit, push, PR বা merge করবেন না। **কখনো `git push --force` বা `git reset --hard` নয়।**
 
@@ -20,7 +20,7 @@
 
 ## ০.০) রিল / এপিসোড প্রোডাকশন — কোথায় কী
 
-- **নিয়ম:** `AGENTS.md` → `.studio/STUDIO-PROMPT.md` (১২ ধাপ) → `.studio/TEXT-STYLE.md` (মাপ/প্যানেল/রঙ)।
+- **নিয়ম:** `AGENTS.md` → `রূপসী.md` (১২ ধাপ) → `.studio/TEXT-STYLE.md` (মাপ/প্যানেল/রঙ)।
 - **বিল্ডার:** `.studio/v3/build_grass.py` (ep.012 স্ট্যান্ডার্ড) — `SCENES`, `BEATS`, `resolve_cues()`,
   `layout_beats()`, `render_frame()`, `build_audio()`।
 - **QA:** `.studio/v3/qa_grass.py` → `/tmp/qa_grass/sheet.jpg` (clash check + চোখে দেখা)।
