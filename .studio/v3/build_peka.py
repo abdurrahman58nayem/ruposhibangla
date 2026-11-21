@@ -214,28 +214,68 @@ def glyph_box(lay, x, y):
     return (x + bb[0], y + bb[1], x + bb[2], y + bb[3])
 
 
-def panel(img, box, e, radius=None, alpha=None, fill=None):
-    """A DARK ROUNDED PANEL — crisp edge, flat fill, no blur.
+GLASS_BLUR = 22 * SCALE     # how much the photo behind the type is softened
+GLASS_TINT = (8, 14, 14)    # near-neutral, cool — never a black slab
+GLASS_A = 132               # ~52%: a light frost — the photo stays clearly visible
+GLASS_DIM = 1.04            # a hair brighter, so the glass reads as light not soot
 
-    The reference pans are hard-edged rectangles with a small corner radius and
-    a very soft vertical gradient inside them; they are never a blurred smudge.
-    An earlier version Gaussian-blurred the plate by 14px, which is exactly what
-    read as a "black shade" over the photograph. Measured reference values:
-    fill ≈ rgb(18,24,22) at ~88% opacity, radius ≈ 3.5% of the frame width.
+
+def panel(img, box, e, radius=None, alpha=None, fill=None, tint=True):
+    """FROSTED GLASS behind the type — the photo stays visible, never buried.
+
+    The user's rule: a dark plate under the type hides the bird and the
+    picture. So the plate is *glass*: the region under it is blurred (so the
+    letters still read), then a translucent tint is laid over it. A crisp
+    hairline edge and a soft inner highlight at the top sell it as glass
+    rather than a shadow. Nothing is blacked out.
     """
     if e <= 0.004:
         return
     x0, y0, x1, y1 = [int(v) for v in box]
     r = int(PANEL_RADIUS) if radius is None else int(radius)
-    a = int((PANEL_A if alpha is None else alpha) * e)
-    fill = PANEL_FILL if fill is None else fill
     w, h = max(4, x1 - x0), max(4, y1 - y0)
-    plate = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    d = ImageDraw.Draw(plate)
-    d.rounded_rectangle([0, 0, w - 1, h - 1], radius=r, fill=fill + (a,))
-    # 2px of feather only — enough to avoid a staircase edge, not a smear
-    plate = plate.filter(ImageFilter.GaussianBlur(1.6 * SCALE))
-    img.paste(plate, (x0, y0), plate)
+    x0c, y0c = max(0, x0), max(0, y0)
+    x1c, y1c = min(img.width, x1), min(img.height, y1)
+    if x1c - x0c < 4 or y1c - y0c < 4:
+        return
+
+    # 1. the glass itself: a blurred copy of exactly what is underneath
+    under = img.crop((x0c, y0c, x1c, y1c)).filter(
+        ImageFilter.GaussianBlur(GLASS_BLUR * max(0.35, min(1.0, e))))
+    if GLASS_DIM < 1.0:
+        under = Image.eval(under, lambda v: int(v * GLASS_DIM))
+
+    layer = Image.new("RGBA", (x1c - x0c, y1c - y0c), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    a = int((GLASS_A if alpha is None else alpha) * e)
+    colour = GLASS_TINT if fill is None else fill
+    d.rounded_rectangle([0, 0, layer.width - 1, layer.height - 1],
+                        radius=r, fill=colour + (a,))
+    # a soft top highlight + hairline border: the two cues that read as "glass"
+    if tint:
+        hl = Image.new("RGBA", layer.size, (0, 0, 0, 0))
+        dh = ImageDraw.Draw(hl)
+        dh.rounded_rectangle([2, 2, layer.width - 3, int(layer.height * 0.42)],
+                             radius=r, fill=(255, 255, 255, int(16 * e)))
+        hl = hl.filter(ImageFilter.GaussianBlur(GLASS_BLUR))
+        layer = Image.alpha_composite(layer, hl)
+        d2 = ImageDraw.Draw(layer)
+        d2.rounded_rectangle([0, 0, layer.width - 1, layer.height - 1],
+                             radius=r, outline=(255, 255, 255, int(30 * e)),
+                             width=max(1, SCALE))
+    plate = Image.alpha_composite(under.convert("RGBA"), layer)
+    # feather only the outermost 1.6px so the edge stays crisp
+    mask = Image.new("L", plate.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, plate.width - 1, plate.height - 1],
+                                           radius=r, fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(1.6 * SCALE))
+    mask = Image.eval(mask, lambda v: int(v * min(1.0, e)))
+    img.paste(plate.convert("RGB"), (x0c, y0c), mask)
+
+
+def ink_on_glass(colour):
+    """Which ink sits on the glass. Kept for the colour-graded fallback."""
+    return colour
 
 
 SUB_GAP = 30 * SCALE        # head → sub-line gap in a bullet row
@@ -414,6 +454,9 @@ def stack_box(txt, y):
     return l1, l2, _mid_x(l1), y, h
 
 
+PLATED_NOW = [False]     # set by overlay(): is this group sitting on glass?
+
+
 def draw_stack(img, txt, accent, y, e, e1=None, e2=None, ink1=None):
     """Animated two-row hero line.
 
@@ -433,8 +476,11 @@ def draw_stack(img, txt, accent, y, e, e1=None, e2=None, ink1=None):
     # ink follows the ground: cream/gold on a dark patch, a deep shade of the
     # photo's own colour on a bright one — the same switch the reference uses
     l1_ref = T.flow(l1_txt, key, px)
-    ink1, kind = pick_ink(img, ((W - l1_ref.width) // 2, y - 8 * SCALE,
-                                (W + l1_ref.width) // 2, y + 2 * px))
+    if PLATED_NOW[0]:
+        ink1, kind = C_CREAM, "light"          # type on glass is always cream
+    else:
+        ink1, kind = pick_ink(img, ((W - l1_ref.width) // 2, y - 8 * SCALE,
+                                    (W + l1_ref.width) // 2, y + 2 * px))
     ink1 = C_CREAM if ink1 is None else ink1
     ink2 = accent
     shadow = (0, 2 * (SCALE - 1) + 2, (0, 0, 0), 0.42)
@@ -1283,6 +1329,7 @@ def overlay(s, p, img):
         grp = merged
 
         geom, gstyles, plates = [], [], False
+        PLATED_NOW[0] = False
         grp_draw = []
         for _i, style, txt, colour, y, align in grp:
             box, fn, wants_plate = _row_geom(style, txt, y, align, colour)
@@ -1351,10 +1398,12 @@ def overlay(s, p, img):
                     min(H - pad_y, max(b[3] for b in geom) + pad_y))
             if pbox[3] - pbox[1] > 8:
                 panel(img, pbox, e)
+            PLATED_NOW[0] = True
 
         for fn, style, txt, colour, y, align in draws:
             if fn:
                 fn(img, e)
+        PLATED_NOW[0] = False
 
     if kind == "outro":
         cue = s["cue"]
