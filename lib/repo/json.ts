@@ -6,6 +6,7 @@ import type {
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow,
 } from '@/lib/types'
 import { normalizeCategoryName } from '@/lib/categories'
+import { matchesFolded, matchesName } from '@/lib/bn-search'
 import { buildCoverageRows } from '@/lib/coverage'
 import { iucnInfo, normalizeConservationBn } from '@/lib/utils'
 import { ensureAdminUser } from '@/lib/bootstrap'
@@ -215,39 +216,42 @@ function write(db: DB) {
   }
 }
 
-function cleanBn(str: string): string {
-  return str
-    .normalize('NFC')
-    .replace(/\u09af\u09bc/g, 'য়')
-    .replace(/\u09df/g, 'য়')
-    .replace(/\u09a1\u09bc/g, 'ড়')
-    .replace(/\u09dd/g, 'ড়')
-    .replace(/\u09a2\u09bc/g, 'ঢ়')
-    .replace(/\u09de/g, 'ঢ়')
-    .replace(/স্তন্যপায়ী|স্তনপায়ী|স্তন্যপায়ী|স্তনপায়ী/g, 'স্তন্যপায়ী')
-    .replace(/পাখী/g, 'পাখি')
-    .toLowerCase()
-}
-
+/**
+ * প্রজাতির খোঁজা — দুই ধাপে।
+ *
+ * ১. **সংকীর্ণ**: নাম, অন্য নাম, সারাংশ, আবাসস্থল, শ্রেণি, সংরক্ষণ-অবস্থা —
+ *    সব ঘরে `normalizeBn` (ী→ি, শ/ষ→স, ণ→ন, চন্দ্রবিন্দু বাদ)। বানানের
+ *    সাধারণ ভেদ এখানেই মিটে যায়, গোলমাল নেই।
+ * ২. **ঢিলা (নামের ঘরেই)**: উপরের ধাপে কিছু না মিললে নামের ঘরে পুরো-শব্দ
+ *    কঙ্কাল-তুলনা — “দয়েল” লিখলেও “দোয়েল”, “স্তনপায়ী” লিখলেও
+ *    “স্তন্যপায়ী”, “বাদুর” লিখলেও “বাদুড়” পাওয়া যায়।
+ */
 function matchesSpecies(s: Species, q: string): boolean {
   const needle = q.trim()
   if (!needle) return true
-  const normNeedle = cleanBn(needle)
+  if (matchesFolded(speciesSearchText(s), needle)) return true
+  return matchesName(speciesNames(s), needle)
+}
+
+/** খোঁজার জন্য প্রজাতির সব লেখা ঘর একসঙ্গে */
+function speciesSearchText(s: Species): string {
   const iucn = iucnInfo(s.conservation)
   const isCetacean = s.taxonomy?.order === 'Cetacea' || /তিমি|শুশুক|ডলফিন/.test(s.nameBn)
-  const isBat = s.taxonomy?.order === 'Chiroptera' || /বাদুড়|বাদুড়/.test(s.nameBn)
-  const hay = [
+  const isBat = s.taxonomy?.order === 'Chiroptera' || /বাদুড়|বাদুড়/.test(s.nameBn)
+  return [
     s.nameBn, s.nameEn, s.scientificName, s.category, normalizeCategoryName(s.category, s.group),
     s.summary, s.habitat, s.description || '', s.identification || '',
     s.conservation, iucn.en, iucn.meaning, s.conservationBn || '',
     (s.otherNames || []).join(' '), (s.synonyms || []).join(' '), s.group || '',
     (s.poetViews || []).map((p) => `${p.poet} ${p.work || ''} ${p.note}`).join(' '),
     isCetacean ? 'তিমি শুশুক ডলফিন whale dolphin cetacea সামুদ্রিক স্তন্যপায়ী' : '',
-    isBat ? 'বাদুড় bat chiroptera উড়ন্ত স্তন্যপায়ী' : '',
-  ]
-    .join(' ')
-  const normHay = cleanBn(hay)
-  return normNeedle.split(/\s+/).every((t) => normHay.includes(t))
+    isBat ? 'বাদুড় bat chiroptera উড়ন্ত স্তন্যপায়ী' : '',
+  ].join(' ')
+}
+
+/** নামের ঘরগুলো আলাদা — ঢিলা স্তরে এগুলোই সবচেয়ে নিরাপদ */
+function speciesNames(s: Species): string[] {
+  return [s.nameBn, s.nameEn || '', s.scientificName || '', ...(s.otherNames || []), ...(s.synonyms || [])]
 }
 
 function sortPostsDesc(posts: Post[]) {
@@ -790,15 +794,15 @@ export const jsonRepo: Repo = {
     const needle = q.trim().toLowerCase()
     if (!needle) return { species: [], posts: [], news: [] }
     const species = db.species.filter((s) => matchesSpecies(s, needle)).slice(0, 12)
+    // পোস্ট ও খবরেও একই বানান-সহনশীলতা — নইলে প্রজাতিতে “সালিক” মিললেও
+    // লেখায় “শালিক” লিখলে কিছু পাওয়া যেত না
     const posts = db.posts
       .filter((p) => p.status === 'approved')
-      .filter((p) =>
-        [p.title, p.body, p.authorName, (p.tags || []).join(' ')].join(' ').toLowerCase().includes(needle),
-      )
+      .filter((p) => matchesFolded([p.title, p.body, p.authorName, (p.tags || []).join(' ')].join(' '), needle))
       .slice(0, 12)
     const news = db.news
       .filter((n) => n.published)
-      .filter((n) => [n.title, n.excerpt, n.body].join(' ').toLowerCase().includes(needle))
+      .filter((n) => matchesFolded([n.title, n.excerpt, n.body].join(' '), needle))
       .slice(0, 6)
     return { species, posts, news }
   },

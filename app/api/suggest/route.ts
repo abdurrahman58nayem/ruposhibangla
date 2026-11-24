@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getRepo } from '@/lib/repo'
 import { speciesPath, typeLabel } from '@/lib/categories'
+import { matchesFolded } from '@/lib/bn-search'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,7 +14,10 @@ export async function GET(req: Request) {
     repo.listObservations?.({ limit: 100 }) || Promise.resolve([]),
   ])
   const needle = q.toLowerCase()
-  const observationHits = observations.filter((item) => [item.name, item.guessedName, item.speciesSlug, item.notes].join(' ').toLowerCase().includes(needle)).slice(0, 2)
+  // পর্যবেক্ষণেও বানান-সহনশীলতা (শালিক/সালিক, দোয়েল/দয়েল)
+  const observationHits = observations
+    .filter((item) => matchesFolded([item.name, item.guessedName, item.speciesSlug, item.notes].filter(Boolean).join(' '), needle))
+    .slice(0, 2)
   const hits = [
     ...species.slice(0, 5).map((s) => ({
       title: `${s.nameBn}${s.nameEn ? ` · ${s.nameEn}` : ''}`,
