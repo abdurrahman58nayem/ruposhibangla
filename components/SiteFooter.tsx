@@ -1,16 +1,19 @@
+'use client'
+
 import Link from 'next/link'
-import { getRepo } from '@/lib/repo'
 import { Facebook, Instagram, Youtube, Twitter, Mail } from 'lucide-react'
+import { useT } from '@/lib/use-t'
+import type { SiteSettings } from '@/lib/types'
 
 const ICONS: Record<string, any> = { facebook: Facebook, youtube: Youtube, x: Twitter, twitter: Twitter, instagram: Instagram }
 
-export default async function SiteFooter() {
-  let settings
-  try {
-    settings = await getRepo().getSettings()
-  } catch {
-    return null
-  }
+/**
+ * পাদচরণ — বর্তমানে ক্লায়েন্ট কম্পোনেন্ট, কারণ ভাষা বদলালে সঙ্গে সঙ্গে
+ * বদলাতে হবে। সেটিংস সার্ভার থেকেই (লে-আউটে) পাঠানো হয়।
+ */
+export default function SiteFooter({ settings }: { settings: SiteSettings | null }) {
+  const t = useT()
+  if (!settings) return null
   const year = new Date().getFullYear()
 
   return (
@@ -43,45 +46,46 @@ export default async function SiteFooter() {
         </div>
 
         <div>
-          <h3 className="mb-3 text-sm font-bold text-white">বিষয়ভিত্তিক</h3>
+          <h3 className="mb-3 text-sm font-bold text-white">{t('categories')}</h3>
           <ul className="space-y-2 text-sm">
-            <li><Link className="hover:text-white" href="/prani">প্রাণী</Link></li>
-            <li><Link className="hover:text-white" href="/udbhid">উদ্ভিদ</Link></li>
-            <li><Link className="hover:text-white" href="/grambangla">গ্রামবাংলা</Link></li>
-            <li><Link className="hover:text-white" href="/kobirchokhe">কবির চোখে</Link></li>
-            <li><Link className="hover:text-white" href="/khobor">প্রকৃতির খবর</Link></li>
+            <li><Link className="hover:text-white" href="/prani">{t('navAnimals')}</Link></li>
+            <li><Link className="hover:text-white" href="/udbhid">{t('navPlants')}</Link></li>
+            <li><Link className="hover:text-white" href="/grambangla">{t('navVillage')}</Link></li>
+            <li><Link className="hover:text-white" href="/kobirchokhe">{t('navKobita')}</Link></li>
+            <li><Link className="hover:text-white" href="/khobor">{t('navNews')}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h3 className="mb-3 text-sm font-bold text-white">অংশগ্রহণ</h3>
+          <h3 className="mb-3 text-sm font-bold text-white">{t('explore')}</h3>
           <ul className="space-y-2 text-sm">
             <li><Link className="hover:text-white" href="/share">ছবি/ভিডিও শেয়ার</Link></li>
             <li><Link className="hover:text-white" href="/ai">এআই সহচর</Link></li>
             <li><Link className="hover:text-white" href="/jeno">জেনো — তথ্য জানান</Link></li>
             <li><Link className="hover:text-white" href="/register">অ্যাকাউন্ট খুলুন</Link></li>
-            <li><Link className="hover:text-white" href="/about">আমাদের সম্পর্কে</Link></li>
+            <li><Link className="hover:text-white" href="/about">{t('aboutus')}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h3 className="mb-3 text-sm font-bold text-white">যোগাযোগ</h3>
+          <h3 className="mb-3 text-sm font-bold text-white">{t('contact')}</h3>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2">
               <Mail size={14} /> {settings.contactEmail}
             </li>
             <li>
-              <Link className="hover:text-white" href="/privacy">গোপনীয়তা নীতি</Link>
+              <Link className="hover:text-white" href="/privacy">{t('privacy')}</Link>
             </li>
             <li>
-              <Link className="hover:text-white" href="/terms">ব্যবহারের শর্তাবলি</Link>
+              <Link className="hover:text-white" href="/terms">{t('terms')}</Link>
             </li>
             <li>
-              <Link className="hover:text-white" href="/credits">মিডিয়া ক্রেডিট ও লাইসেন্স</Link>
+              <Link className="hover:text-white" href="/credits">{t('credits')}</Link>
             </li>
           </ul>
           <p className="mt-4 text-xs text-white/40">
-            © {year} {settings.siteName}। বাংলাদেশের প্রকৃতির জন্য তৈরি।
+            © {year} {settings.siteName}
+            {t('language') === 'ভাষা' ? '। বাংলাদেশের প্রকৃতির জন্য তৈরি।' : ' — made for the nature of Bangladesh.'}
           </p>
         </div>
       </div>

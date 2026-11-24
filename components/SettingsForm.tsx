@@ -38,16 +38,16 @@ type User = {
 } | null
 
 const THEMES = [
-  { id: 'light', label: 'হালকা', labelEn: 'Light', icon: Sun },
-  { id: 'dark', label: 'গাঢ়', labelEn: 'Dark', icon: Moon },
-  { id: 'system', label: 'ডিভাইসের মতো', labelEn: 'System', icon: MonitorSmartphone },
+  { id: 'light', key: 'themeLight', icon: Sun },
+  { id: 'dark', key: 'themeDark', icon: Moon },
+  { id: 'system', key: 'themeSystem', icon: MonitorSmartphone },
 ] as const
 
 export default function SettingsForm({ user }: { user: User }) {
   const router = useRouter()
   const {
     theme, setTheme, lang, setLang, dataSaver, setDataSaver,
-    autoplay, setAutoplay, videoSound, setVideoSound, reduceMotion, setReduceMotion,
+    autoplay, setAutoplay, videoSound, setVideoSound, reduceMotion, setReduceMotion, t,
   } = useApp()
 
   const [profile, setProfile] = useState({
@@ -145,25 +145,27 @@ export default function SettingsForm({ user }: { user: User }) {
   return (
     <div className="container-pb max-w-3xl space-y-4 py-6">
       <div>
-        <h1 className="text-2xl font-bold text-forest-900">সেটিংস</h1>
+        <h1 className="text-2xl font-bold text-forest-900">{t('settings')}</h1>
         <p className="mt-1 text-sm text-black/55">
-          থিম, ভাষা, ভিডিও ও ডেটার পছন্দ আপনার ডিভাইসেই সংরক্ষিত হয় — আবার আসলেও একই থাকবে।
+          {lang === 'bn'
+            ? 'থিম, ভাষা, ভিডিও ও ডেটার পছন্দ আপনার ডিভাইসেই সংরক্ষিত হয় — আবার আসলেও একই থাকবে।'
+            : 'Theme, language, video and data preferences are saved on your device — and will still be here when you return.'}
         </p>
       </div>
 
       {/* থিম */}
       <section className="card p-4">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-forest-900">
-          <Sun size={16} /> থিম
+          <Sun size={16} /> {t('theme')}
         </h2>
         <div className="grid grid-cols-3 gap-2">
-          {THEMES.map((t) => {
-            const Icon = t.icon
-            const active = theme === t.id
+          {THEMES.map((opt) => {
+            const Icon = opt.icon
+            const active = theme === opt.id
             return (
               <button
-                key={t.id}
-                onClick={() => setTheme(t.id)}
+                key={opt.id}
+                onClick={() => setTheme(opt.id)}
                 className={cn(
                   'flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-xs font-medium transition',
                   active
@@ -172,7 +174,7 @@ export default function SettingsForm({ user }: { user: User }) {
                 )}
               >
                 <Icon size={20} />
-                {lang === 'bn' ? t.label : t.labelEn}
+                {t(opt.key)}
               </button>
             )
           })}
@@ -200,38 +202,41 @@ export default function SettingsForm({ user }: { user: User }) {
             </button>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-black/45">
-          বৈজ্ঞানিক নাম সবসময় ল্যাটিনেই থাকবে — ভুল অনুবাদ তৈরি করা হয় না।
+        <p className="mt-2 text-[11px] text-black/45">{t('languageHint')}</p>
+        <p className="mt-1 text-[11px] text-black/45">
+          {lang === 'bn'
+            ? 'বৈজ্ঞানিক নাম সবসময় ল্যাটিনেই থাকবে — ভুল অনুবাদ তৈরি করা হয় না।'
+            : 'Scientific names always stay in Latin — no machine mistranslation.'}
         </p>
       </section>
 
       {/* ছবি ও ভিডিও */}
       <section className="card p-4">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-forest-900">
-          <MonitorSmartphone size={16} /> ছবি ও ভিডিও
+          <MonitorSmartphone size={16} /> {t('media')}
         </h2>
         <div className="space-y-2">
           <Toggle
-            label="ডেটা সাশ্রয়ী মোড"
-            hint="ভিডিও আগেই লোড হয় না, ছবির মান কমানো হয়"
+            label={t('dataSaver')}
+            hint={t('dataSaverHint')}
             checked={dataSaver}
             onChange={setDataSaver}
           />
           <Toggle
-            label="ভিডিও অটো-প্লে"
-            hint="ফিড ও রিলসে ভিডিও নিজে থেকে চালু হবে"
+            label={t('autoplay')}
+            hint={t('autoplayHint')}
             checked={autoplay}
             onChange={setAutoplay}
           />
           <Toggle
-            label="ভিডিওর শব্দ"
-            hint="চালু থাকলে ভিডিও শব্দসহ শুরু হবে"
+            label={t('videoSound')}
+            hint={t('videoSoundHint')}
             checked={videoSound}
             onChange={setVideoSound}
           />
           <Toggle
-            label="অ্যানিমেশন কমান"
-            hint="নড়াচড়া কমিয়ে দেয় — চোখ আরাম পায়"
+            label={t('reduceMotion')}
+            hint={t('reduceMotionHint')}
             checked={reduceMotion}
             onChange={setReduceMotion}
           />
@@ -241,21 +246,25 @@ export default function SettingsForm({ user }: { user: User }) {
       {/* প্রোফাইল */}
       <section className="card p-4">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-forest-900">
-          <Camera size={16} /> প্রোফাইল
+          <Camera size={16} /> {t('profileSection')}
         </h2>
         {!user ? (
           <div className="rounded-xl bg-forest-50 p-4 text-sm text-forest-900">
-            <p>প্রোফাইল ও ব্যক্তিগত সেটিংস পেতে অ্যাকাউন্ট খুলুন বা লগইন করুন।</p>
+            <p>
+              {lang === 'bn'
+                ? 'প্রোফাইল ও ব্যক্তিগত সেটিংস পেতে অ্যাকাউন্ট খুলুন বা লগইন করুন।'
+                : 'Create an account or log in to get a profile and personal settings.'}
+            </p>
             <div className="mt-3 flex gap-2">
-              <Link href="/login" className="btn-primary text-sm">লগইন</Link>
-              <Link href="/register" className="btn-outline text-sm">অ্যাকাউন্ট খুলুন</Link>
+              <Link href="/login" className="btn-primary text-sm">{t('login')}</Link>
+              <Link href="/register" className="btn-outline text-sm">{t('register')}</Link>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="label">প্রদর্শিত নাম</label>
+                <label className="label">{t('displayName')}</label>
                 <input
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
@@ -263,7 +272,7 @@ export default function SettingsForm({ user }: { user: User }) {
                 />
               </div>
               <div>
-                <label className="label">ইউজারনেম</label>
+                <label className="label">{t('username')}</label>
                 <input
                   value={profile.username}
                   onChange={(e) => setProfile({ ...profile, username: e.target.value })}
@@ -272,7 +281,7 @@ export default function SettingsForm({ user }: { user: User }) {
               </div>
             </div>
             <div>
-              <label className="label">পরিচিতি</label>
+              <label className="label">{t('bio')}</label>
               <textarea
                 value={profile.bio}
                 onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
@@ -294,7 +303,7 @@ export default function SettingsForm({ user }: { user: User }) {
               <UploadField value={profile.cover} onChange={(url) => setProfile({ ...profile, cover: url })} label="কভার ছবি" />
             </div>
             <div>
-              <label className="label">নতুন পাসওয়ার্ড (বদলাতে চাইলে)</label>
+              <label className="label">{t('password')}</label>
               <input
                 type="password"
                 value={profile.password}
@@ -305,16 +314,16 @@ export default function SettingsForm({ user }: { user: User }) {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <button onClick={saveProfile} className="btn-primary" disabled={busy}>
-                {busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} সংরক্ষণ করুন
+                {busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} {t('saveChanges')}
               </button>
-              <Link href={`/u/${user.username}`} className="btn-outline text-sm">আমার প্রোফাইল</Link>
+              <Link href={`/u/${user.username}`} className="btn-outline text-sm">{t('myProfile')}</Link>
               {msg && <span className="text-sm text-black/60">{msg}</span>}
             </div>
 
             <div className="grid grid-cols-3 gap-2 rounded-xl bg-forest-50 p-3 text-center">
-              <Stat label="পোস্ট" value={0} />
-              <Stat label="অনুসারী" value={user.followers} />
-              <Stat label="অনুসরণ" value={user.following} />
+              <Stat label={t('posts')} value={0} />
+              <Stat label={t('followers')} value={user.followers} />
+              <Stat label={t('following')} value={user.following} />
             </div>
           </div>
         )}
@@ -324,18 +333,27 @@ export default function SettingsForm({ user }: { user: User }) {
       {user && (
         <section className="card p-4">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-bold text-forest-900">
-            <ShieldCheck size={16} /> অ্যাকাউন্ট
+            <ShieldCheck size={16} /> {t('accountSection')}
           </h2>
           <p className="text-xs text-black/55">
-            ভূমিকা: <b>{user.role === 'partner' ? 'যাচাইকৃত পার্টনার' : user.role === 'admin' || user.role === 'super_admin' ? 'অ্যাডমিন' : user.role === 'editor' ? 'এডিটর/মডারেটর' : 'ব্যবহারকারী'}</b>
-            {user.verified && ' · ব্লু টিক ✔'}
+            {lang === 'bn' ? 'ভূমিকা' : 'Role'}:{' '}
+            <b>
+              {user.role === 'partner'
+                ? lang === 'bn' ? 'যাচাইকৃত পার্টনার' : 'Verified partner'
+                : user.role === 'admin' || user.role === 'super_admin'
+                  ? lang === 'bn' ? 'অ্যাডমিন' : 'Admin'
+                  : user.role === 'editor'
+                    ? lang === 'bn' ? 'এডিটর/মডারেটর' : 'Editor / moderator'
+                    : lang === 'bn' ? 'ব্যবহারকারী' : 'Member'}
+            </b>
+            {user.verified && ` · ${t('verified')} ✔`}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Link href="/saved" className="btn-outline text-sm">সংরক্ষিত</Link>
+            <Link href="/saved" className="btn-outline text-sm">{t('savedItems')}</Link>
             <Link href="/notifications" className="btn-outline text-sm">
-              <Bell size={14} /> নোটিফিকেশন
+              <Bell size={14} /> {t('notifications')}
             </Link>
-            <Link href="/observations" className="btn-outline text-sm">আমার পর্যবেক্ষণ</Link>
+            <Link href="/observations" className="btn-outline text-sm">{t('myObservations')}</Link>
           </div>
           {/* নীল টিক */}
           <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50/50 p-3">
@@ -431,7 +449,7 @@ export default function SettingsForm({ user }: { user: User }) {
               className="mt-2 inline-flex items-center gap-2 rounded-full bg-red-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
             >
               {deleteAsked ? <Check size={14} /> : <Trash2 size={14} />}
-              {deleteAsked ? 'অনুরোধ জমা হয়েছে' : 'অ্যাকাউন্ট মুছে ফেলার অনুরোধ'}
+              {deleteAsked ? t('deleteRequested') : t('deleteAccount')}
             </button>
           </div>
         </section>

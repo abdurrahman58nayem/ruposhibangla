@@ -70,8 +70,12 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let notice: string | null = null
+  // পাদচরণের সেটিংস (নাম, লোগো, যোগাযোগ, সোশ্যাল) একবারই পড়া হয় — ক্লায়েন্ট
+  // কম্পোনেন্টকে পাঠানো হয়, যাতে ভাষা বদলালে লেখা সঙ্গে সঙ্গে বদলায়
+  let footerSettings = null as Awaited<ReturnType<ReturnType<typeof getRepo>['getSettings']>> | null
   try {
     const s = await getRepo().getSettings()
+    footerSettings = s
     if (s.headerNoticeActive && s.headerNotice) notice = s.headerNotice
   } catch {
     notice = null
@@ -91,7 +95,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Providers>
           <SiteHeader notice={notice} />
           <main className="pb-safe">{children}</main>
-          <SiteFooter />
+          <SiteFooter settings={footerSettings} />
           <BottomNav />
         </Providers>
       </body>

@@ -4,7 +4,8 @@ import { ArrowRight, Sparkles, Camera, Bird, Leaf, Map as MapIcon, Quote, Newspa
 import Feed from '@/components/Feed'
 import SpeciesCard from '@/components/SpeciesCard'
 import SmartImage from '@/components/SmartImage'
-import SearchBar from '@/components/SearchBar'
+import HomeHero from '@/components/HomeHero'
+import Bi from '@/components/Bi'
 import { getRepo } from '@/lib/repo'
 import { buildFeedPage } from '@/lib/feed'
 import { toBn } from '@/lib/utils'
@@ -68,62 +69,17 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* ---------- Hero ---------- */}
-      <section className="hero-pattern relative overflow-hidden">
-        <div className="absolute inset-0 opacity-25 [background-image:url('/seed/village/paddy-2.jpg')] bg-cover bg-center mix-blend-overlay" />
-        <div className="container-pb relative py-12 text-white sm:py-16">
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
-            <Leaf size={13} /> {settings.tagline}
-          </p>
-          <h1 className="text-balance text-3xl font-bold leading-tight sm:text-5xl">
-            বাংলাদেশের প্রাণী, পাখি আর গাছপালার
-            <br className="hidden sm:block" /> <span className="text-earth-300">সব খোঁজ এক জায়গায়</span>
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/80 sm:text-base">
-            {toBn(stats.species)}+ প্রজাতির তথ্যভাণ্ডার, গ্রামবাংলার ছবি, কবির চোখে প্রকৃতি আর আপনার নিজের তোলা ছবি শেয়ারের জায়গা —
-            সব মিলিয়ে একটাই ঠিকানা।
-          </p>
-
-          <div className="mt-6 max-w-2xl">
-            <SearchBar />
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-2 text-xs sm:text-sm">
-            <Link href="/prani" className="rounded-full bg-white/10 px-4 py-2 font-medium backdrop-blur transition hover:bg-white/20">
-              <Bird size={14} className="mr-1 inline" /> প্রাণী
-            </Link>
-            <Link href="/udbhid" className="rounded-full bg-white/10 px-4 py-2 font-medium backdrop-blur transition hover:bg-white/20">
-              <Leaf size={14} className="mr-1 inline" /> উদ্ভিদ
-            </Link>
-            <Link href="/grambangla" className="rounded-full bg-white/10 px-4 py-2 font-medium backdrop-blur transition hover:bg-white/20">
-              <MapIcon size={14} className="mr-1 inline" /> গ্রামবাংলা
-            </Link>
-            <Link href="/ai" className="rounded-full bg-earth-400 px-4 py-2 font-medium text-white transition hover:bg-earth-500">
-              <Sparkles size={14} className="mr-1 inline" /> এআই সহচর
-            </Link>
-          </div>
-
-          <dl className="mt-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { label: 'প্রজাতির তথ্য', value: stats.species },
-              { label: 'পাখি', value: stats.birds },
-              { label: 'উদ্ভিদ', value: stats.plants },
-              { label: 'শেয়ার করা ছবি', value: stats.posts },
-            ].map((s) => (
-              <div key={s.label} className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
-                <dt className="text-[11px] text-white/70">{s.label}</dt>
-                <dd className="num text-2xl font-bold">{toBn(s.value)}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
+      {/* ---------- Hero (ভাষা-সচেতন, ক্লায়েন্টে) ---------- */}
+      <HomeHero
+        tagline={settings.tagline}
+        stats={{ species: stats.species, birds: stats.birds, plants: stats.plants, posts: stats.posts }}
+      />
 
       {/* ---------- ১০টি প্রধান বিভাগ — সাবক্যাটাগরির সংক্ষিপ্ত সূচি ---------- */}
       <section className="container-pb mt-6 sm:mt-8">
         <div className="mb-3 flex items-end justify-between gap-3">
-          <div><h2 className="text-base font-bold text-forest-900 sm:text-lg">কী খুঁজছেন?</h2><p className="text-xs text-black/50">প্রাণী থেকে গ্রামবাংলা—সব বিভাগ ও দ্রুত সাবক্যাটাগরি</p></div>
-          <Link href="/categories" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">সব বিভাগ <ArrowRight size={13} className="ml-1 inline" /></Link>
+          <div><h2 className="text-base font-bold text-forest-900 sm:text-lg"><Bi bn="কী খুঁজছেন?" en="What are you looking for?" /></h2><p className="text-xs text-black/50"><Bi bn="প্রাণী থেকে গ্রামবাংলা—সব বিভাগ ও দ্রুত সাবক্যাটাগরি" en="Every section from animals to village life — with quick subcategories" /></p></div>
+          <Link href="/categories" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline"><Bi bn="সব বিভাগ" en="All sections" /> <ArrowRight size={13} className="ml-1 inline" /></Link>
         </div>
         <PortalCategoryGrid compact />
       </section>
@@ -132,11 +88,11 @@ export default async function HomePage() {
       <section className="container-pb mt-10">
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
-            <h2 className="section-title">আজকের নির্বাচিত প্রজাতি</h2>
-            <p className="text-xs text-black/50">বাংলাদেশের বাঘ, নীল তিমি, দোয়েল, ইলিশ ও অন্যান্য বিশেষ জীববৈচিত্র্য</p>
+            <h2 className="section-title"><Bi bn="আজকের নির্বাচিত প্রজাতি" en="Featured species" /></h2>
+            <p className="text-xs text-black/50"><Bi bn="বাংলাদেশের বাঘ, নীল তিমি, দোয়েল, ইলিশ ও অন্যান্য বিশেষ জীববৈচিত্র্য" en="The Bengal tiger, blue whale, doyel, hilsa and other remarkable biodiversity of Bangladesh" /></p>
           </div>
           <Link href="/prani" className="shrink-0 text-sm font-medium text-forest-700 hover:underline">
-            সব দেখুন <ArrowRight size={14} className="inline" />
+            <Bi bn="সব দেখুন" en="See all" /> <ArrowRight size={14} className="inline" />
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -166,9 +122,9 @@ export default async function HomePage() {
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
               <h2 className="section-title flex items-center gap-2">
-                <Newspaper size={18} className="text-forest-600" /> প্রকৃতির খবর
+                <Newspaper size={18} className="text-forest-600" /> <Bi bn="প্রকৃতির খবর" en="Nature news" />
               </h2>
-              <p className="text-xs text-black/50">জীববৈচিত্র্য ও পরিবেশ সংরক্ষণের সর্বশেষ খবর</p>
+              <p className="text-xs text-black/50"><Bi bn="জীববৈচিত্র্য ও পরিবেশ সংরক্ষণের সর্বশেষ খবর" en="The latest on biodiversity and conservation" /></p>
             </div>
             <Link href="/khobor" className="shrink-0 text-sm font-medium text-forest-700 hover:underline">
               সব খবর <ArrowRight size={14} className="inline" />
@@ -224,12 +180,12 @@ export default async function HomePage() {
           <div className="mb-4 flex items-end justify-between gap-4">
             <div>
               <h2 className="section-title flex items-center gap-2">
-                <Quote size={18} className="text-earth-500" /> কবির চোখে প্রকৃতি
+                <Quote size={18} className="text-earth-500" /> <Bi bn="কবির চোখে প্রকৃতি" en="Nature through poets' eyes" />
               </h2>
-              <p className="text-xs text-black/50">কবিরা কীভাবে দেখেছেন আমাদের পাখি, ফুল আর জন্তুজানোয়ার</p>
+              <p className="text-xs text-black/50"><Bi bn="কবিরা কীভাবে দেখেছেন আমাদের পাখি, ফুল আর জন্তুজানোয়ার" en="How our poets saw the birds, flowers and creatures around us" /></p>
             </div>
             <Link href="/kobirchokhe" className="shrink-0 text-sm font-medium text-forest-700 hover:underline">
-              সব <ArrowRight size={14} className="inline" />
+              <Bi bn="সব" en="All" /> <ArrowRight size={14} className="inline" />
             </Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -254,11 +210,11 @@ export default async function HomePage() {
           <div>
             <h2 className="section-title">নদী, বন ও পাহাড়ি বাস্তুতন্ত্র</h2>
             <p className="mt-1 text-xs text-black/50">
-              পদ্মা, সুন্দরবন ও পার্বত্য চট্টগ্রামের প্রাকৃতিক পরিবেশ
+              <Bi bn="পদ্মা, সুন্দরবন ও পার্বত্য চট্টগ্রামের প্রাকৃতিক পরিবেশ" en="The natural worlds of the Padma, the Sundarbans and the Chittagong Hill Tracts" />
             </p>
           </div>
           <Link href="/gyan?type=sthan" className="shrink-0 text-xs font-semibold text-forest-700 hover:underline">
-            সব স্থান <ArrowRight size={13} className="inline" />
+            <Bi bn="সব স্থান" en="All places" /> <ArrowRight size={13} className="inline" />
           </Link>
         </div>
         <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0">

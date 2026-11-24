@@ -9,17 +9,18 @@ import { Menu, Search, X, User, LayoutDashboard, Bell, Languages, LayoutGrid } f
 import type { SiteSettings, UserRole } from '@/lib/types'
 import { cn, toBn } from '@/lib/utils'
 import { useApp } from '@/components/Providers'
+import { useT } from '@/lib/use-t'
 import { PORTAL_CATEGORIES } from '@/lib/portal-categories'
 import CategoryIcon, { toneOf } from '@/components/icons/CategoryIcon'
 import { TOGGLE_CATEGORIES_EVENT, TOGGLE_SEARCH_EVENT } from '@/components/CategoryTopBarClient'
 
 const NAV = [
-  { href: '/gyan', label: 'জ্ঞানভান্ডার' },
-  { href: '/prani', label: 'প্রাণী' },
-  { href: '/udbhid', label: 'উদ্ভিদ' },
-  { href: '/grambangla', label: 'গ্রামবাংলা' },
-  { href: '/sahitto', label: 'কবির চোখে' },
-  { href: '/khobor', label: 'খবর' },
+  { href: '/gyan', key: 'knowledge' as const },
+  { href: '/prani', key: 'navAnimals' as const },
+  { href: '/udbhid', key: 'navPlants' as const },
+  { href: '/grambangla', key: 'navVillage' as const },
+  { href: '/sahitto', key: 'navKobita' as const },
+  { href: '/khobor', key: 'navNews' as const },
 ]
 
 type CUser = { id: string; username: string; name: string; role: UserRole; verified: boolean; avatar?: string } | null
@@ -38,6 +39,7 @@ export default function HeaderClient({
   const [q, setQ] = useState('')
   const [unread, setUnread] = useState(0)
   const { lang, setLang } = useApp()
+  const t = useT()
 
   useEffect(() => setMounted(true), [])
 
@@ -113,7 +115,7 @@ export default function HeaderClient({
               pathname.startsWith(n.href) ? 'bg-forest-700 text-white' : 'text-forest-900 hover:bg-forest-50',
             )}
           >
-            {n.label}
+            {t(n.key)}
           </Link>
         ))}
       </nav>
@@ -295,7 +297,7 @@ export default function HeaderClient({
                     pathname.startsWith(n.href) && 'bg-forest-50 text-forest-800',
                   )}
                 >
-                  {n.label}
+                  {t(n.key)}
                 </Link>
               ))}
               <Link href="/share" onClick={() => setOpen(false)} className="mt-1 rounded-xl bg-forest-700 px-3 py-2.5 text-[15px] font-medium text-white hover:bg-forest-800">
