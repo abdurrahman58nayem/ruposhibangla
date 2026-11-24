@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
   Sun, Moon, MonitorSmartphone, Languages, Bell, Trash2, Save, Loader2, ShieldCheck,
-  Camera, Check,
+  Camera, Check, BadgeCheck, Clock, X,
 } from 'lucide-react'
 import { useApp } from '@/components/Providers'
 import UploadField from '@/components/admin/UploadField'
@@ -25,6 +25,16 @@ type User = {
   verified: boolean
   role: string
   deletionRequested?: boolean
+  verificationRequest?: {
+    status: 'pending' | 'approved' | 'rejected'
+    note: string
+    evidence?: string
+    requestedAt: string
+    reviewedAt?: string
+    reviewedByName?: string
+    reason?: string
+  }
+  retryDaysLeft: number
 } | null
 
 const THEMES = [
@@ -52,6 +62,50 @@ export default function SettingsForm({ user }: { user: User }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [deleteAsked, setDeleteAsked] = useState(!!user?.deletionRequested)
+  const req = user?.verificationRequest
+  const [verifyNote, setVerifyNote] = useState('')
+  const [verifyLink, setVerifyLink] = useState('')
+  const [verifyBusy, setVerifyBusy] = useState(false)
+  const [verifyMsg, setVerifyMsg] = useState('')
+
+  async function submitVerification() {
+    setVerifyBusy(true)
+    setVerifyMsg('')
+    try {
+      const res = await fetch('/api/me/verification', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ note: verifyNote, evidence: verifyLink }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'আবেদন পাঠানো যায়নি')
+      setVerifyMsg('✔ আবেদন জমা হয়েছে — অ্যাডমিন পর্যালোচনা করবেন')
+      setVerifyNote('')
+      setVerifyLink('')
+      router.refresh()
+    } catch (e: any) {
+      setVerifyMsg(e.message)
+    } finally {
+      setVerifyBusy(false)
+    }
+  }
+
+  async function withdrawVerification() {
+    if (!confirm('যাচাইয়ের আবেদন প্রত্যাহার করবেন?')) return
+    setVerifyBusy(true)
+    try {
+      const res = await fetch('/api/me/verification', { method: 'DELETE' })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        throw new Error(d.error || 'প্রত্যাহার করা যায়নি')
+      }
+      router.refresh()
+    } catch (e: any) {
+      setVerifyMsg(e.message)
+    } finally {
+      setVerifyBusy(false)
+    }
+  }
 
   async function saveProfile() {
     if (!user) return
@@ -283,6 +337,90 @@ export default function SettingsForm({ user }: { user: User }) {
             </Link>
             <Link href="/observations" className="btn-outline text-sm">আমার পর্যবেক্ষণ</Link>
           </div>
+          {/* নীল টিক */}
+          <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50/50 p-3">
+            <p className="flex items-center gap-1.5 text-xs font-bold text-sky-900">
+              <BadgeCheck size={14} /> নীল টিক (যাচাইকৃত পরিচয়)
+            </p>
+
+            {user.verified ? (
+              <p className="mt-1.5 text-xs text-sky-900/80">
+                আপনার প্রোফাইল যাচাইকৃত ✔ — নামের পাশে নীল টিক দেখানো হচ্ছে।
+              </p>
+            ) : req?.status === 'pending' ? (
+              <div className="mt-1.5 space-y-2">
+                <p className="flex items-center gap-1 text-xs text-sky-900/80">
+                  <Clock size={12} /> আপনার আবেদন পর্যালোচনাধীন — দয়া করে অপেক্ষা করুন।
+                </p>
+                <p className="rounded-lg bg-white/70 px-2.5 py-1.5 text-[11px] leading-relaxed text-black/60">
+                  “{req.note}”
+                </p>
+                <button
+                  onClick={withdrawVerification}
+                  disabled={verifyBusy}
+                  className="inline-flex items-center gap-1 rounded-full bg-black/5 px-2.5 py-1 text-[11px] font-semibold text-black/60 disabled:opacity-50"
+                >
+                  <X size={12} /> আবেদন প্রত্যাহার
+                </button>
+              </div>
+            ) : req?.status === 'rejected' ? (
+              <div className="mt-1.5 space-y-1.5">
+                <p className="text-xs text-red-700">
+                  আবেদনটি অনুমোদিত হয়নি{req.reason ? `: ${req.reason}` : ''}
+                </p>
+                {user.retryDaysLeft > 0 ? (
+                  <p className="text-[11px] text-black/50">
+                    আবার আবেদন করতে {toBn(user.retryDaysLeft)} দিন বাকি।
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-black/50">এখন আবার আবেদন করতে পারবেন।</p>
+                )}
+              </div>
+            ) : null}
+
+            {/* ফর্ম দেখানো হয়: আবেদন নেই, প্রত্যাখ্যাত ও অপেক্ষা শেষ */}
+            {!user.verified && req?.status !== 'pending' && user.retryDaysLeft === 0 && (
+              <div className="mt-2 space-y-2">
+                <p className="text-[11px] leading-relaxed text-black/55">
+                  দেশ ও প্রকৃতির কাজে যুক্ত গবেষক, সংরক্ষণকর্মী, আলোকচিত্রী বা প্রতিষ্ঠান হলে
+                  যাচাইয়ের আবেদন করুন। অনুমোদনে প্রোফাইলে নীল টিক বসবে।
+                </p>
+                <label className="label" htmlFor="verify-note">
+                  কেন যাচাই দরকার (অন্তত ২০ অক্ষর)
+                </label>
+                <textarea
+                  id="verify-note"
+                  rows={3}
+                  maxLength={400}
+                  value={verifyNote}
+                  onChange={(e) => setVerifyNote(e.target.value)}
+                  className="field"
+                  placeholder="যেমন: সুন্দরবনের পাখি নিয়ে ৮ বছর মাঠপর্যায়ে কাজ করছি; প্রকাশিত ছবি ও প্রতিবেদন রয়েছে…"
+                />
+                <label className="label" htmlFor="verify-link">
+                  প্রমাণসূত্র (ইচ্ছা হলে — পূর্ণ লিংক)
+                </label>
+                <input
+                  id="verify-link"
+                  type="url"
+                  value={verifyLink}
+                  onChange={(e) => setVerifyLink(e.target.value)}
+                  className="field"
+                  placeholder="https://…"
+                />
+                {verifyMsg && <p className="text-[11px] text-black/60">{verifyMsg}</p>}
+                <button
+                  onClick={submitVerification}
+                  disabled={verifyBusy || verifyNote.trim().length < 20}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  {verifyBusy ? <Loader2 size={13} className="animate-spin" /> : <BadgeCheck size={13} />}
+                  আবেদন পাঠান
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50/60 p-3">
             <p className="text-xs text-red-800">
               অ্যাকাউন্ট মুছে ফেলার অনুরোধ পাঠালে আমরা যাচাই করে সাড়া দিই। আপনার ব্যক্তিগত তথ্য অন্য কোথাও ব্যবহার করা হয় না।

@@ -3,6 +3,7 @@ import { resolveSpeciesImage, resolveSpeciesMedia } from '@/lib/species-image'
 import type {
   Species, Post, Comment, UserRecord, News, Jeno, SiteSettings, Stats,
   AiQuestion, Notification, SavedItem, Report, Observation, AuditLog, CoverageRow, CoverageAggregate,
+  VerificationRequest,
 } from '@/lib/types'
 import { normalizeCategoryName } from '@/lib/categories'
 import { mapCoverageAggregates } from '@/lib/coverage'
@@ -27,8 +28,11 @@ const P = (v: string | undefined | null): any[] => {
 type SpeciesRow = Record<string, any>
 
 function parseJson<T>(v: unknown, fallback: T): T {
+  if (v === null || v === undefined || v === '') return fallback
+  // pg কিছু টাইপ নিজেই অবজেক্টে রূপান্তর করে দেয় — তখন আর parse লাগে না
+  if (typeof v === 'object') return (v as T) ?? fallback
   try {
-    return (JSON.parse(String(v || '')) as T) ?? fallback
+    return (JSON.parse(String(v)) as T) ?? fallback
   } catch {
     return fallback
   }
@@ -234,6 +238,9 @@ function rowToUser(r: Record<string, any>): UserRecord {
     bio: r.bio || '',
     location: r.location || '',
     deletionRequested: !!r.deletion_requested,
+    // jsonb কলাম jsonb[]/string — দুইভাবেই আসতে পারে
+    verificationRequest:
+      parseJson<VerificationRequest | null>(r.verification_request, null) || undefined,
     followers: Number(r.followers || 0),
     following: Number(r.following || 0),
     createdAt: new Date(r.created_at).toISOString(),
@@ -682,7 +689,8 @@ export const neonRepo: Repo = {
       update users set name = ${next.name}, username = ${next.username}, password_hash = ${next.passwordHash || ''},
         email = ${next.email || ''}, role = ${next.role}, verified = ${!!next.verified}, avatar = ${next.avatar || ''},
         cover = ${next.cover || ''}, bio = ${next.bio || ''}, location = ${next.location || ''},
-        deletion_requested = ${!!next.deletionRequested}
+        deletion_requested = ${!!next.deletionRequested},
+        verification_request = ${next.verificationRequest ? JSON.stringify(next.verificationRequest) : null}
       where id = ${id}
     `
     return next

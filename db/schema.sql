@@ -260,6 +260,8 @@ alter table species add column if not exists status_locked_at timestamptz;
 
 alter table users add column if not exists cover text default '';
 alter table users add column if not exists deletion_requested boolean default false;
+-- নীল টিকের আবেদন: {status, note, evidence, requestedAt, reviewedAt, reviewedBy, reason}
+alter table users add column if not exists verification_request jsonb;
 
 alter table news add column if not exists kind text default 'news';
 alter table news add column if not exists publisher text default '';

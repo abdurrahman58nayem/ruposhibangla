@@ -333,11 +333,29 @@ export type PublicUser = {
   following: number
 }
 
+/** নীল টিক (যাচাইকৃত) পাওয়ার আবেদন */
+export type VerificationRequest = {
+  status: 'pending' | 'approved' | 'rejected'
+  /** ব্যবহারকারী কেন যাচাই চান — সংক্ষিপ্ত বিবরণ */
+  note: string
+  /** পরিচয়/কাজের প্রমাণসূত্র (প্রোফাইল/প্রতিষ্ঠান/কর্মক্ষেত্রের লিংক) */
+  evidence?: string
+  requestedAt: string
+  /** সিদ্ধান্ত কে ও কখন নিলেন */
+  reviewedAt?: string
+  reviewedBy?: string
+  reviewedByName?: string
+  /** প্রত্যাখ্যানের কারণ — ব্যবহারকারীকে দেখানো হয় */
+  reason?: string
+}
+
 export type UserRecord = PublicUser & {
   passwordHash: string
   email?: string
   /** অ্যাকাউন্ট মুছে ফেলার অনুরোধ */
   deletionRequested?: boolean
+  /** নীল টিকের আবেদন (সর্বশেষ অবস্থা) */
+  verificationRequest?: VerificationRequest
 }
 
 export type AuditLog = {

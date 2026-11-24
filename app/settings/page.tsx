@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import SettingsForm from '@/components/SettingsForm'
 import { getRepo } from '@/lib/repo'
 import { getSession } from '@/lib/auth'
+import { retryDaysLeft } from '@/lib/verification'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'সেটিংস' }
@@ -21,6 +22,17 @@ export default async function Page() {
     verified: boolean
     role: string
     deletionRequested?: boolean
+    verificationRequest?: {
+      status: 'pending' | 'approved' | 'rejected'
+      note: string
+      evidence?: string
+      requestedAt: string
+      reviewedAt?: string
+      reviewedByName?: string
+      reason?: string
+    }
+    /** প্রত্যাখ্যানের পর আবার আবেদনের আগে কত দিন বাকি */
+    retryDaysLeft: number
   }
   if (session) {
     const u = await getRepo().getUserById(session.id)
@@ -38,6 +50,8 @@ export default async function Page() {
         verified: u.verified,
         role: u.role,
         deletionRequested: u.deletionRequested,
+        verificationRequest: u.verificationRequest,
+        retryDaysLeft: retryDaysLeft(u.verificationRequest),
       }
     }
   }

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { BadgeCheck, Trash2 } from 'lucide-react'
+import { BadgeCheck, Trash2, UserMinus } from 'lucide-react'
 import type { UserRecord, UserRole } from '@/lib/types'
 import { toBn } from '@/lib/utils'
 
@@ -11,6 +11,8 @@ export default function UsersTable({ initial }: { initial: Omit<UserRecord, 'pas
   const router = useRouter()
   const [items, setItems] = useState(initial)
   const [msg, setMsg] = useState('')
+  // অ্যাকাউন্ট মোছার অনুরোধ আগে থেকেই তালিকার ওপরে — অ্যাডমিন চোখে পড়ে
+  const deletionAsks = items.filter((u) => u.deletionRequested)
 
   async function patch(id: string, data: Partial<UserRecord>) {
     setItems((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)))
@@ -39,6 +41,37 @@ export default function UsersTable({ initial }: { initial: Omit<UserRecord, 'pas
       </p>
 
       {msg && <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{msg}</p>}
+
+      {deletionAsks.length > 0 && (
+        <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-3">
+          <p className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+            <UserMinus size={14} /> অ্যাকাউন্ট মুছে ফেলার অনুরোধ ({toBn(deletionAsks.length)})
+          </p>
+          <ul className="mt-2 space-y-1.5">
+            {deletionAsks.map((u) => (
+              <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/70 px-2.5 py-1.5">
+                <span className="min-w-0 truncate text-xs text-forest-900">
+                  {u.name} <span className="text-black/40">@{u.username}</span>
+                </span>
+                <span className="flex shrink-0 gap-1.5">
+                  <button
+                    onClick={() => patch(u.id, { deletionRequested: false })}
+                    className="rounded-full bg-forest-700 px-2.5 py-1 text-[11px] font-semibold text-white"
+                  >
+                    অনুরোধ বাতিল
+                  </button>
+                  <button
+                    onClick={() => remove(u.id)}
+                    className="rounded-full bg-red-600 px-2.5 py-1 text-[11px] font-semibold text-white"
+                  >
+                    অ্যাকাউন্ট মুছুন
+                  </button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">

@@ -76,7 +76,7 @@ export async function getGuestKey(): Promise<string> {
 
 export async function isAdmin(): Promise<boolean> {
   const s = await getSession()
-  return !!s && s.role === 'admin'
+  return !!s && (s.role === 'admin' || s.role === 'super_admin')
 }
 
 export function publicUser(u: UserRecord) {
