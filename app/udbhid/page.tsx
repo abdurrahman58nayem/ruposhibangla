@@ -21,6 +21,8 @@ export default async function Page({
       type="udbhid"
       title="বাংলাদেশের উদ্ভিদ"
       subtitle="বন, ফল, ফুল, ঔষধি, জলজ, ম্যানগ্রোভ আর ফসল — বাংলার সবুজের তালিকা"
+      titleEn="Plants of Bangladesh"
+      subtitleEn="Forests, fruits, flowers, medicinal and aquatic plants, mangroves and crops — the green list of Bengal"
       cat={sp.cat}
       iucn={sp.iucn}
       q={sp.q}

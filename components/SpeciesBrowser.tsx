@@ -10,11 +10,14 @@ import {
   normalizeCategoryName,
 } from '@/lib/categories'
 import type { Conservation, SpeciesType } from '@/lib/types'
+import Bi from '@/components/Bi'
 
 export default async function SpeciesBrowser({
   type,
   title,
   subtitle,
+  titleEn,
+  subtitleEn,
   cat,
   sub,
   iucn,
@@ -25,6 +28,9 @@ export default async function SpeciesBrowser({
   type: SpeciesType
   title: string
   subtitle: string
+  /** ইংরেজি শিরোনাম/উপশিরোনাম — না দিলে বাংলাটিই দেখানো হয় */
+  titleEn?: string
+  subtitleEn?: string
   cat?: string
   sub?: string
   iucn?: string
@@ -78,10 +84,14 @@ export default async function SpeciesBrowser({
   return (
     <div className="container-pb py-6">
       <header className="mb-5">
-        <h1 className="text-2xl font-bold text-forest-900 sm:text-3xl">{title}</h1>
-        <p className="mt-1 text-sm text-black/55">{subtitle}</p>
+        <h1 className="text-2xl font-bold text-forest-900 sm:text-3xl">
+          <Bi bn={title} en={titleEn || title} />
+        </h1>
+        <p className="mt-1 text-sm text-black/55">
+          <Bi bn={subtitle} en={subtitleEn || subtitle} />
+        </p>
         <div className="mt-4 max-w-2xl">
-          <SearchBar placeholder={type === 'prani' ? 'পাখি, বাঘ, তিমি, ডলফিন বা মাছের নাম লিখুন…' : 'গাছ বা ফুলের নাম লিখুন…'} />
+          <SearchBar />
         </div>
       </header>
 

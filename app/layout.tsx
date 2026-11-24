@@ -5,6 +5,8 @@ import BottomNav from '@/components/BottomNav'
 import SiteFooter from '@/components/SiteFooter'
 import { Providers } from '@/components/Providers'
 import { getRepo } from '@/lib/repo'
+import { cookies } from 'next/headers'
+import type { Lang } from '@/lib/i18n'
 
 const DEFAULT_NAME = 'রূপসী বাংলা'
 const DEFAULT_DESC =
@@ -69,6 +71,14 @@ export const viewport: Viewport = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // ভাষা কুকি থেকে — সার্ভারেই সঠিক ভাষায় HTML যায়, তাই ফ্ল্যাশ হয় না
+  let initialLang: Lang = 'bn'
+  try {
+    const c = await cookies()
+    if (c.get('pb_lang')?.value === 'en') initialLang = 'en'
+  } catch {
+    /* কুকি না পেলে বাংলা */
+  }
   let notice: string | null = null
   // পাদচরণের সেটিংস (নাম, লোগো, যোগাযোগ, সোশ্যাল) একবারই পড়া হয় — ক্লায়েন্ট
   // কম্পোনেন্টকে পাঠানো হয়, যাতে ভাষা বদলালে লেখা সঙ্গে সঙ্গে বদলায়
@@ -82,7 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="bn-BD" dir="ltr" suppressHydrationWarning>
+    <html lang={initialLang === 'en' ? 'en' : 'bn-BD'} dir="ltr" suppressHydrationWarning>
       <head>
         {/* থিম ফ্ল্যাশ এড়াতে — প্রথম পেইন্টের আগেই ক্লাস বসে যায় */}
         <script
@@ -92,7 +102,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="min-h-screen bg-[#f7faf7] antialiased dark:bg-[#08130d]">
-        <Providers>
+        <Providers initialLang={initialLang}>
           <SiteHeader notice={notice} />
           <main className="pb-safe">{children}</main>
           <SiteFooter settings={footerSettings} />

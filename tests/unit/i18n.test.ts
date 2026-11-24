@@ -54,3 +54,20 @@ describe('ভাষা — অভিধান', () => {
     }
   })
 })
+
+describe('ভাষা — কুকি থেকে প্রাথমিক ভাষা', () => {
+  // `app/layout.tsx`-এর নিয়মটি এখানে অনুকরণ করা: কেবল 'en' হলে ইংরেজি
+  const resolve = (value?: string): 'bn' | 'en' => (value === 'en' ? 'en' : 'bn')
+
+  it('কুকি থাকলে সেটিই প্রাথমিক ভাষা', () => {
+    expect(resolve('en')).toBe('en')
+    expect(resolve('bn')).toBe('bn')
+  })
+
+  it('কুকি না থাকলে বা অচেনা হলে বাংলা (সাইটের মূল ভাষা)', () => {
+    expect(resolve(undefined)).toBe('bn')
+    expect(resolve('')).toBe('bn')
+    expect(resolve('fr')).toBe('bn')
+    expect(resolve('EN')).toBe('bn') // কেস-সংবেদনশীল: অচেনা মান = ডিফল্ট
+  })
+})

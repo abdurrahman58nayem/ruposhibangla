@@ -40,10 +40,15 @@ function read<T extends string>(key: string, fallback: T): T {
   return (localStorage.getItem(key) as T) || fallback
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+/**
+ * প্রথম রেন্ডারে সার্ভারের পাঠানো ভাষা — কুকি থেকে পড়া হয়, তাই পর্দায়
+ * বাংলা-ইংরেজি ঝলক (flash of wrong language) হয় না। কুকি না থাকলে
+ * localStorage/types-এর পুরোনো আচরণই চলে।
+ */
+export function Providers({ children, initialLang = 'bn' }: { children: React.ReactNode; initialLang?: Lang }) {
   const [theme, setThemeState] = useState<Theme>('system')
   const [systemDark, setSystemDark] = useState(false)
-  const [lang, setLangState] = useState<Lang>('bn')
+  const [lang, setLangState] = useState<Lang>(initialLang)
   const [dataSaver, setDataSaverState] = useState(false)
   const [autoplay, setAutoplayState] = useState(true)
   const [videoSound, setVideoSoundState] = useState(false)
@@ -53,7 +58,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // localStorage থেকে পড়া + সিস্টেম থিম শোনা
   useEffect(() => {
     setThemeState(read<Theme>(KEY.theme, 'system'))
-    setLangState(read<Lang>(KEY.lang, 'bn'))
+    // localStorage-এ থাকলে সেটিই প্রাধান্য পায় (একই ডিভাইসে আগের পছন্দ)
+    setLangState(read<Lang>(KEY.lang, initialLang))
     setDataSaverState(localStorage.getItem(KEY.dataSaver) === '1')
     setAutoplayState(localStorage.getItem(KEY.autoplay) !== '0')
     setVideoSoundState(localStorage.getItem(KEY.sound) === '1')
@@ -67,6 +73,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     mq.addEventListener('change', onChange)
     setReady(true)
     return () => mq.removeEventListener('change', onChange)
+    // initialLang একবারই দরকার (মাউন্টে) — পরে বদলালে localStorage-ই প্রাধান্য পায়
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const resolvedTheme: 'light' | 'dark' =
@@ -93,6 +101,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       setLang: (v) => {
         setLangState(v)
         localStorage.setItem(KEY.lang, v)
+        // কুকিতেও রাখি — সার্ভার পরেরবার সঠিক ভাষাতেই HTML পাঠাবে
+        document.cookie = `${KEY.lang}=${v}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
       },
       t: (key: DictKey) => translate(lang, key),
       dataSaver,

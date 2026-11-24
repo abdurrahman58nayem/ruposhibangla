@@ -21,6 +21,8 @@ export default async function Page({
       type="prani"
       title="বাংলাদেশের প্রাণী"
       subtitle="পাখি, স্তন্যপায়ী, সরীসৃপ, উভচর, মাছ ও পতঙ্গ — বাংলাদেশের যা কিছু প্রাণ আছে"
+      titleEn="Animals of Bangladesh"
+      subtitleEn="Birds, mammals, reptiles, amphibians, fish and insects — every creature of Bangladesh"
       cat={sp.cat}
       sub={sp.sub}
       iucn={sp.iucn}
