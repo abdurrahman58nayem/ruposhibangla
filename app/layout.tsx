@@ -4,6 +4,7 @@ import SiteHeader from '@/components/SiteHeader'
 import BottomNav from '@/components/BottomNav'
 import SiteFooter from '@/components/SiteFooter'
 import { Providers } from '@/components/Providers'
+import LanguageContentNotice from '@/components/LanguageContentNotice'
 import { getRepo } from '@/lib/repo'
 import { cookies } from 'next/headers'
 import type { Lang } from '@/lib/i18n'
@@ -104,6 +105,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen bg-[#f7faf7] antialiased dark:bg-[#08130d]">
         <Providers initialLang={initialLang}>
           <SiteHeader notice={notice} />
+          <LanguageContentNotice />
           <main className="pb-safe">{children}</main>
           <SiteFooter settings={footerSettings} />
           <BottomNav />

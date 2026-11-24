@@ -128,6 +128,8 @@ const DICT = {
     siteMap: 'সাইটম্যাপ',
     followUs: 'আমাদের অনুসরণ করুন',
     languageSwitch: 'ভাষা বদলান',
+    contentLangNotice:
+      'ইন্টারফেস ইংরেজিতে, কিন্তু প্রজাতির বর্ণনা এখনো বাংলায় — ভুল অনুবাদ নয়, মূল লেখাই রাখা হয়।',
   },
   en: {
     home: 'Home',
@@ -251,6 +253,8 @@ const DICT = {
     siteMap: 'Sitemap',
     followUs: 'Follow us',
     languageSwitch: 'Change language',
+    contentLangNotice:
+      'The interface is in English, but species descriptions remain in Bengali — the original wording is kept rather than mistranslated.',
   },
 } as const
 
