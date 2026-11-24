@@ -42,8 +42,15 @@ const images = SPECIES.filter((s) => s.image)
 const remoteImages = images.filter((s) => /^https?:/.test(s.image))
 const localImages = images.length - remoteImages.length
 
-const stats = {
+const poetViewSpecies = SPECIES.filter((s) => (s.poetViews || []).length).length
+const poetViewEntries = SPECIES.reduce((n, s) => n + (s.poetViews || []).length, 0)
+const gallerySpecies = SPECIES.filter((s) => (s.gallery || []).length).length
+const galleryImages = SPECIES.reduce((n, s) => n + (s.gallery || []).length, 0)
+
+const st = {
   seedRecords: SPECIES.length,
+  poetViews: { species: poetViewSpecies, entries: poetViewEntries },
+  gallery: { species: gallerySpecies, images: galleryImages },
   byType: by(SPECIES, (s) => s.type),
   byGroup: by(SPECIES, (s) => s.group),
   byDataStatus: by(SPECIES, (s) => s.dataStatus || 'partial'),
@@ -85,8 +92,107 @@ if (fs.existsSync(dbPath)) {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* ডকুমেন্টেশনের সংখ্যা স্বয়ংক্রিয় হালনাগাদ                                */
+/* ------------------------------------------------------------------ */
+
+const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
+const toBn = (n) => String(n).replace(/[0-9]/g, (d) => bnDigits[Number(d)])
+const clock = (n) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : String(n))
+
+/**
+ * মার্কডাউনে লেখা সংখ্যা বদলে দেয় — `<!-- stats:key -->মান<!-- /stats -->` ব্লক।
+ *
+ * কেন: README/HANDOFF-এ হাতে লেখা সংখ্যা সিড বাড়ার সাথে সাথে পুরোনো হয়ে যায়
+ * (আগে ৬৬১ → ১৭৫৯ → ১৮৯৬ → ১৯১০, প্রতিবারই ভুল ছিল)। এখন ডকে কেবল
+ * `<!-- stats:records -->` থাকবে, `npm run stats -- --write` সংখ্যা বসিয়ে দেবে।
+ */
+const DOC_FILES = ['README.md', 'HANDOFF.md', 'docs/TESTING.md', 'docs/SEED-SYNC.md', 'docs/species-image-audit.md']
+
+const STAT_KEYS = {
+  records: () => st.seedRecords,
+  animals: () => st.byType.prani || 0,
+  plants: () => st.byType.udbhid || 0,
+  places: () => st.byType.sthan || 0,
+  literature: () => st.byType.sahitto || 0,
+  birds: () => st.byGroup.pakhi || 0,
+  fish: () => st.byGroup.machh || 0,
+  mammals: () => st.byGroup.stanapayi || 0,
+  reptiles: () => st.byGroup.sarisrip || 0,
+  amphibians: () => st.byGroup.ubhochor || 0,
+  insects: () => st.byGroup.kitpotongo || 0,
+  invertebrates: () => st.byGroup.ameruddondi || 0,
+  plantsFlowers: () => st.byGroup.udbhidful || 0,
+  trees: () => st.byGroup.gachhbon || 0,
+  fungi: () => st.byGroup.chhatrak || 0,
+  microbes: () => st.byGroup.onujib || 0,
+  rivers: () => st.byGroup.nadi || 0,
+  hills: () => st.byGroup.pahar || 0,
+  withImage: () => st.images.withImage,
+  imageGaps: () => st.images.documentedGaps,
+  videos: () => st.videos,
+  credits: () => st.credits.total,
+  creditsVerified: () => st.credits.verified,
+  creditsPending: () => st.credits.pending,
+  verified: () => st.byDataStatus.verified || 0,
+  review: () => st.byDataStatus.review || 0,
+  identityUncertain: () => st.byDataStatus.identity_uncertain || 0,
+  needsCorrection: () => st.byDataStatus.needs_correction || 0,
+  unverified: () => totals.partial,
+  gapOtherNames: () => st.fieldGaps.otherNames,
+  gapOrigin: () => st.fieldGaps.origin,
+  gapSize: () => st.fieldGaps.sizeOrHeight,
+  gapTaxonomy: () => st.fieldGaps.taxonomy,
+  poetViews: () => st.poetViews.species,
+  galleries: () => st.gallery.species,
+}
+
+function renderStatBlock(text, { bangla }) {
+  return text.replace(
+    /<!--\s*stats:([a-zA-Z]+)(?:\s*:\s*(bn|raw))?\s*-->([\s\S]*?)<!--\s*\/stats\s*-->/g,
+    (_m, key, fmt, fallback) => {
+      const getter = STAT_KEYS[key]
+      if (!getter) return _m
+      const n = getter()
+      const useBn = fmt === 'bn' || (fmt !== 'raw' && bangla)
+      return `<!-- stats:${key}${fmt ? ':' + fmt : ''} -->${useBn ? toBn(n) : String(n)}<!-- /stats -->`
+    },
+  )
+}
+
+function refreshDocs({ write = false } = {}) {
+  const changed = []
+  for (const rel of DOC_FILES) {
+    const abs = path.join(root, rel)
+    if (!fs.existsSync(abs)) continue
+    const before = fs.readFileSync(abs, 'utf8')
+    const after = renderStatBlock(before, { bangla: true })
+    if (after !== before) {
+      changed.push(rel)
+      if (write) fs.writeFileSync(abs, after)
+    }
+  }
+  return changed
+}
+
+if (process.argv.includes('--check')) {
+  const changed = refreshDocs({ write: false })
+  if (changed.length) {
+    console.error('✗ ডকের সংখ্যা পুরোনো: ' + changed.join(', ') + '\n  ঠিক করতে: npm run stats -- --write')
+    process.exit(1)
+  }
+  console.log('✓ ডকের সংখ্যা হালনাগাদ।')
+  process.exit(0)
+}
+
+if (process.argv.includes('--write')) {
+  const changed = refreshDocs({ write: true })
+  console.log(changed.length ? `✓ ডক হালনাগাদ: ${changed.join(', ')}` : '✓ ডক আগেই হালনাগাদ ছিল।')
+  process.exit(0)
+}
+
 if (process.argv.includes('--json')) {
-  console.log(JSON.stringify({ seed: stats, runtime }, null, 2))
+  console.log(JSON.stringify({ seed: st, runtime }, null, 2))
   process.exit(0)
 }
 
@@ -109,15 +215,15 @@ const fieldLabels = {
 console.log('# রূপসী বাংলা — প্রকৃত সংখ্যা (স্বয়ংক্রিয় গণনা)\n')
 console.log('| বিষয় | সংখ্যা |')
 console.log('|---|---|')
-console.log(`| মোট রেকর্ড | ${bn(stats.seedRecords)} |`)
-for (const [type, n] of Object.entries(stats.byType)) {
+console.log(`| মোট রেকর্ড | ${bn(st.seedRecords)} |`)
+for (const [type, n] of Object.entries(st.byType)) {
   console.log(`| — ${typeLabels[type] || type} | ${bn(n)} |`)
 }
-console.log(`| ছবিসহ রেকর্ড | ${bn(stats.images.withImage)} (লোকাল ${bn(stats.images.local)} + দূরবর্তী ${bn(stats.images.remote)}) |`)
-console.log(`| নথিভুক্ত ছবি-ফাঁক | ${bn(stats.images.documentedGaps)} |`)
-console.log(`| প্রজাতির ভিডিও | ${bn(stats.videos)} |`)
-console.log(`| মিডিয়া-ক্রেডিট রেকর্ড | ${bn(stats.credits.total)} (যাচাইকৃত ${bn(stats.credits.verified)}, বাকি ${bn(stats.credits.pending)}) |`)
-for (const [status, n] of Object.entries(stats.byDataStatus)) {
+console.log(`| ছবিসহ রেকর্ড | ${bn(st.images.withImage)} (লোকাল ${bn(st.images.local)} + দূরবর্তী ${bn(st.images.remote)}) |`)
+console.log(`| নথিভুক্ত ছবি-ফাঁক | ${bn(st.images.documentedGaps)} |`)
+console.log(`| প্রজাতির ভিডিও | ${bn(st.videos)} |`)
+console.log(`| মিডিয়া-ক্রেডিট রেকর্ড | ${bn(st.credits.total)} (যাচাইকৃত ${bn(st.credits.verified)}, বাকি ${bn(st.credits.pending)}) |`)
+for (const [status, n] of Object.entries(st.byDataStatus)) {
   console.log(`| তথ্যের অবস্থা — ${statusLabels[status] || status} | ${bn(n)} |`)
 }
 console.log('')
@@ -151,3 +257,4 @@ if (runtime) {
 } else {
   console.log('\n_রানটাইম `.data/db.json` নেই — সাইট প্রথম চালু হলে এটি তৈরি হবে।_')
 }
+

@@ -31,8 +31,10 @@ export const RULES = {
   ai: { windowMs: 60_000, max: 12 },
   /** লগইন/রেজিস্ট্রেশন — ব্রুট-ফোর্স প্রতিরোধ */
   auth: { windowMs: 5 * 60_000, max: 10 },
-  /** আপলোড */
+  /** আপলোড — প্রতি মিনিটে */
   upload: { windowMs: 60_000, max: 15 },
+  /** আপলোড — প্রতি দিনে (আইপি/অ্যাকাউন্ট-ভিত্তিক কোটা) */
+  uploadDaily: { windowMs: 24 * 60 * 60_000, max: 10 },
   /** সাধারণ GET */
   read: { windowMs: 60_000, max: 180 },
 } satisfies Record<string, RateRule>

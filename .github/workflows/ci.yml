@@ -14,22 +14,33 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
-      - name: Install
-        run: npm ci
+      # npm 10-এ vitest 4-এর peer-tree পার্স করতে গিয়ে `edgesOut` ক্র্যাশ করে;
+      # প্রজেক্ট npm 11-এ বাঁধা (package.json → engines/packageManager)
+      - name: Install (npm 11)
+        run: npm i -g npm@11 && npm ci
 
-      # দ্রুত ইউনিট টেস্ট (Vitest) — কভারেজের হিসাব, রেট-লিমিট, ক্যাটাগরি/সংখ্যা
+      # সরবরাহ-শৃঙ্খল: নতুন দুর্বলতা এলে PR আটকে যাবে
+      # (postcss என்ற transitive প্যাকেজ override দিয়ে 8.5.x-এ বাঁধা — package.json দেখুন)
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+      # দ্রুত ইউনিট টেস্ট (Vitest) — কভারেজের হিসাব, রেট-লিমিট, sitemap, আপলোড-নিরাপত্তা
       - name: Unit tests
         run: npm run test:unit
 
-      # সিড ও মিডিয়া-চুক্তি (ছবি, ক্রেডিট, ভিডিও, SmartImage)
+      # সিড ও মিডিয়া-চুক্তি (ছবি, ক্রেডিট, ভিডিও, স্মার্ট-ইমেজ, প্রতিটি মাছ-ব্যাচ)
       - name: Contract checks
         run: npm run test:contract
 
+      # ডকের সংখ্যা পুরোনো হয়ে গেলে ব্যর্থ — `npm run stats:write` দিয়ে ঠিক করুন
+      - name: Docs stats up to date
+        run: npm run stats:check
+
       - name: Type check
-        run: npx tsc --noEmit
+        run: ./node_modules/.bin/tsc --noEmit
 
       - name: Lint
         run: npm run lint
