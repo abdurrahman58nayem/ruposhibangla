@@ -72,10 +72,19 @@ export async function storageKindAsync(): Promise<'r2' | 'local'> {
   return (await loadR2Config()).source === 'none' ? 'local' : 'r2'
 }
 
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024 // 25MB
+export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024 // 25MB — লগইন করা ব্যবহারকারী
+/** বেনামি (অ্যাকাউন্ট ছাড়া) আপলোডের সীমা — খরচ ও অপব্যবহার কমাতে */
+export const MAX_UPLOAD_BYTES_ANON = 8 * 1024 * 1024 // 8MB
 
+/**
+ * অনুমোদিত ফাইল-ধরন → এক্সটেনশন।
+ *
+ * **SVG ইচ্ছাকৃতভাবে বাদ** — আপলোড করা SVG-তে `<script>` থাকতে পারে এবং সেটি
+ * একই অরিজিন থেকে সার্ভ হলে stored XSS হয়। ছবি হিসেবে শুধু রাস্টার ফরম্যাট।
+ */
 const EXT_MAP: Record<string, string> = {
   'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
   'image/gif': 'gif',
@@ -85,10 +94,30 @@ const EXT_MAP: Record<string, string> = {
   'video/quicktime': 'mov',
 }
 
+/** সেভ করা যাবে এমন এক্সটেনশন — শুধু উপরের তালিকা থেকে */
+const ALLOWED_EXT = new Set(Object.values(EXT_MAP))
+
+/** কনটেন্ট-টাইপ অনুমোদিত কি না (svt/text/html ইত্যাদি নয়) */
+export function isAllowedContentType(contentType: string): boolean {
+  return Object.prototype.hasOwnProperty.call(EXT_MAP, (contentType || '').toLowerCase().split(';')[0].trim())
+}
+
+/**
+ * ফাইলের এক্সটেনশন ঠিক করে।
+ *
+ * নিরাপত্তা: আগে ফাইলনেমের এক্সটেনশনকে (`.html`, `.svg`, `.php` …) অন্ধভাবে
+ * বিশ্বাস করা হতো — `evil.html`-কে `image/png` বলে পাঠালে সেটি `….html` নামে
+ * সেভ হয়ে যেত। এখন এক্সটেনশন **শুধু MIME থেকে** আসে (ফাইলনেম কেবল তখনই,
+ * যখন MIME অজানা কিন্তু ফাইলনেমের এক্সটেনশন অনুমোদিত তালিকায় আছে)।
+ */
 export function extensionFor(contentType: string, filename = ''): string {
-  const fromName = filename.split('.').pop()?.toLowerCase()
-  if (fromName && /^[a-z0-9]{2,5}$/.test(fromName) && fromName !== 'blob') return fromName
-  return EXT_MAP[contentType] || 'bin'
+  const mime = (contentType || '').toLowerCase().split(';')[0].trim()
+  const fromMime = EXT_MAP[mime]
+  if (fromMime) return fromMime
+  // MIME অজানা/সাধারণ — তখনই ফাইলনেম দেখি, তাও কেবল অনুমোদিত এক্সটেনশন হলে
+  const fromName = filename.split('.').pop()?.toLowerCase() || ''
+  if (ALLOWED_EXT.has(fromName)) return fromName
+  return 'bin'
 }
 
 export async function storeFile(
@@ -120,6 +149,7 @@ export async function storeFile(
       }),
     )
     const base = cfg.publicUrl.replace(/\/$/, '')
+    // public ডোমেইন না থাকলে ফাইলটি `/api/media/...` দিয়ে সার্ভ হবে (একই রুট রিড করে)
     const url = base ? `${base}/${key}` : `/api/media/${key}`
     return { url, key }
   }
@@ -128,5 +158,24 @@ export async function storeFile(
   const relDir = path.join('public', path.dirname(key))
   await fs.mkdir(relDir, { recursive: true })
   await fs.writeFile(path.join('public', key), buffer)
-  return { url: `/${key.replace(/^uploads\//, 'uploads/')}`, key }
+  // `next start`-এ build-এর পরে লেখা ফাইল `public/` থেকে সার্ভ হয় না,
+  // তাই লোকাল ফলব্যাকে সবসময় `/api/media/...` রুট ব্যবহার করা হয়।
+  return { url: `/api/media/${key}`, key }
+}
+
+/** লোকাল স্টোরেজে রাখা ফাইলের নিরাপদ পথ (path traversal বন্ধ) */
+export function localUploadPath(key: string): string | null {
+  const clean = key.replace(/\\/g, '/').replace(/^\.\//, '')
+  if (!clean.startsWith('uploads/') || clean.includes('..')) return null
+  const abs = path.resolve(process.cwd(), 'public', clean)
+  const root = path.resolve(process.cwd(), 'public', 'uploads')
+  if (!abs.startsWith(root + path.sep)) return null
+  return abs
+}
+
+/** key থেকে নিরাপদ MIME — এক্সটেনশনই কর্তা (ক্লায়েন্টের দাবি নয়) */
+export function contentTypeForKey(key: string): string {
+  const ext = key.split('.').pop()?.toLowerCase() || ''
+  const found = Object.entries(EXT_MAP).find(([, e]) => e === ext)
+  return found ? found[0] : 'application/octet-stream'
 }

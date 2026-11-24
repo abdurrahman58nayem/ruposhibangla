@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # npm নির্ভরতা — নিরাপত্তা-প্যাচ স্বয়ংক্রিয় PR হিসেবে
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      next:
+        patterns: ['next', 'eslint-config-next']
+      minor-patch:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+    ignore:
+      # zod 4-এ আপগ্রেড ইচ্ছাকৃতভাবে হাতে (breaking) — স্বয়ংক্রিয় নয়
+      - dependency-name: zod
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: monthly

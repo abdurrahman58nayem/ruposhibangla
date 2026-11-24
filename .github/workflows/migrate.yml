@@ -54,7 +54,7 @@ jobs:
           cache: 'npm'
 
       - name: Install
-        run: npm ci
+        run: npm i -g npm@11 && npm ci
 
       - name: DATABASE_URL আছে কিনা যাচাই
         id: chk

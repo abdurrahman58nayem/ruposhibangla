@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       { userAgent: '*', allow: '/', disallow: ['/admin', '/api/'] },
     ],
+    // sitemap index — ভেতরে /sitemap/0.xml, /sitemap/1.xml … (প্রতি অংশে ৫০০ রেকর্ড)
     sitemap: `${base}/sitemap.xml`,
     host: base,
   }

@@ -1,0 +1,89 @@
+name: Backup (Neon + seeds)
+
+# সাপ্তাহিক ব্যাকআপ — Neon ডেটাবেজের SQL ডাম্প ও সিডের ম্যানিফেস্ট আর্টিফ্যাক্ট হিসেবে।
+#
+# আগে ব্যাকআপ ছিল শুধু `docs/BACKUP.md`-এর হাতে-চালানো নির্দেশনা; কেউ না চালালে
+# ব্যাকআপ হতো না। এখন GitHub Actions সপ্তাহে একবার নিজে চালায়।
+#
+# সেটআপ (একবার):
+#   Settings → Secrets and variables → Actions → New repository secret
+#   `DATABASE_URL` = Neon-এর connection string
+#   না থাকলে জব সতর্কবার্তা দিয়ে স্কিপ করে (CI লাল হবে না)।
+#
+# চালানোর উপায়: Actions → "Backup (Neon + seeds)" → Run workflow
+
+on:
+  schedule:
+    # প্রতি রবিবার ০২:৩০ UTC (বাংলাদেশ সময় ০৮:৩০)
+    - cron: '30 2 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: backup-neon
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: DATABASE_URL আছে কিনা যাচাই
+        id: chk
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::DATABASE_URL সিক্রেট নেই — ব্যাকআপ স্কিপ করা হলো (docs/BACKUP.md দেখুন)।"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Neon ডাম্প (pg_dump)
+        if: steps.chk.outputs.skip != 'true'
+        run: |
+          STAMP=$(date +%F)
+          pg_dump "$DATABASE_URL" --format=custom --no-owner --no-acl \
+            --file="ruposhibangla-${STAMP}.dump"
+          gzip -9 "ruposhibangla-${STAMP}.dump"
+          ls -lh ruposhibangla-*.dump.gz
+
+      - name: সিড ম্যানিফেস্ট
+        if: always()
+        run: |
+          npm i -g npm@11 && npm ci
+          npm run stats -- --json > seed-stats.json || true
+          git rev-parse HEAD > commit.txt
+          ls -lh seed-stats.json commit.txt
+
+      - name: আর্টিফ্যাক্ট আপলোড (৩০ দিন রাখা)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: |
+            ruposhibangla-*.dump.gz
+            seed-stats.json
+            commit.txt
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: সারাংশ
+        if: always()
+        run: |
+          if [ "${{ steps.chk.outputs.skip }}" = "true" ]; then
+            echo "### ⚠️ ব্যাকআপ স্কিপ" >> "$GITHUB_STEP_SUMMARY"
+            echo "\`DATABASE_URL\` সিক্রেট নেই — শুধু সিড-ম্যানিফেস্ট সংরক্ষণ হয়েছে।" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ✅ ব্যাকআপ সম্পন্ন" >> "$GITHUB_STEP_SUMMARY"
+            echo "Neon ডাম্প ও সিড-ম্যানিফেস্ট ৩০ দিনের জন্য আর্টিফ্যাক্টে রাখা হয়েছে।" >> "$GITHUB_STEP_SUMMARY"
+          fi
