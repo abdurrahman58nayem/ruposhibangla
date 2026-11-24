@@ -2,6 +2,9 @@
 
 export type Lang = 'bn' | 'en'
 
+/** সাইটে যে ভাষাগুলো আছে — ক্রম অনুযায়ী */
+export const LANGS: Lang[] = ['bn', 'en']
+
 const DICT = {
   bn: {
     home: 'হোম',
