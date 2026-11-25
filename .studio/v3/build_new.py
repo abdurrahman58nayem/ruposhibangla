@@ -149,6 +149,21 @@ def push(img, z, cx=0.5, cy=0.5):
     return big.crop((x, y, x + w, y + h))
 
 
+def _sharp(spr, ww, hh, amount=62):
+    """Downscale, then put the micro-contrast back.
+
+    A plain LANCZOS resize of a 544 px sprite onto 900 px of frame goes soft, and
+    soft product pixels are what reads as "small" even when the object is big.
+    """
+    sp = spr.resize((ww, hh), Image.LANCZOS)
+    if ww < spr.width * 1.4:               # only when we are not up-scaling much
+        a = sp.split()[3]
+        rgb = sp.convert("RGB").filter(ImageFilter.UnsharpMask(2, amount, 3))
+        sp = rgb.convert("RGBA")
+        sp.putalpha(a)
+    return sp
+
+
 def place(img, key, xf, base_y, scale, alpha=1.0, shadow=True):
     """Paste a product at an explicit left edge and base line.
 
@@ -160,7 +175,7 @@ def place(img, key, xf, base_y, scale, alpha=1.0, shadow=True):
     spr = _SPR[key]
     hh = int(scale * H)
     ww = int(spr.width * hh / spr.height)
-    sp = spr.resize((ww, hh), Image.LANCZOS)
+    sp = _sharp(spr, ww, hh)
     x = int(xf * W)
     y = int(base_y * H) - hh
     m = sp.split()[3]
@@ -175,6 +190,190 @@ def place(img, key, xf, base_y, scale, alpha=1.0, shadow=True):
                   (x - 130, int(base_y * H) - 96), sh)
     img.paste(sp, (x, y), m)
     return img
+
+
+# ------------------------------------------------------------------ graphics
+def steam_plume(img, cx, by, p, alpha=1.0, spread=0.05, rise=0.30, n=5):
+    """Three or four wisps of steam over the spout, screen-blended.
+
+    Never alpha-pasted: a cream paste over warm paper goes grey and reads as a
+    smudge. Screen only ever adds light, which is what steam does.
+    """
+    if alpha <= 0.01:
+        return
+    w, h = img.size
+    layer = Image.new("L", (w, h), 0)
+    d = ImageDraw.Draw(layer)
+    for i in range(n):
+        ph = i * 1.7 + p * 5.0
+        x0 = cx + spread * math.sin(ph) * 0.9 + (i - n / 2) * spread * 0.30
+        top = by - rise * (0.55 + 0.45 * ((i * 0.37) % 1.0))
+        for k in range(14):
+            f = k / 13.0
+            yy = by - (by - top) * f
+            xx = x0 + 0.022 * math.sin(ph + f * 5.2) * f
+            r = (0.006 + 0.011 * f) * (1 - 0.55 * f)
+            a = int(120 * alpha * (1 - f) ** 1.5)
+            if a <= 2:
+                continue
+            d.ellipse([(xx - r) * w, (yy - r * 1.1) * h,
+                       (xx + r) * w, (yy + r * 1.1) * h], fill=a)
+    layer = layer.filter(ImageFilter.GaussianBlur(9 * SCALE))
+    img.paste(Image.new("RGB", (w, h), (255, 252, 246)), (0, 0), layer.point(
+        lambda v: min(255, v)))
+
+
+def macro_window(img, name, box, e, zoom=1.0, radius=None, border=MARIGOLD):
+    """A real photographed detail in a rounded window — the honest way to show
+    a claim: it is the actual product, not a rendering of it."""
+    if e <= 0.004:
+        return
+    x0, y0, x1, y1 = [int(v) for v in box]
+    w, h = x1 - x0, y1 - y0
+    plate = _PL[name]
+    # cover-fit with the zoom applied, centred
+    sc = max(w / plate.width, h / plate.height) * zoom
+    pw, ph = int(plate.width * sc), int(plate.height * sc)
+    cuts = plate.resize((pw, ph), Image.LANCZOS).filter(
+        ImageFilter.UnsharpMask(2, 55, 3))
+    ox, oy = (pw - w) // 2, int((ph - h) * 0.42)
+    tile = cuts.crop((ox, oy, ox + w, oy + h)).convert("RGB")
+    r = radius if radius is not None else int(20 * SCALE)
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, w - 1, h - 1], r, fill=255)
+    if e < 0.999:
+        mask = mask.point(lambda v: int(v * e))
+    img.paste(tile, (x0, y0), mask)
+    if e > 0.6:
+        d = ImageDraw.Draw(img, "RGBA")
+        a = int(200 * (e - 0.6) / 0.4)
+        d.rounded_rectangle([x0, y0, x1 - 1, y1 - 1], r,
+                            outline=tuple(border) + (a,),
+                            width=max(2, int(2.5 * SCALE)))
+
+
+def gauge(img, x, y0, y1, frac, e, label, ticks=4, colour=NAVY):
+    """A measured fill bar: the claim '২ লিটার' shown as a scale, not as a word."""
+    if e <= 0.004:
+        return
+    d = ImageDraw.Draw(img, "RGBA")
+    wbar = 0.016
+    xa, xb = x * W, (x + wbar) * W
+    a = int(210 * e)
+    d.rounded_rectangle([xa, y0 * H, xb, y1 * H], int(wbar * W / 2),
+                        outline=tuple(colour) + (a,), width=max(2, int(2 * SCALE)))
+    top = y1 - (y1 - y0) * frac * K.eio(min(1.0, e * 1.2))
+    if (y1 - top) * H < 10 or (xb - xa) < 10:
+        return
+    d.rounded_rectangle([xa + 3, top * H, xb - 3, y1 * H], int(wbar * W / 2) - 2,
+                        fill=MARIGOLD + (int(235 * e),))
+    for i in range(ticks + 1):
+        yy = (y0 + (y1 - y0) * i / ticks) * H
+        d.line([xb, yy, xb + 0.012 * W, yy], fill=tuple(colour) + (a,),
+               width=max(2, int(1.5 * SCALE)))
+    t = Type(img)
+    t.line(label, "sans-semi", int(30 * SCALE), x + 0.030, y0 - 0.030,
+           colour, e, wipe=e)
+
+
+def gauge_h(img, x0, x1, y, frac, e, label, colour=NAVY):
+    """Horizontal fill bar — reads like a spec sheet under the photo inset."""
+    if e <= 0.004:
+        return
+    d = ImageDraw.Draw(img, "RGBA")
+    hb = 0.011
+    a = int(210 * e)
+    d.rounded_rectangle([x0 * W, y * H, x1 * W, (y + hb) * H],
+                        int(hb * H / 2), outline=tuple(colour) + (a,),
+                        width=max(2, int(2 * SCALE)))
+    xr = x0 + (x1 - x0) * frac * K.eio(min(1.0, e * 1.25))
+    if (xr - x0) * W < 10 or hb * H < 10:
+        return
+    d.rounded_rectangle([x0 * W + 3, y * H + 3, xr * W - 3, (y + hb) * H - 3],
+                        int(hb * H / 2) - 2, fill=MARIGOLD + (int(238 * e),))
+    if label:
+        t = Type(img)
+        t.line(label, "sans-semi", int(28 * SCALE), x0, y + 0.016, colour, e,
+               wipe=e)
+
+
+def dial24(img, cx, cy, r, e, colour=NAVY):
+    """A 24-hour arc with 24 ticks: '২৪ ঘণ্টা' made visible."""
+    if e <= 0.004:
+        return
+    d = ImageDraw.Draw(img, "RGBA")
+    n = 24
+    sweep = 300.0
+    a0 = -120.0
+    for i in range(n):
+        f = i / (n - 1)
+        ang = math.radians(a0 + sweep * f * K.eio(min(1.0, e)))
+        r0, r1 = r * 0.74, r * (0.86 if i % 6 else 0.94)
+        hot = (222, 148, 34) if f < 0.62 else (150, 110, 60)
+        al = int(240 * e * (0.35 + 0.65 * (1 - f)))
+        d.line([cx * W + math.cos(ang) * r0 * W, cy * H + math.sin(ang) * r0 * W,
+                cx * W + math.cos(ang) * r1 * W, cy * H + math.sin(ang) * r1 * W],
+               fill=hot + (al,), width=max(2, int((3 if i % 6 else 5) * SCALE)))
+    t = Type(img)
+    t.line("২৪", "serif-bold", int(60 * SCALE), cx, cy - 0.030, MARIGOLD_DK,
+           e, wipe=e, align="center")
+    t.line("ঘণ্টা", "sans-semi", int(28 * SCALE), cx, cy + 0.014, NAVY_SOFT,
+           e, wipe=e, align="center")
+
+
+def glyph_steam(img, x, y, e, colour=MARIGOLD_DK):
+    """Small line mark: three rising wisps. Used as a bullet for the boil claim."""
+    if e <= 0.004:
+        return
+    d = ImageDraw.Draw(img, "RGBA")
+    a = int(230 * e)
+    for k in range(3):
+        bx = (x + k * 0.020) * W
+        for j in range(12):
+            f = j / 11.0
+            yy = (y + 0.030 - 0.030 * f) * H
+            xx = bx + 0.006 * W * math.sin(f * 6.0 + k)
+            d.ellipse([xx - 0.0035 * W, yy - 0.0035 * W,
+                       xx + 0.0035 * W, yy + 0.0035 * W], fill=colour + (a,))
+
+
+def glyph_switch(img, x, y, e, colour=MARIGOLD_DK):
+    """Small line mark: a rocker switch, for the auto shut-off claim."""
+    if e <= 0.004:
+        return
+    d = ImageDraw.Draw(img, "RGBA")
+    a = int(230 * e)
+    d.rounded_rectangle([x * W, y * H, (x + 0.046) * W, (y + 0.026) * H],
+                        int(0.008 * W), outline=colour + (a,),
+                        width=max(2, int(2 * SCALE)))
+    d.ellipse([(x + 0.006) * W, (y + 0.006) * H, (x + 0.020) * W, (y + 0.020) * H],
+              fill=colour + (a,))
+
+
+def glyph_dial(img, x, y, e, colour=MARIGOLD_DK):
+    """Small line mark: a clock face, for the 24-hour claim."""
+    if e <= 0.004:
+        return
+    d = ImageDraw.Draw(img, "RGBA")
+    a = int(230 * e)
+    d.ellipse([x * W, y * H, (x + 0.040) * W, (y + 0.040) * H],
+              outline=colour + (a,), width=max(2, int(2 * SCALE)))
+    d.line([(x + 0.020) * W, (y + 0.020) * H, (x + 0.020) * W, (y + 0.008) * H],
+           fill=colour + (a,), width=max(2, int(2 * SCALE)))
+    d.line([(x + 0.020) * W, (y + 0.020) * H, (x + 0.032) * W, (y + 0.026) * H],
+           fill=colour + (a,), width=max(2, int(2 * SCALE)))
+
+
+def glyph_leaf(img, x, y, e, colour=MARIGOLD_DK):
+    """Small line mark: a leaf, for the odour-free claim."""
+    if e <= 0.004:
+        return
+    d = ImageDraw.Draw(img, "RGBA")
+    a = int(230 * e)
+    d.arc([x * W, y * H, (x + 0.044) * W, (y + 0.030) * H], 200, 340,
+          fill=colour + (a,), width=max(2, int(2 * SCALE)))
+    d.line([x * W, (y + 0.024) * H, (x + 0.040) * W, (y + 0.004) * H],
+           fill=colour + (a,), width=max(2, int(2 * SCALE)))
 
 
 # ------------------------------------------------------------------- type kit
@@ -264,90 +463,110 @@ def price_band(img, t, value, y, h, e, label="কম্বো প্রাইস
 
 # ---------------------------------------------------------------- scene draw
 def scene_A(img, s, p, t):
-    """The hook, set as a printed poster.
+    """The hook, set as a printed poster — now with the products at full size.
 
-    Copy is one column at the left margin; the pair bleeds off the right edge and
-    is cropped by it; the price is a solid marigold band across the foot. No
-    product is ever shrunk to fit and no line is ever stacked on another.
+    Copy is one column at the left margin; the pair is big and cropped by the
+    right edge; the price is a solid marigold band that doubles as the ground
+    line they stand on. Steam rises off the spout so the promise is visible.
     """
-    z = 1.0 + 0.032 * K.eio(p)
+    z = 1.0 + 0.030 * K.eio(p)
     img.paste(push(paper_img("hi"), z, 0.55, 0.55), (0, 0))
 
-    # The copy is laid out FIRST and measured, then the products are hung under
-    # it — that is the only way the two can never touch, whatever the glyphs do.
     t_ = Type(img)
     PX = int(112 * SCALE)
     H1 = t_.measure("গরম পানি,", "serif-bold", PX)[1]
     H2 = t_.measure("এক দামে", "serif-bold", PX)[1]
-    top = 0.188
+    top = 0.186
     copy_bottom = top + (H1 + 0.024 * H + H2) / H
 
-    kicker(t_, s["kicker"], 0.150, K.ss(0.14, 0.52, t),
+    kicker(t_, s["kicker"], 0.148, K.ss(0.14, 0.52, t),
            wipe=K.ss(0.14, 0.70, t))
     t_.line("গরম পানি,", "serif-bold", PX, GUTTER, top, NAVY,
             K.ss(0.30, 0.80, t), wipe=K.ss(0.30, 0.76, t))
     t_.line("এক দামে", "serif-bold", PX, GUTTER, top + (H1 + 0.024 * H) / H,
             NAVY, K.ss(0.44, 0.94, t), wipe=K.ss(0.44, 0.90, t))
 
-    # products stand on the price band — the band is their ground line, which is
-    # why it can be full-bleed without looking like a sticker on a page
-    base = 0.664
-    place(img, "kettle", 0.312, base, 0.316 * (1 + 0.10 * (z - 1)),
-          alpha=K.ss(0.08, 0.58, t))
-    place(img, "flask", 0.622, base + 0.010, 0.330 * (1 + 0.10 * (z - 1)),
-          alpha=K.ss(0.20, 0.70, t))
-    # No caption here on purpose: the copy block is measured, the products hang
-    # 0.026 under its last descender, and the band is their ground line. Three
-    # objects, three zones, nothing overlapping.
-    # beat 2: the band. It arrives exactly when the read says the price, so the
-    # viewer hears and sees the number at the same instant.
-    price_band(img, t_, 1550, 0.664, 0.104, K.ss(4.35, 4.75, t))
-    t_.line("শুধু এই শীতে", "sans-semi", int(30 * SCALE), GUTTER, 0.628,
+    # products: 0.36 / 0.375 of frame height, standing on the band at 0.676
+    base = 0.676
+    place(img, "kettle", 0.268, base, 0.360 * (1 + 0.10 * (z - 1)),
+          alpha=K.ss(0.08, 0.55, t))
+    place(img, "flask", 0.612, base + 0.008, 0.372 * (1 + 0.10 * (z - 1)),
+          alpha=K.ss(0.18, 0.65, t))
+    steam_plume(img, 0.315, base - 0.352, p, alpha=0.55 * K.ss(0.75, 1.4, t),
+                spread=0.030, rise=0.085, n=4)
+
+    # beat 2: the band arrives exactly when the read says the price
+    price_band(img, t_, 1550, 0.676, 0.108, K.ss(4.35, 4.75, t))
+    t_.line("শুধু এই শীতে", "sans-semi", int(30 * SCALE), GUTTER, 0.640,
            MARIGOLD_DK, K.ss(4.05, 4.35, t))
 
 
 def scene_product(img, s, p, t, key, scale, side, kicker_y=0.150):
-    """A spec sheet, not a hero shot: big bleed photo + three measured lines."""
-    dur = s["dur"]
-    z = 1.0 + 0.030 * K.eio(p)
-    base = push(paper_img("warm"), z, 0.35, 0.45)
-    img.paste(base, (0, 0))
-    # a marigold hairline down the left margin, full height — the grid
+    """Spec page: the claim on the left, the product big on the right.
+
+    Under the spec rows sits ONE real photograph of the product — the steel body
+    for the kettle, the lid for the flask. A photographed detail proves a claim
+    in a way a bullet point cannot, and it keeps the page from being all type.
+    """
+    z = 1.0 + 0.026 * K.eio(p)
+    img.paste(push(paper_img("warm"), z, 0.28, 0.44), (0, 0))
     d = ImageDraw.Draw(img)
-    d.line([GUTTER * W * 0.42, SAFE_T * H, GUTTER * W * 0.42, SAFE_B * H],
+    d.line([GUTTER * W * 0.40, SAFE_T * H, GUTTER * W * 0.40, SAFE_B * H],
            fill=MARIGOLD + (150,), width=max(2, int(3 * SCALE * 0.5)))
 
-    place(img, key, 0.470, 0.726, scale * (1 + 0.012 * z),
-          alpha=K.ss(0.00, 0.50, t))
+    # the real macro sits UNDER the product in z-order: an inset is a window on
+    # the same object, so the object must be allowed to pass in front of it
+    macro_window(img, ("steel" if key == "kettle" else "lid"),
+                 (GUTTER * W, 0.572 * H, (GUTTER + 0.330) * W, 0.664 * H),
+                 K.ss(0.95, 1.35, t), zoom=1.02 + 0.06 * K.eio(p))
+
+    # the product: 0.40 of the frame tall, base on 0.762, right of centre
+    place(img, key, (0.482 if key == "kettle" else 0.520), 0.766,
+          scale * (1 + 0.012 * z), alpha=K.ss(0.00, 0.48, t))
 
     t_ = Type(img)
     kicker(t_, s["kicker"], kicker_y, K.ss(0.12, 0.50, t),
            wipe=K.ss(0.12, 0.66, t))
-    # headline: left column, above the spec list
     head = s["head"].split("\n")
     cols = s.get("head_cols") or [NAVY] * len(head)
-    yy = 0.194
+    yy = 0.192
     for i, ln in enumerate(head):
         e = K.ss(0.26 + i * 0.10, 0.80 + i * 0.10, t)
-        hgt = t_.line(ln, "serif-bold", int(82 * SCALE), GUTTER, yy, cols[i], e,
+        hgt = t_.line(ln, "serif-bold", int(80 * SCALE), GUTTER, yy, cols[i], e,
                       wipe=K.ss(0.26 + i * 0.10, 0.78 + i * 0.10, t))
-        yy += (hgt + 0.14 * 82 * SCALE) / H
+        yy += (hgt + 0.14 * 80 * SCALE) / H
 
-    # spec rows: rule + label + sub, each on its own beat, directly under the
-    # headline so the left column never opens a hole the product has to fill
-    y = 0.356
+    marks = [glyph_steam, glyph_switch, glyph_leaf]
+    if key == "flask":
+        marks = [glyph_dial, glyph_switch, glyph_leaf]
+    y = 0.312
     for i, (a, b) in enumerate(s["specs"]):
-        e = K.ss(0.85 + i * 0.42, 1.22 + i * 0.42, t)
+        e = K.ss(0.55 + i * 0.26, 0.88 + i * 0.26, t)
         if e <= 0.004:
             continue
-        hairline(t_, GUTTER, y - 0.020, GUTTER + 0.400, y - 0.020,
-                 colour=LINE, width=2, alpha=e * 0.9)
-        h1 = t_.line(a, "sans-semi", int(46 * SCALE), GUTTER, y, NAVY, e,
-                     wipe=K.ss(0.85 + i * 0.42, 1.20 + i * 0.42, t))
-        t_.line(b, "sans", int(30 * SCALE), GUTTER, y + (h1 + 0.012 * H) / H,
-                NAVY_SOFT, e)
-        y += 0.098
-    price_stamp(img, t_, 1550, 0.706, K.ss(2.35, 2.75, t))
+        hairline(t_, GUTTER + 0.056, y - 0.012, GUTTER + 0.386, y - 0.012,
+                 colour=LINE, width=2, alpha=e * 0.8)
+        marks[i](img, GUTTER, y - 0.004, e)
+        h1 = t_.line(a, "sans-semi", int(41 * SCALE), GUTTER + 0.056, y, NAVY,
+                     e, wipe=K.ss(0.55 + i * 0.26, 0.86 + i * 0.26, t))
+        t_.line(b, "sans", int(27 * SCALE), GUTTER + 0.056,
+                y + (h1 + 0.008 * H) / H, NAVY_SOFT, e)
+        y += 0.084
+
+    caption = ("স্টেইনলেস স্টিল বডি" if key == "kettle" else "লিড ও বডি")
+    t_.line(caption, "sans", int(24 * SCALE), GUTTER, 0.669, NAVY_SOFT,
+            K.ss(1.30, 1.55, t))
+
+    # the number as a picture: a fill gauge for capacity, a 24-tick arc for time
+    if key == "kettle":
+        gauge_h(img, GUTTER, GUTTER + 0.330, 0.696, 1.0,
+                K.ss(1.60, 2.00, t), None)
+    else:
+        t_.line("গরম থাকে", "sans", int(24 * SCALE), 0.836, 0.150,
+                NAVY_SOFT, K.ss(1.60, 1.85, t), align="center")
+        dial24(img, 0.836, 0.214, 0.062, K.ss(1.70, 2.15, t))
+
+    price_stamp(img, t_, 1550, 0.720, K.ss(2.30, 2.70, t))
 
 
 def price_stamp(img, t, value, y, e):
@@ -368,8 +587,8 @@ def scene_D(img, s, p, t):
     e2 = K.ss(0.15, 0.68, t)
     dx = 0.075 * (1 - K.eio(min(1.0, t / 0.75)))
     # two products, one entering from each side, then holding
-    _sprite_at(img, "kettle", 0.296 - dx, 0.726, 0.352, e1)
-    _sprite_at(img, "flask", 0.712 + dx, 0.736, 0.372, e2)
+    _sprite_at(img, "kettle", 0.286 - dx, 0.730, 0.392, e1)
+    _sprite_at(img, "flask", 0.716 + dx, 0.742, 0.414, e2)
     t_ = Type(img)
     kicker(t_, s["kicker"], 0.150, K.ss(0.10, 0.45, t),
            wipe=K.ss(0.10, 0.60, t))
@@ -382,7 +601,7 @@ def _sprite_at(img, key, cx, base_y, scale, alpha=1.0):
     spr = _SPR[key]
     hh = int(scale * H)
     ww = int(spr.width * hh / spr.height)
-    sp = spr.resize((ww, hh), Image.LANCZOS)
+    sp = _sharp(spr, ww, hh)
     x = int(cx * W - ww / 2)
     y = int(base_y * H) - hh
     m = sp.split()[3]
@@ -465,8 +684,8 @@ def scene_F(img, s, p, t):
     # signature pair at the foot
     e = K.ss(2.75, 3.10, t)
     if e > 0.004:
-        place(img, "kettle", 0.336, 0.906, 0.170, alpha=e, shadow=False)
-        place(img, "flask", 0.524, 0.912, 0.178, alpha=e, shadow=False)
+        place(img, "kettle", 0.330, 0.910, 0.196, alpha=e, shadow=False)
+        place(img, "flask", 0.512, 0.916, 0.206, alpha=e, shadow=False)
 
 
 # ------------------------------------------------------------------ assembly
@@ -653,7 +872,7 @@ def _read(path):
 
 
 # --------------------------------------------------------------------- assets
-_SPR, _PHOTO = {}, {}
+_SPR, _PHOTO, _PL = {}, {}, {}
 
 
 def load_assets():
@@ -661,6 +880,10 @@ def load_assets():
     _SPR["flask"] = Image.open(os.path.join(SPR, "flask.png")).convert("RGBA")
     _PHOTO["family"] = Image.open(os.path.join(STUDIO, "ad",
                                                "family_warm.png")).convert("RGB")
+    _PL["steel"] = Image.open(os.path.join(PLATES,
+                                           "kettle_detail_light.png")).convert("RGB")
+    _PL["lid"] = Image.open(os.path.join(PLATES,
+                                         "flask_detail_light.png")).convert("RGB")
 
 
 # ------------------------------------------------------------------ rendering
