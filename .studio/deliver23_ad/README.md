@@ -68,3 +68,9 @@
 
 > **সেফ-এরিয়া:** সব লেখা ফ্রেমের `০.১৩৫–০.৭৯০` মধ্যে — Reels/Stories-এর উপরের প্রোফাইল ও
 > নিচের ক্যাপশন/বাটন UI কোনো লেখা ঢাকবে না।
+
+**v12 Drive লিঙ্ক (পাবলিক)**
+- 4K: https://drive.google.com/file/d/1EkWi2MkIht8Ylnjadsys9V9aGZTsDT5N/view
+- 1080×1920: https://drive.google.com/file/d/1Vuhcoi_Ly7gSk37LG9F3sLH692o_eIES/view
+- ১৫ সেকেন্ড: (আপলোড লিমিটের কারণে পরের রাউন্ডে)
+
