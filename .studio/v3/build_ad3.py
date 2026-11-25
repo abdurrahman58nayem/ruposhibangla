@@ -44,16 +44,20 @@ SCENES = [
          chip="শীতের কম্বো অফার",
          head=["শীতের কম্বো", "দুটি পণ্য, এক দামে"],
          price=1550),
-    dict(id="s2", dur=8.70, stage="cool", vo=[("v2", 0.70)],
+    dict(id="s2", dur=10.10, stage="cool", vo=[("v2b", 0.30)],
          chip="Hawkins ইলেকট্রিক কেটল",
-         head=["পানি গরম,", "কয়েক মিনিটেই"],
-         cards=["২ লিটার ধারণক্ষমতা", "স্টেইনলেস স্টিল বডি", "পানি ফুটলেই অটো বন্ধ"],
-         detail="kettle_detail.png", detail_at=3.10),
-    dict(id="s3", dur=8.30, stage="warm", vo=[("v3", 0.70)],
+         head=["দ্রুত পানি", "গরম হয়"],
+         cards=[("অল্প সময়েই ফুটে ওঠে", "কয়েক মিনিটেই তৈরি"),
+                ("স্টেইনলেস স্টিল বডি", "২ লিটার ধারণক্ষমতা"),
+                ("অটোমেটিক শাট-অফ", "পানি ফুটলেই বন্ধ")],
+         detail="kettle_detail.png", detail_at=3.30),
+    dict(id="s3", dur=10.10, stage="warm", vo=[("v3b", 0.30)],
          chip="Elima ভ্যাকুয়াম ফ্লাস্ক",
-         head=["চায়ের উষ্ণতা", "থাকুক অনেকক্ষণ"],
-         cards=["১ লিটার ধারণক্ষমতা", "প্রিমিয়াম ডিজাইন", "গন্ধহীন ভেতর"],
-         detail="flask_detail.png", detail_at=2.90),
+         head=["২৪ ঘণ্টা", "পানি গরম থাকে"],
+         cards=[("২৪ ঘণ্টা পানি গরম", "পুরো দিন উষ্ণ থাকে"),
+                ("প্রিমিয়াম ডিজাইন", "১ লিটার ধারণক্ষমতা"),
+                ("গন্ধহীন ভেতর", "স্বাদ অটুট থাকে")],
+         detail="flask_detail.png", detail_at=3.30),
     dict(id="s4", dur=4.20, stage="cool", vo=[("v4", 0.70)],
          chip="কম্বো অফার",
          head=["দুটোই একসঙ্গে"]),
@@ -151,7 +155,12 @@ def steam(canvas, cx, by, p, count=5, strength=1.0, spread=0.055, rise=0.20,
         d.ellipse([xx - r, yy - r * 0.8, xx + r, yy + r * 0.8], fill=a)
     lay = lay.filter(ImageFilter.GaussianBlur(w4 * 0.020))
     lay = lay.resize((W, H), Image.BICUBIC)
-    canvas.paste(Image.new("RGB", canvas.size, (255, 250, 240)), (0, 0), lay)
+    # screen, never paste: an alpha paste replaced the stage with flat cream and
+    # the macro cut showed a hanging curtain of steam over the whole frame (24 s)
+    col = np.array([255, 250, 240], np.float32)
+    base = np.asarray(canvas, np.float32)
+    a = (np.asarray(lay, np.float32) / 255.0)[..., None]
+    canvas.paste(Image.fromarray(np.clip(base + (col - base) * a, 0, 255).astype(np.uint8), "RGB"))
 
 
 # ---------------------------------------------------------------------- type ---
@@ -171,6 +180,32 @@ def chip(canvas, txt, y, e, colour=GOLD_L):
             IVORY, e, shadow=(2, 3, (0, 0, 0), 0.5))
 
 
+def feature_row(canvas, txt, sub, yy, e):
+    """A feature row: gold tick + bold claim, with a quiet second line under it.
+
+    The claim is what sells; the sub-line carries the spec so the row can hold
+    a fact ('fast boil') plus its number ('2 litre') without a wall of text.
+    """
+    lay = T.flow(txt, "sans-semi", int(44 * SCALE))
+    sub_lay = T.flow(sub, "sans", int(31 * SCALE)) if sub else None
+    tw = lay.width
+    sw = sub_lay.width if sub_lay else 0
+    x0 = int((W - max(tw, sw)) / 2 - 54 * SCALE)
+    d = ImageDraw.Draw(canvas, "RGBA")
+    ty = int(yy * H + lay.image.height * 0.40)
+    d.line([x0, ty, x0 - 14 * SCALE, ty + 14 * SCALE], fill=GOLD_L + (int(235 * e),),
+           width=max(1, int(3 * SCALE)))
+    d.line([x0 - 14 * SCALE, ty + 14 * SCALE, x0 - 34 * SCALE, ty - 8 * SCALE],
+           fill=GOLD_L + (int(235 * e),), width=max(1, int(3 * SCALE)))
+    top = yy * H + 24 * (1 - e) * SCALE
+    T.paint(canvas, lay.image, (int(x0 + 44 * SCALE), int(top)), IVORY,
+            min(1.0, e * 1.25), shadow=(3, 4, (0, 0, 0), 0.6))
+    if sub_lay is not None:
+        T.paint(canvas, sub_lay.image, (int(x0 + 44 * SCALE),
+                                        int(top + lay.image.height + 6 * SCALE)),
+                WINTER, min(1.0, e * 1.15), shadow=(2, 3, (0, 0, 0), 0.5))
+
+
 def feature_cards(canvas, rows, y0, e_all, at=0.0, gap=0.049, t=0.0, stagger=0.30):
     """Three feature rows: gold tick, ivory text, stepping in one after another.
 
@@ -180,23 +215,12 @@ def feature_cards(canvas, rows, y0, e_all, at=0.0, gap=0.049, t=0.0, stagger=0.3
     """
     if e_all <= 0.004:
         return
-    for i, txt in enumerate(rows):
+    for i, row in enumerate(rows):
         e = K.ss(at + i * stagger, at + i * stagger + 0.40, t) * e_all
         if e <= 0.004:
             continue
-        yy = y0 + i * gap
-        lay = T.flow(txt, "sans-semi", int(44 * SCALE))
-        tw = lay.width
-        x0 = int((W - tw) / 2 - 54 * SCALE)
-        d = ImageDraw.Draw(canvas, "RGBA")
-        ty = int(yy * H + lay.image.height * 0.40)
-        d.line([x0, ty, x0 - 14 * SCALE, ty + 14 * SCALE], fill=GOLD_L + (int(235 * e),),
-               width=max(1, int(3 * SCALE)))
-        d.line([x0 - 14 * SCALE, ty + 14 * SCALE, x0 - 34 * SCALE, ty - 8 * SCALE],
-               fill=GOLD_L + (int(235 * e),), width=max(1, int(3 * SCALE)))
-        T.paint(canvas, lay.image, (int((W - tw) / 2 + 12 * SCALE),
-                                    int(yy * H + 24 * (1 - e) * SCALE)),
-                IVORY, min(1.0, e * 1.25), shadow=(3, 4, (0, 0, 0), 0.6))
+        txt, sub = row if isinstance(row, tuple) else (row, None)
+        feature_row(canvas, txt, sub, y0 + i * gap, e)
 
 
 # --------------------------------------------------------------------- scenes --
@@ -242,7 +266,7 @@ def draw_s1(img, s, p, t):
             alpha=K.ss(0.0, 0.45, t), lift=-0.004 * np.sin(p * 5), reflect=0.0)
     product(img, "flask", 0.680, 0.600 + rise, h=0.325,
             alpha=K.ss(0.10, 0.55, t), lift=-0.004 * np.sin(p * 5 + 1), reflect=0.0)
-    steam(img, 0.320, 0.470, p, count=4, strength=0.28 * e)
+    steam(img, 0.320, 0.470, p, count=4, strength=0.22 * e)
 
     chip(img, s["chip"], 0.068, K.ss(0.15, 0.55, t))
     A.centred(img, s["head"][0], "big", 0.112, GOLD_L, K.ss(0.28, 0.72, t), dy=30)
@@ -279,10 +303,10 @@ def draw_product_scene(img, s, p, t, key, cx, h, base=0.560):
     # is a frost, not a slab — the floor still reads through it.
     ec = K.ss(1.05, 1.45, t)
     if ec > 0.004:
-        A.glass_card(img, (W * 0.082, H * 0.636, W * 0.918, H * 0.838), ec,
+        A.glass_card(img, (W * 0.082, H * 0.634, W * 0.918, H * 0.806), ec,
                      radius=32 * SCALE, alpha=112, border_a=104, tint=(16, 38, 33))
     feature_cards(img, s["cards"], 0.660, K.ss(1.10, 1.45, t), at=1.10, t=t,
-                  gap=0.052)
+                  gap=0.049)
 
 
 def draw_s4(img, s, p, t):
@@ -320,7 +344,7 @@ def draw_s5(img, s, p, t):
     lift = -0.005 * np.sin(p * 4.0)
     product(img, "kettle", 0.315, base, h=0.285, alpha=e_in, lift=lift)
     product(img, "flask", 0.685, base, h=0.310, alpha=e_in, lift=lift)
-    steam(img, 0.400, base - 0.285 * 0.86, p, count=4, strength=0.28 * e_in)
+    steam(img, 0.400, base - 0.285 * 0.86, p, count=4, strength=0.22 * e_in)
     img2 = A.light_sweep(img, K.ss(0.20, 0.70, p), y0=0.10, y1=0.66,
                          width=0.15, strength=0.22)
     img.paste(img2, (0, 0))
