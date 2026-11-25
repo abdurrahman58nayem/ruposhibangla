@@ -16,6 +16,12 @@
 | `10-voiceover-bengali.wav` | শুধু ভয়েসওভার | 48 kHz mono |
 
 **Drive লিঙ্ক**
+**v8 (সর্বশেষ — দ্রুত গরম + ২৪ ঘণ্টা গরম যোগ করা)**
+- 4K: https://drive.google.com/file/d/1AxPI1gMLAVCNBnNrlFtOD6s2ocNm0xWN/view
+- 1080×1920: https://drive.google.com/file/d/1w17YWPKT4DoPMXAQHAqA9sofX3VGR9FD/view
+- ১৫ সেকেন্ড: https://drive.google.com/file/d/1aoQ_14_h6Yx6ymqyO51hvrMEQX-DniqU/view
+
+**v7 (পুরোনো — এই দুটি দাবি ছাড়া)**
 - 4K: https://drive.google.com/file/d/1dATDOMRaGeh3-_9lD0p9kf5c_ZnGqWWI/view
 - 1080×1920: https://drive.google.com/file/d/1_6Em2kRDBcon3tllrCWmXlfsoenHmvH8/view
 - ১৫ সেকেন্ড: https://drive.google.com/file/d/10LCnDp-2w0kyCsxHxUePl5lczaDE00QN/view
