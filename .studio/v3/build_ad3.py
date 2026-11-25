@@ -305,63 +305,72 @@ def _deepen_lower(img, y=0.66):
 def draw_s1(img, s, p, t):
     """Hook: the deal AND the price in the first two seconds.
 
-    Products rise into a low two-up pose; the price lockup lands on a light
-    frosted card under them, so the number is the second thing the eye finds —
-    not the last thing in the film.
+    Layout is measured, not eyeballed. Every glyph box height below was taken
+    from rbtext.flow() at the real px size, then the gaps were set to a
+    consistent rhythm (0.024 between blocks, 0.020 for the caption). The old
+    version stacked the caption right under the price card — the card's rim
+    (0.748) and the caption's ink (0.752) were 4 px apart, which is what read
+    as text sitting on text.
     """
     e = K.ss(0.0, 0.90, t)
-    # eased, not sprung: the v8 back-ease made the products hop on entry
     rise = 0.075 * (1 - K.eio(min(1.0, t / 1.15)))
-    # no mirrored floor reflection here: the price card sits right under the
-    # products and the reflection bled through as a ghost of the flask
-    product(img, "kettle", 0.320, 0.640 + rise, h=0.255,
-            alpha=K.ss(0.0, 0.45, t), lift=-0.004 * np.sin(p * 5), reflect=0.0)
-    product(img, "flask", 0.680, 0.640 + rise, h=0.276,
-            alpha=K.ss(0.10, 0.55, t), lift=-0.004 * np.sin(p * 5 + 1), reflect=0.0)
-    steam(img, 0.320, 0.64 - 0.255 * 0.86, p, count=4, strength=0.22 * e)
 
-    chip(img, s["chip"], 0.148, K.ss(0.15, 0.65, t))
-    A.centred(img, s["head"][0], "big", 0.188, A.DEEP, K.ss(0.28, 0.92, t), dy=34)
-    A.centred(img, s["head"][1], "title", 0.256, A.DEEP2, K.ss(0.42, 1.06, t), dy=26)
+    # ---------------------------------------------------------- type stack --
+    # chip   0.148 -> 0.167   (1.93% tall)
+    # big    0.186 -> 0.237   (5.08%)
+    # title  0.250 -> 0.299   (4.87%)
+    # --- products (cap 0.336) ---
+    # card   0.500 -> 0.576
+    #   label 0.509 (1.85%) / price 0.523 (5.18%, ends 0.575)
+    # caption 0.600 -> 0.619
+    chip(img, s["chip"], 0.150, K.ss(0.15, 0.65, t))
+    A.centred(img, s["head"][0], "big", 0.188, A.DEEP, K.ss(0.28, 0.92, t), dy=32)
+    A.centred(img, s["head"][1], "title", 0.252, A.DEEP2, K.ss(0.42, 1.06, t), dy=24)
+
+    product(img, "kettle", 0.320, 0.522 + rise, h=0.195,
+            alpha=K.ss(0.0, 0.45, t), lift=-0.004 * np.sin(p * 5), reflect=0.0)
+    product(img, "flask", 0.680, 0.522 + rise, h=0.212,
+            alpha=K.ss(0.10, 0.55, t), lift=-0.004 * np.sin(p * 5 + 1), reflect=0.0)
+    steam(img, 0.320, 0.522 - 0.195 * 0.86, p, count=4, strength=0.20 * e)
 
     ep = K.ss(0.75, 1.20, t)
     if ep > 0.004:
-        soft_shadow(img, (W * 0.155, H * 0.672, W * 0.845, H * 0.748), ep, 34 * SCALE)
-        A.glass_card(img, (W * 0.155, H * 0.672, W * 0.845, H * 0.748), ep,
-                     radius=34 * SCALE, alpha=150, border_a=160, tint=(255, 255, 255),
-                     border=A.SKY)
-        A.centred(img, "কম্বো প্রাইস", "label", 0.680, (44, 112, 164),
+        soft_shadow(img, (W * 0.200, H * 0.560, W * 0.800, H * 0.640), ep, 32 * SCALE)
+        A.glass_card(img, (W * 0.200, H * 0.560, W * 0.800, H * 0.640), ep,
+                     radius=32 * SCALE, alpha=150, border_a=160,
+                     tint=(255, 255, 255), border=A.SKY)
+        A.centred(img, "কম্বো প্রাইস", "label", 0.568, (44, 112, 164),
                   K.ss(0.80, 1.16, t), maxw=0.6, shadow=0.0)
-        A.count_price(img, 1550, 0.694, K.ss(0.88, 1.50, t), colour=A.INK,
+        A.count_price(img, 1550, 0.582, K.ss(0.88, 1.50, t), colour=A.INK,
                       px=int(148 * SCALE * 0.72))
-    A.centred(img, "Hawkins ২ লিটার · Elima ১ লিটার", "list2", 0.752, A.DEEP2,
-              K.ss(1.30, 1.85, t), dy=18)
+    A.centred(img, "Hawkins ২ লিটার · Elima ১ লিটার", "list2", 0.664, A.DEEP2,
+              K.ss(1.30, 1.85, t), dy=16)
 
 
 def draw_product_scene(img, s, p, t, key, cx, h, base=0.560):
     dur = s["dur"]
     e_in = K.ss(0.0, 0.55, t)
     lift = -0.006 * np.sin(p * 4.2)
-    product(img, key, cx, base, h=h * 0.94, alpha=e_in, lift=lift)
+    product(img, key, cx, 0.516, h=h * 0.72, alpha=e_in, lift=lift)
     steam(img, cx + 0.105, base - h * 0.86, p, count=5,
           strength=(0.55 if key == "kettle" else 0.35) * e_in)
-    chip(img, s["chip"], 0.140, K.ss(0.25, 0.90, t))
-    A.centred(img, s["head"][0], "title", 0.182, A.DEEP, K.ss(0.22, 0.92, t), dy=30)
-    A.centred(img, s["head"][1], "sub", 0.238, A.DEEP2, K.ss(0.38, 1.06, t), dy=22)
+    chip(img, s["chip"], 0.134, K.ss(0.25, 0.90, t))
+    A.centred(img, s["head"][0], "title", 0.172, A.DEEP, K.ss(0.22, 0.92, t), dy=30)
+    A.centred(img, s["head"][1], "sub", 0.230, A.DEEP2, K.ss(0.38, 1.06, t), dy=22)
 
     # ONE light glass card holds all three features. It starts BELOW the
     # product's contact point (base 0.560) so it never covers the base, and it
     # is a frost, not a slab — the floor still reads through it.
     ec = K.ss(1.05, 1.45, t)
     if ec > 0.004:
-        soft_shadow(img, (W * 0.082, H * 0.560, W * 0.918, H * 0.742), ec, 32 * SCALE)
-        A.glass_card(img, (W * 0.082, H * 0.560, W * 0.918, H * 0.742), ec,
+        soft_shadow(img, (W * 0.082, H * 0.560, W * 0.918, H * 0.770), ec, 32 * SCALE)
+        A.glass_card(img, (W * 0.082, H * 0.560, W * 0.918, H * 0.770), ec,
                      radius=32 * SCALE, alpha=118, border_a=170, tint=(255, 255, 255),
                      border=A.SKY)
     # rows pulled up and tightened: the third row used to sit 8 px below the
     # card's bottom edge and read as cut off
-    feature_cards(img, s["cards"], 0.588, K.ss(1.10, 1.45, t), at=1.10, t=t,
-                  gap=0.050)
+    feature_cards(img, s["cards"], 0.586, K.ss(1.10, 1.45, t), at=1.10, t=t,
+                  gap=0.049)
 
 
 def draw_s4(img, s, p, t):
@@ -371,18 +380,18 @@ def draw_s4(img, s, p, t):
     e2 = K.ss(0.16, 0.96, p * dur)
     dx1 = 0.15 * (1 - K.eio(min(1.0, p * 1.9)))
     dx2 = -0.15 * (1 - K.eio(min(1.0, p * 1.9)))
-    product(img, "kettle", 0.335 + dx1, 0.730, h=0.300, alpha=e1)
-    product(img, "flask", 0.665 + dx2, 0.730, h=0.325, alpha=e2)
+    product(img, "kettle", 0.335 + dx1, 0.700, h=0.270, alpha=e1)
+    product(img, "flask", 0.665 + dx2, 0.700, h=0.292, alpha=e2)
     img_ = A.light_sweep(img, K.ss(0.30, 0.95, p), y0=0.18, y1=0.80,
                          width=0.16, strength=0.20)
     img.paste(img_, (0, 0))
     chip(img, s["chip"], 0.150, K.ss(0.18, 0.70, p * dur))
-    A.centred(img, "HAWKINS KETTLE", "list", 0.198, A.DEEP, K.ss(0.35, 0.92, p * dur),
+    A.centred(img, "HAWKINS KETTLE", "list", 0.200, A.DEEP, K.ss(0.35, 0.92, p * dur),
               maxw=0.86)
-    A.centred(img, "ELIMA FLASK", "list", 0.244, A.DEEP, K.ss(0.55, 1.12, p * dur),
+    A.centred(img, "ELIMA FLASK", "list", 0.252, A.DEEP, K.ss(0.55, 1.12, p * dur),
               maxw=0.86)
-    A.centred(img, "দুটোই একসঙ্গে, এক কম্বো অফারে", "sub", 0.722, A.DEEP2,
-              K.ss(0.85, 1.45, p * dur), dy=18)
+    A.centred(img, "দুটোই একসঙ্গে, এক কম্বো অফারে", "sub", 0.760, A.DEEP2,
+              K.ss(0.85, 1.45, p * dur), dy=16)
 
 
 def draw_s5(img, s, p, t):
@@ -458,8 +467,8 @@ def draw_s6(img, s, p, t):
     img.paste(img2, (0, 0))
 
     chip(img, s["chip"], 0.142, K.ss(0.12, 0.60, p * dur))
-    A.centred(img, s["head"][0], "big", 0.182, A.DEEP, K.ss(0.25, 0.85, p * dur))
-    A.centred(img, "Hawkins কেটল + Elima ফ্লাস্ক", "sub", 0.252, A.DEEP2,
+    A.centred(img, s["head"][0], "big", 0.180, A.DEEP, K.ss(0.25, 0.85, p * dur))
+    A.centred(img, "Hawkins কেটল + Elima ফ্লাস্ক", "sub", 0.246, A.DEEP2,
               K.ss(0.45, 1.00, p * dur))
 
     ep = K.ss(0.55, 1.30, p * dur)
@@ -511,10 +520,10 @@ def macro_cut(s, img, t):
     lab = "স্টেইনলেস স্টিল বডি" if s["id"] == "s2" else "প্রিমিয়াম লিড ও বডি"
     le = K.ss(0.12, 0.42, local) * (1 - K.ss(1.30, 1.55, local))
     if le > 0.004:
-        A.glass_card(macro, (W * 0.13, H * 0.700, W * 0.87, H * 0.762), le,
-                     radius=30 * SCALE, alpha=235, border_a=200,
+        A.glass_card(macro, (W * 0.13, H * 0.646, W * 0.87, H * 0.704), le,
+                     radius=30 * SCALE, alpha=238, border_a=200,
                      tint=(255, 252, 245), border=A.SKY)
-        A.centred(macro, lab, "list", 0.716, A.DEEP, le, shadow=0.0)
+        A.centred(macro, lab, "list", 0.660, A.DEEP, le, shadow=0.0)
     # full cut, not a ghost: even 6% of the outgoing frame showed the titles
     # through the macro plate and read as a double exposure
     return macro if e >= 0.995 else Image.blend(img, macro, float(min(1.0, e)))

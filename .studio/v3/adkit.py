@@ -189,8 +189,14 @@ def dust(img, p, count=40, strength=0.5, seed=7):
         a = int(255 * rng.uniform(0.35, 0.9) * strength)
         d.ellipse([x * W - r * W, y * H - r * W, x * W + r * W, y * H + r * W], fill=a)
     lay = lay.filter(ImageFilter.GaussianBlur(1.2 * SCALE))
-    img.paste(Image.new("RGB", img.size, (255, 246, 220)), (0, 0), lay)
-    return img
+    # ON A BRIGHT STAGE A PASTE DARKENS: pasting a warm cream over a near-white
+    # floor left visible darker specks that read as dirt (or worse, as dust on
+    # the lens). Screen-blend instead, so motes only ever add light.
+    colr = np.array((255, 246, 220), np.float32)
+    base = np.asarray(img, np.float32)
+    a = (np.asarray(lay, np.float32) / 255.0)[..., None]
+    out = base + (colr - base) * a
+    return Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "RGB")
 
 
 _VIG = {}
