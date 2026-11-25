@@ -68,36 +68,23 @@ def s02():
     bg = stage(w, h)
     txt(bg, "প্রিমিয়াম", "sans-bold", 32, (76, 132), CARAMEL)
     txt(bg, "OLEVS", "serif-bold", 124, (70, 176), NAVY)
-    txt(bg, "বাটারফ্লাই লক · ওয়াটারপ্রুফ", "sans-semi", 38, (76, 338), NAVY_SOFT)
-    sprite(bg, "w_olevs_a", w / 2 + 230, 880, 780)
-    # lock macro card (square cover-crop of the clasp head)
-    lk = SPR["w_lock"]
-    side = 320
-    sc = max(side / lk.width, side / lk.height)
-    lk2 = lk.resize((int(lk.width * sc) + 1, int(lk.height * sc) + 1), Image.LANCZOS)
-    ox = int((lk2.width - side) * 0.42); oy = int((lk2.height - side) * 0.10)
-    lk2 = lk2.crop((ox, oy, ox + side, oy + side))
-    card = Image.new("RGB", (side, side), CREAM_HI)
-    card.paste(lk2, (0, 0), lk2)
-    m = Image.new("L", card.size, 0)
-    ImageDraw.Draw(m).rounded_rectangle([0, 0, side - 1, side - 1], radius=16, fill=255)
-    cx, cy = 66, 1150
-    sh = Image.new("L", bg.size, 0)
-    ImageDraw.Draw(sh).rounded_rectangle([cx + 5, cy + 12, cx + side - 5, cy + side],
-                                        radius=16, fill=105)
-    sh = sh.filter(ImageFilter.GaussianBlur(14))
-    bg.paste(Image.new("RGB", bg.size, (150, 128, 96)), (0, 0), sh)
-    bg.paste(card, (cx, cy), m)
-    txt(bg, "OLEVS", "sans-bold", 26, (cx + side / 2, cy + side + 30), CARAMEL, align="center")
-    txt(bg, "বাটারফ্লাই লক", "sans-semi", 34, (cx + side / 2, cy + side + 72), NAVY, align="center")
-    txt(bg, "ডাবল-লকিং ক্ল্যাস্প", "sans", 26, (cx + side / 2, cy + side + 116), NAVY_SOFT, align="center")
+    txt(bg, "প্রিমিয়াম ফিনিশ · ওয়াটারপ্রুফ", "sans-semi", 38, (76, 338), NAVY_SOFT)
+    sprite(bg, "w_olevs_a", w / 2 + 215, 856, 800)
+    # two designs, side by side (replaces the old clasp macro)
+    lbl_y = 1150
+    txt(bg, "দুই ডিজাইন", "sans-bold", 34, (86, lbl_y), CARAMEL)
+    txt(bg, "যেটা ভালো লাগে সেটাই", "sans", 28, (86, lbl_y + 52), NAVY_SOFT)
+    for j, (k, tag) in enumerate((("w_olevs_a", "A"), ("w_olevs_b", "B"))):
+        cx2 = 300 + j * 300
+        sprite(bg, k, cx2, 1480, 370, shadow=0.40)
+        txt(bg, tag, "serif-bold", 42, (cx2, 1660), NAVY, align="center")
     # feature strip
-    hairline(bg, 90, w - 90, 1620, CARAMEL, 2, 110)
+    hairline(bg, 90, w - 90, 1748, CARAMEL, 2, 110)
     feats = ["ওয়াটারপ্রুফ", "কালার গ্যারান্টি", "প্রিমিয়াম ফিনিশ"]
     for i, f in enumerate(feats):
         cx2 = 200 + i * 340
-        dot(bg, cx2 - 16, 1700, 5, CARAMEL, 200)
-        txt(bg, f, "sans-semi", 30, (cx2, 1676), NAVY, align="center")
+        dot(bg, cx2 - 16, 1822, 5, CARAMEL, 200)
+        txt(bg, f, "sans-semi", 30, (cx2, 1798), NAVY, align="center")
     return bg
 
 
