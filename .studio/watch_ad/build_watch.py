@@ -155,10 +155,9 @@ def mid(mask, y):
 
 
 def footer(bg, alpha=1.0):
-    """Brand strip that seats every frame — keeps the bottom from going dead."""
-    m, _ = pl("রূপসী বাংলা", "sans-semi", 24)
-    ctr(bg, m, 1806, NAVY_SOFT, 0.85 * alpha)
-    hl(bg, 480, 600, 1786, CARAMEL, 1.5, int(90 * alpha))
+    """No brand line — the shop name is not to be printed on the artwork.
+    A single hairline just seats the frame."""
+    hl(bg, 430, 650, 1800, CARAMEL, 1.5, int(80 * alpha))
 
 
 def kicker(bg, s, y=150, col=CARAMEL, px=34):
@@ -174,7 +173,12 @@ def scene_A(p):
     rise(bg, m1, ((540 - m1.width / S / 2), 116), CARAMEL, p, dist=20, t0=0.02, t1=0.26)
     m2, _ = pl("তিনটা ঘড়ি · একসাথে", "serif-bold", 92)
     rise(bg, m2, ((540 - m2.width / S / 2), 162), NAVY, p, dist=28, t0=0.10, t1=0.38)
-    cam(bg, "w_olevs_a", 540, 1190, 980, p, push=0.045)
+    for i, k in enumerate(("w_olevs_a", "w_spider_big", "w_sport")):
+        e = ease_out((p - 0.06 - i * 0.06) / 0.34, 2.6)
+        if e <= 0.002:
+            continue
+        sprite(bg, k, 232 + i * 308, 1150 - (1 - e) * 56,
+               700 * (0.93 + 0.07 * e), shadow=0.42, alpha=e)
     e = ease_out((p - 0.32) / 0.22)
     if e > 0.002:
         m3, _ = pl("মাত্র ৳১,০৯৯", "serif-bold", 128)
@@ -218,7 +222,7 @@ def scene_B(p):
         for i, f in enumerate(["ওয়াটারপ্রুফ", "কালার গ্যারান্টি", "প্রিমিয়াম ফিনিশ"]):
             m, _ = pl(f, "sans-semi", 23)
             at(bg, m, 215 + i * 325 - m.width / S / 2, 1566, NAVY, e3)
-        ch(bg, "OLEVS সহ ৩টা ঘড়ি — ৳১,০৯৯", "sans-semi", 27, (540, 1640),
+        ch(bg, "কম্বোর দাম ৳১,০৯৯", "sans-semi", 27, (540, 1640),
            fill=CARAMEL, fg=WHITE, pad_x=30, pad_y=16, align="center", alpha=e3)
     footer(bg)
     return frame_fade(bg, p, SCENES[1]["dur"])
