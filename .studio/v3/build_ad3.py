@@ -236,10 +236,12 @@ def draw_s1(img, s, p, t):
     """
     e = K.ss(0.0, 0.70, t)
     rise = 0.085 * (1 - K.back(min(1.0, t * 1.9)))
+    # no mirrored floor reflection here: the price card sits right under the
+    # products and the reflection bled through as a ghost of the flask
     product(img, "kettle", 0.320, 0.600 + rise, h=0.300,
-            alpha=K.ss(0.0, 0.45, t), lift=-0.004 * np.sin(p * 5))
+            alpha=K.ss(0.0, 0.45, t), lift=-0.004 * np.sin(p * 5), reflect=0.0)
     product(img, "flask", 0.680, 0.600 + rise, h=0.325,
-            alpha=K.ss(0.10, 0.55, t), lift=-0.004 * np.sin(p * 5 + 1))
+            alpha=K.ss(0.10, 0.55, t), lift=-0.004 * np.sin(p * 5 + 1), reflect=0.0)
     steam(img, 0.320, 0.470, p, count=4, strength=0.28 * e)
 
     chip(img, s["chip"], 0.068, K.ss(0.15, 0.55, t))
