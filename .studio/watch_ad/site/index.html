@@ -107,6 +107,14 @@
   .slot-total .big{font-family:"Noto Serif Bengali",serif; font-size:1.5rem; color:var(--caramel)}
   .slot-total .small{font-size:.9rem; color:var(--navy-soft)}
 
+  .combo-live{display:grid; grid-template-columns:.85fr 1.15fr; gap:clamp(1.2rem,3vw,2.4rem);
+    align-items:center; margin:1.8rem 0 .4rem; padding:1.2rem; border:1px solid var(--line);
+    border-radius:var(--radius); background:var(--cream-hi)}
+  .combo-live img{width:100%; height:auto; display:block; border-radius:14px}
+  .combo-live .cap{font-size:.92rem; color:var(--navy-soft)}
+  .combo-live .name{font-family:"Noto Serif Bengali",serif; font-size:1.3rem; font-weight:700; margin:.2rem 0 .5rem}
+  .combo-live .was{color:var(--navy-soft); font-size:.9rem}
+
   /* ---------------- product cards ---------------- */
   .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem; margin-top:2.2rem}
   .card{
@@ -123,6 +131,20 @@
   .tags{display:flex; flex-wrap:wrap; gap:.4rem; margin-top:auto; padding-top:.6rem}
   .tag{font-size:.78rem; padding:.22rem .6rem; border-radius:999px;
     background:var(--sand); color:#6b5730}
+
+  /* ---------------- combo gallery ---------------- */
+  .combos{background:var(--cream)}
+  .combo-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1.4rem; margin-top:2.2rem}
+  .combo-card{position:relative; background:var(--cream-hi); border:1px solid var(--line);
+    border-radius:var(--radius); overflow:hidden; margin:0;
+    transition:transform .18s ease, box-shadow .18s ease}
+  .combo-card:hover{transform:translateY(-4px); box-shadow:var(--shadow)}
+  .combo-card img{width:100%; height:auto; display:block}
+  .combo-card figcaption{display:flex; align-items:center; justify-content:space-between; gap:.8rem;
+    padding:.85rem 1.1rem 1rem; border-top:1px solid var(--line)}
+  .combo-card figcaption b{font-family:"Noto Serif Bengali",serif; font-size:1.05rem; font-weight:700}
+  .combo-card .tag{background:var(--sand); color:#6b5730}
+  .combo-card.is-active{outline:3px solid var(--caramel); outline-offset:-3px}
 
   /* ---------------- price / offer ---------------- */
   .offer{background:var(--navy); color:#f7f0e2}
@@ -169,12 +191,15 @@
     .hero-grid{grid-template-columns:1fr}
     .hero-media{order:-1}
     .cards{grid-template-columns:1fr 1fr}
+    .combo-grid{grid-template-columns:1fr 1fr}
+    .combo-live{grid-template-columns:1fr}
     .offer .wrap{grid-template-columns:1fr}
     .trust ul{grid-template-columns:1fr 1fr}
   }
   @media (max-width:620px){
     body{font-size:16px}
     .cards{grid-template-columns:1fr}
+    .combo-grid{grid-template-columns:1fr}
     .slot{grid-template-columns:1fr}
     .slot .picks{justify-content:flex-start; flex-wrap:wrap}
     .pick{width:calc(33% - .6rem); min-width:96px}
@@ -206,6 +231,7 @@
       <div class="hero-cta">
         <a class="btn btn-primary" href="#order">এখনই অর্ডার করুন</a>
         <a class="btn btn-ghost" href="#combo">কম্বো যেভাবে</a>
+        <a class="btn btn-ghost" href="#combos">৪টা কম্বো</a>
       </div>
     </div>
     <div class="hero-media">
@@ -241,12 +267,10 @@
           <div class="hint">প্রিমিয়াম ফিনিশ · ওয়াটারপ্রুফ · কালার গ্যারান্টি</div>
         </div>
         <div class="picks" data-slot="olevs">
-          <button type="button" class="pick is-picked" data-value="OLEVS A — সিলভার-গোল্ড">
-            <img src="img/olevs-a.jpg" alt="OLEVS ডিজাইন A — সিলভার ডায়াল, গোল্ড বেজেল" width="720" height="980">
+          <img src="img/pick-olevs-a.jpg" alt="OLEVS ডিজাইন A — সিলভার ডায়াল, গোল্ড বেজেল" width="360" height="520">
             <span>A · সিলভার-গোল্ড</span>
           </button>
-          <button type="button" class="pick" data-value="OLEVS B — অল-ব্ল্যাক">
-            <img src="img/olevs-b.jpg" alt="OLEVS ডিজাইন B — অল-ব্ল্যাক" width="720" height="980">
+          <img src="img/pick-olevs-b.jpg" alt="OLEVS ডিজাইন B — অল-ব্ল্যাক" width="360" height="520">
             <span>B · অল-ব্ল্যাক</span>
           </button>
         </div>
@@ -258,12 +282,10 @@
           <div class="hint">NICKIES স্পাইডার ডায়াল অথবা ক্রোনোগ্রাফ</div>
         </div>
         <div class="picks" data-slot="strap">
-          <button type="button" class="pick is-picked" data-value="NICKIES স্পাইডার ডায়াল">
-            <img src="img/nickies.jpg" alt="NICKIES — কালো ডায়াল, সাদা স্পাইডার" width="720" height="980">
+          <img src="img/pick-nickies.jpg" alt="NICKIES — কালো ডায়াল, সাদা স্পাইডার" width="360" height="520">
             <span>NICKIES</span>
           </button>
-          <button type="button" class="pick" data-value="ক্রোনোগ্রাফ">
-            <img src="img/chrono.jpg" alt="ক্রোনোগ্রাফ — গানমেটাল কেস, কালো চামড়ার স্ট্র্যাপ" width="720" height="980">
+          <img src="img/pick-chrono.jpg" alt="ক্রোনোগ্রাফ — গানমেটাল কেস, কালো চামড়ার স্ট্র্যাপ" width="360" height="520">
             <span>ক্রোনোগ্রাফ</span>
           </button>
         </div>
@@ -275,13 +297,21 @@
           <div class="hint">অষ্টভুজ কেস · রাবার স্ট্র্যাপ · টেকসই</div>
         </div>
         <div class="picks" data-slot="sport">
-          <button type="button" class="pick is-picked" data-value="স্পোর্টস ঘড়ি">
-            <img src="img/sport.jpg" alt="স্পোর্টস ঘড়ি — অষ্টভুজ কেস, রাবার স্ট্র্যাপ" width="720" height="980">
+          <img src="img/pick-sport.jpg" alt="স্পোর্টস ঘড়ি — অষ্টভুজ কেস, রাবার স্ট্র্যাপ" width="360" height="520">
             <span>স্পোর্টস</span>
           </button>
         </div>
       </div>
     </div>
+
+    <figure class="combo-live" id="combo-live">
+      <img id="combo-live-img" src="img/plates/combo-1.jpg" alt="নির্বাচিত কম্বো: OLEVS A + NICKIES + স্পোর্টস" width="600" height="750">
+      <figcaption>
+        <div class="cap">আপনার বাছাই</div>
+        <div class="name" id="combo-live-name">OLEVS A + NICKIES + স্পোর্টস</div>
+        <div class="cap">তিনটা ঘড়ি একসাথে — একদামে। নিচে সব চারটা কম্বোর ছবি দেখে নিতে পারেন।</div>
+      </figcaption>
+    </figure>
 
     <div class="slot-total">
       <div>
@@ -303,7 +333,7 @@
 
     <div class="cards">
       <article class="card">
-        <figure><img src="img/olevs-a.jpg" alt="OLEVS A" width="720" height="980" loading="lazy"></figure>
+        <figure><img src="img/card-olevs-a.jpg" alt="OLEVS A" width="360" height="520" loading="lazy"></figure>
         <div class="body">
           <h3 class="brand">OLEVS — A</h3>
           <p class="desc">সিলভার ডায়াল, গোল্ড বেজেল, টু-টোন গোল্ড-স্টিল ব্রেসলেট। তিন সাব-ডায়াল।</p>
@@ -311,7 +341,7 @@
         </div>
       </article>
       <article class="card">
-        <figure><img src="img/olevs-b.jpg" alt="OLEVS B" width="720" height="980" loading="lazy"></figure>
+        <figure><img src="img/card-olevs-b.jpg" alt="OLEVS B" width="360" height="520" loading="lazy"></figure>
         <div class="body">
           <h3 class="brand">OLEVS — B</h3>
           <p class="desc">অল-ব্ল্যাক আয়ন-প্লেটেড কেস ও ব্রেসলেট, কালো ডায়াল, গোল্ড ইনডেক্স।</p>
@@ -319,7 +349,7 @@
         </div>
       </article>
       <article class="card">
-        <figure><img src="img/nickies.jpg" alt="NICKIES" width="720" height="980" loading="lazy"></figure>
+        <figure><img src="img/card-nickies.jpg" alt="NICKIES" width="360" height="520" loading="lazy"></figure>
         <div class="body">
           <h3 class="brand">NICKIES</h3>
           <p class="desc">সিলভার কেস, কালো ডায়ালে সাদা স্পাইডার গ্রাফিক, কালো ক্রোکو-এমবসড চামড়ার স্ট্র্যাপ।</p>
@@ -327,7 +357,7 @@
         </div>
       </article>
       <article class="card">
-        <figure><img src="img/chrono.jpg" alt="ক্রোনোগ্রাফ" width="720" height="980" loading="lazy"></figure>
+        <figure><img src="img/card-chrono.jpg" alt="ক্রোনোগ্রাফ" width="360" height="520" loading="lazy"></figure>
         <div class="body">
           <h3 class="brand">ক্রোনোগ্রাফ</h3>
           <p class="desc">গানমেটাল কেস, তিন সাব-ডায়াল (২৪ ঘণ্টাসহ), রেড অ্যাকসেন্ট, কালো চামড়ার স্ট্র্যাপ।</p>
@@ -335,7 +365,7 @@
         </div>
       </article>
       <article class="card">
-        <figure><img src="img/sport.jpg" alt="স্পোর্টস ঘড়ি" width="720" height="980" loading="lazy"></figure>
+        <figure><img src="img/card-sport.jpg" alt="স্পোর্টস ঘড়ি" width="360" height="520" loading="lazy"></figure>
         <div class="body">
           <h3 class="brand">স্পোর্টস ঘড়ি</h3>
           <p class="desc">ম্যাট ব্ল্যাক অষ্টভুজ বেজেল, আট স্ক্রু, গ্রিড ডায়াল, রাবার স্ট্র্যাপ — রোজকার জন্য।</p>
@@ -349,6 +379,35 @@
           <a class="btn btn-primary" href="#order" style="align-self:flex-start">অর্ডার করুন</a>
         </div>
       </article>
+    </div>
+  </div>
+</section>
+
+<section class="combos" id="combos">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">চারটা কম্বো</p>
+      <h2>যে কম্বোটা পছন্দ, সেটাতেই ক্লিক করুন</h2>
+      <p>প্রতিটা স্লটে একটা করে — মোট চারটা কম্বো হয়। ছবিতে ক্লিক করলে উপরের স্লটে সেই বাছাই বসে যাবে।</p>
+    </div>
+
+    <div class="combo-grid">
+      <figure class="combo-card" data-olevs="A" data-strap="NICKIES" role="button" tabindex="0">
+        <img src="img/plates/combo-1.jpg" alt="কম্বো ১ — OLEVS A + NICKIES + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS A + NICKIES + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
+      <figure class="combo-card" data-olevs="A" data-strap="ক্রোনোগ্রাফ" role="button" tabindex="0">
+        <img src="img/plates/combo-2.jpg" alt="কম্বো ২ — OLEVS A + ক্রোনোগ্রাফ + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS A + ক্রোনোগ্রাফ + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
+      <figure class="combo-card" data-olevs="B" data-strap="NICKIES" role="button" tabindex="0">
+        <img src="img/plates/combo-3.jpg" alt="কম্বো ৩ — OLEVS B + NICKIES + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS B + NICKIES + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
+      <figure class="combo-card" data-olevs="B" data-strap="ক্রোনোগ্রাফ" role="button" tabindex="0">
+        <img src="img/plates/combo-4.jpg" alt="কম্বো ৪ — OLEVS B + ক্রোনোগ্রাফ + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS B + ক্রোনোগ্রাফ + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
     </div>
   </div>
 </section>
@@ -449,6 +508,15 @@
   var summary = document.getElementById('picked-summary');
   var olevsSel = document.getElementById('olevs');
   var strapSel = document.getElementById('strap');
+  var liveImg = document.getElementById('combo-live-img');
+  var liveName = document.getElementById('combo-live-name');
+  var comboCards = document.querySelectorAll('.combo-card');
+  var COMBOS = {
+    'A|NICKIES':    {img:'img/plates/combo-1.jpg', name:'OLEVS A + NICKIES + স্পোর্টস'},
+    'A|ক্রোনোগ্রাফ': {img:'img/plates/combo-2.jpg', name:'OLEVS A + ক্রোনোগ্রাফ + স্পোর্টস'},
+    'B|NICKIES':    {img:'img/plates/combo-3.jpg', name:'OLEVS B + NICKIES + স্পোর্টস'},
+    'B|ক্রোনোগ্রাফ': {img:'img/plates/combo-4.jpg', name:'OLEVS B + ক্রোনোগ্রাফ + স্পোর্টস'}
+  };
 
   function sync(){
     var chosen = {};
@@ -459,7 +527,41 @@
     summary.textContent = 'নির্বাচিত: ' + (chosen.olevs || '—') + ' · ' + (chosen.strap || '—') + ' · স্পোর্টস';
     if (chosen.olevs) olevsSel.value = chosen.olevs.indexOf('B') > -1 ? 'B — অল-ব্ল্যাক' : 'A — সিলভার-গোল্ড';
     if (chosen.strap) strapSel.value = chosen.strap.indexOf('NICKIES') > -1 ? 'NICKIES স্পাইডার ডায়াল' : 'ক্রোনোগ্রাফ';
+
+    var oKey = chosen.olevs && chosen.olevs.indexOf('B') > -1 ? 'B' : 'A';
+    var sKey = chosen.strap && chosen.strap.indexOf('NICKIES') > -1 ? 'NICKIES' : 'ক্রোনোগ্রাফ';
+    var hit = COMBOS[oKey + '|' + sKey];
+    if (hit){
+      liveImg.src = hit.img;
+      liveImg.alt = 'নির্বাচিত কম্বো: ' + hit.name;
+      liveName.textContent = hit.name;
+    }
+    comboCards.forEach(function(c){
+      c.classList.toggle('is-active', c.dataset.olevs === oKey && c.dataset.strap === sKey);
+    });
   }
+
+  function applyCombo(olevs, strap){
+    document.querySelectorAll('.picks[data-slot="olevs"] .pick').forEach(function(b){
+      var isB = b.dataset.value.indexOf('B') > -1;
+      var wantB = olevs === 'B';
+      b.classList.toggle('is-picked', isB === wantB);
+    });
+    document.querySelectorAll('.picks[data-slot="strap"] .pick').forEach(function(b){
+      var isN = b.dataset.value.indexOf('NICKIES') > -1;
+      var wantN = strap === 'NICKIES';
+      b.classList.toggle('is-picked', isN === wantN);
+    });
+    sync();
+  }
+
+  comboCards.forEach(function(c){
+    var go = function(){ applyCombo(c.dataset.olevs, c.dataset.strap); };
+    c.addEventListener('click', go);
+    c.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); }
+    });
+  });
 
   picks.forEach(function(p){
     p.addEventListener('click', function(){

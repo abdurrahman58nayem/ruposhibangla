@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>৩টা ঘড়ি একসাথে ৳১,০৯৯ — কম্বো বেছে নিন</title>
+<meta name="description" content="OLEVS + NICKIES/ক্রোনোগ্রাফ + স্পোর্টস — তিনটা ঘড়ি একসাথে মাত্র ৳১,০৯৯। সারা বাংলাদেশে ডেলিভারি, ক্যাশ অন ডেলিভারি।">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233a; --navy-soft:#3a4a64; --caramel:#b0803c; --caramel-lt:#d6ac6a;
+    --cream:#f7f2e8; --cream-hi:#fdfaf4; --sand:#e9dfcb; --line:#e3d8c2;
+    --radius:20px; --shadow:0 18px 40px -22px rgba(70,52,20,.45);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--cream); color:var(--navy);
+    font-family:"Hind Siliguri",system-ui,sans-serif; font-size:17px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:"Noto Serif Bengali",serif; font-weight:700; line-height:1.25; margin:0}
+  p{margin:0}
+  a{color:inherit}
+  .wrap{width:min(1120px,92vw); margin-inline:auto}
+  .eyebrow{color:var(--caramel); font-weight:700; letter-spacing:.02em; font-size:.95rem}
+  .num{font-family:"Noto Serif Bengali",serif}
+
+  /* ---------------- top bar ---------------- */
+  .topbar{
+    background:var(--navy); color:#f6efe2; font-size:.9rem; text-align:center;
+    padding:.55rem 1rem; letter-spacing:.01em;
+  }
+  .topbar b{color:var(--caramel-lt)}
+
+  /* ---------------- hero ---------------- */
+  header.hero{padding:clamp(2.4rem,6vw,4.6rem) 0 0; position:relative; overflow:hidden}
+  .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(1.4rem,4vw,3.4rem); align-items:center}
+  .hero h1{font-size:clamp(2rem,4.6vw,3.5rem); letter-spacing:-.01em}
+  .hero h1 em{font-style:normal; color:var(--caramel)}
+  .hero .lede{margin-top:1rem; color:var(--navy-soft); font-size:1.08rem; max-width:34ch}
+  .price{
+    display:inline-flex; align-items:baseline; gap:.55rem; margin-top:1.5rem;
+    padding:.5rem 1.25rem .65rem; border-radius:999px;
+    background:var(--caramel); color:#fff; box-shadow:var(--shadow);
+  }
+  .price .amount{font-family:"Noto Serif Bengali",serif; font-size:clamp(1.7rem,3.4vw,2.3rem); line-height:1.1}
+  .price .was{font-size:.95rem; opacity:.85; text-decoration:line-through}
+  .hero .note{margin-top:.9rem; font-size:.92rem; color:var(--navy-soft)}
+  .hero-cta{display:flex; flex-wrap:wrap; gap:.7rem; margin-top:1.6rem}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+    border:0; border-radius:999px; padding:.85rem 1.6rem; font:inherit; font-weight:700;
+    cursor:pointer; text-decoration:none; transition:transform .16s ease, box-shadow .16s ease, background .16s;
+  }
+  .btn-primary{background:var(--navy); color:#fff; box-shadow:var(--shadow)}
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 22px 44px -22px rgba(22,35,58,.6)}
+  .btn-ghost{background:transparent; color:var(--navy); border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--caramel); color:var(--caramel)}
+  .hero-media{position:relative}
+  .hero-media img{width:100%; height:auto; display:block; border-radius:var(--radius);
+    mix-blend-mode:multiply}
+
+  /* ---------------- trust strip ---------------- */
+  .trust{border-block:1px solid var(--line); margin-top:clamp(2.2rem,5vw,3.6rem);
+    background:var(--cream-hi)}
+  .trust ul{display:grid; grid-template-columns:repeat(4,1fr); gap:1rem;
+    list-style:none; margin:0; padding:1.1rem 0; font-size:.92rem; color:var(--navy-soft)}
+  .trust li{display:flex; align-items:center; gap:.5rem}
+  .trust svg{flex:none; color:var(--caramel)}
+
+  /* ---------------- section shells ---------------- */
+  section{padding:clamp(3rem,7vw,5.2rem) 0}
+  .sec-head{max-width:52ch}
+  .sec-head h2{font-size:clamp(1.6rem,3.4vw,2.4rem); margin-top:.4rem}
+  .sec-head p{margin-top:.7rem; color:var(--navy-soft)}
+
+  /* ---------------- how the combo works ---------------- */
+  .combo{background:var(--cream-hi); border-block:1px solid var(--line)}
+  .slots{margin-top:2.2rem; border-top:1px solid var(--line)}
+  .slot{
+    display:grid; grid-template-columns:1.15fr 1fr; gap:1rem; align-items:center;
+    padding:1.15rem 0; border-bottom:1px solid var(--line);
+  }
+  .slot .label{font-weight:700; font-size:1.05rem}
+  .slot .hint{color:var(--navy-soft); font-size:.9rem; margin-top:.15rem}
+  .slot .picks{display:flex; gap:.8rem; justify-content:flex-end}
+  .pick{
+    position:relative; width:118px; padding:.5rem .5rem 0; border-radius:14px;
+    font:inherit; color:inherit; text-align:center; cursor:pointer;
+    background:var(--cream); border:1px solid var(--line);
+    transition:border-color .16s, transform .16s, background .16s;
+  }
+  .pick img{width:100%; height:auto; display:block; mix-blend-mode:multiply}
+  .pick span{display:block; text-align:center; font-size:.78rem; color:var(--navy-soft); padding:.15rem 0 .4rem}
+  .pick.is-picked{border-color:var(--caramel); background:#fff; transform:translateY(-3px);
+    box-shadow:0 14px 26px -18px rgba(70,52,20,.7)}
+  .pick.is-picked::after{
+    content:"✓"; position:absolute; top:-9px; right:-9px; width:24px; height:24px;
+    border-radius:50%; background:var(--caramel); color:#fff; font-size:.8rem;
+    display:grid; place-items:center; font-weight:700;
+  }
+  .slot-total{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;
+    gap:1rem; padding:1.5rem 0 .2rem}
+  .slot-total .big{font-family:"Noto Serif Bengali",serif; font-size:1.5rem; color:var(--caramel)}
+  .slot-total .small{font-size:.9rem; color:var(--navy-soft)}
+
+  .combo-live{display:grid; grid-template-columns:.85fr 1.15fr; gap:clamp(1.2rem,3vw,2.4rem);
+    align-items:center; margin:1.8rem 0 .4rem; padding:1.2rem; border:1px solid var(--line);
+    border-radius:var(--radius); background:var(--cream-hi)}
+  .combo-live img{width:100%; height:auto; display:block; border-radius:14px}
+  .combo-live .cap{font-size:.92rem; color:var(--navy-soft)}
+  .combo-live .name{font-family:"Noto Serif Bengali",serif; font-size:1.3rem; font-weight:700; margin:.2rem 0 .5rem}
+  .combo-live .was{color:var(--navy-soft); font-size:.9rem}
+
+  /* ---------------- product cards ---------------- */
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem; margin-top:2.2rem}
+  .card{
+    background:var(--cream-hi); border:1px solid var(--line); border-radius:var(--radius);
+    overflow:hidden; display:flex; flex-direction:column;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-4px); box-shadow:var(--shadow)}
+  .card figure{margin:0; background:#fbf7f0}
+  .card figure img{width:100%; height:auto; display:block; mix-blend-mode:multiply}
+  .card .body{padding:1.2rem 1.25rem 1.5rem; display:flex; flex-direction:column; gap:.6rem; flex:1}
+  .card .brand{font-family:"Noto Serif Bengali",serif; font-size:1.35rem}
+  .card .desc{font-size:.93rem; color:var(--navy-soft)}
+  .tags{display:flex; flex-wrap:wrap; gap:.4rem; margin-top:auto; padding-top:.6rem}
+  .tag{font-size:.78rem; padding:.22rem .6rem; border-radius:999px;
+    background:var(--sand); color:#6b5730}
+
+  /* ---------------- combo gallery ---------------- */
+  .combos{background:var(--cream)}
+  .combo-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1.4rem; margin-top:2.2rem}
+  .combo-card{position:relative; background:var(--cream-hi); border:1px solid var(--line);
+    border-radius:var(--radius); overflow:hidden; margin:0;
+    transition:transform .18s ease, box-shadow .18s ease}
+  .combo-card:hover{transform:translateY(-4px); box-shadow:var(--shadow)}
+  .combo-card img{width:100%; height:auto; display:block}
+  .combo-card figcaption{display:flex; align-items:center; justify-content:space-between; gap:.8rem;
+    padding:.85rem 1.1rem 1rem; border-top:1px solid var(--line)}
+  .combo-card figcaption b{font-family:"Noto Serif Bengali",serif; font-size:1.05rem; font-weight:700}
+  .combo-card .tag{background:var(--sand); color:#6b5730}
+  .combo-card.is-active{outline:3px solid var(--caramel); outline-offset:-3px}
+
+  /* ---------------- price / offer ---------------- */
+  .offer{background:var(--navy); color:#f7f0e2}
+  .offer .wrap{display:grid; grid-template-columns:1.1fr .9fr; gap:clamp(1.6rem,4vw,3rem); align-items:center}
+  .offer h2{font-size:clamp(1.7rem,3.6vw,2.6rem); color:#fff}
+  .offer p{margin-top:.9rem; color:#cfd6e2}
+  .offer .price{background:var(--caramel); margin-top:1.6rem}
+  .checklist{list-style:none; margin:1.2rem 0 0; padding:0; display:grid; gap:.7rem; font-size:.98rem}
+  .checklist li{display:flex; gap:.65rem; align-items:flex-start; color:#e7ecf4}
+  .checklist svg{flex:none; margin-top:.22rem; color:var(--caramel-lt)}
+  .offer-visual{background:#fdfaf4; border-radius:var(--radius); padding:1rem; box-shadow:var(--shadow)}
+  .offer-visual img{width:100%; display:block; mix-blend-mode:multiply}
+
+  /* ---------------- faq ---------------- */
+  .faq details{border-bottom:1px solid var(--line); padding:1rem 0}
+  .faq summary{cursor:pointer; font-weight:600; list-style:none; display:flex; justify-content:space-between; gap:1rem}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+"; color:var(--caramel); font-weight:700; font-size:1.2rem; line-height:1}
+  .faq details[open] summary::after{content:"–"}
+  .faq p{margin-top:.7rem; color:var(--navy-soft); font-size:.95rem}
+
+  /* ---------------- order form ---------------- */
+  .order{background:var(--cream-hi); border-top:1px solid var(--line)}
+  form{display:grid; gap:.9rem; margin-top:1.8rem; max-width:520px}
+  label{font-size:.9rem; font-weight:600; color:var(--navy)}
+  input,select,textarea{
+    width:100%; font:inherit; padding:.8rem .95rem; border-radius:12px;
+    border:1.5px solid var(--line); background:#fff; color:var(--navy);
+  }
+  input:focus,select:focus,textarea:focus{outline:none; border-color:var(--caramel);
+    box-shadow:0 0 0 4px rgba(176,128,60,.14)}
+  .form-row{display:grid; grid-template-columns:1fr 1fr; gap:.9rem}
+  .form-note{font-size:.84rem; color:var(--navy-soft)}
+  .ok{display:none; margin-top:1rem; padding:.9rem 1.1rem; border-radius:12px;
+    background:#eaf5ea; color:#255c2b; font-size:.95rem}
+  .ok.show{display:block}
+
+  footer{padding:2.4rem 0 3rem; font-size:.88rem; color:var(--navy-soft)}
+  footer .wrap{display:flex; flex-wrap:wrap; justify-content:space-between; gap:1rem;
+    align-items:center; border-top:1px solid var(--line); padding-top:1.6rem}
+
+  /* ---------------- responsive ---------------- */
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr}
+    .hero-media{order:-1}
+    .cards{grid-template-columns:1fr 1fr}
+    .combo-grid{grid-template-columns:1fr 1fr}
+    .combo-live{grid-template-columns:1fr}
+    .offer .wrap{grid-template-columns:1fr}
+    .trust ul{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:620px){
+    body{font-size:16px}
+    .cards{grid-template-columns:1fr}
+    .combo-grid{grid-template-columns:1fr}
+    .slot{grid-template-columns:1fr}
+    .slot .picks{justify-content:flex-start; flex-wrap:wrap}
+    .pick{width:calc(33% - .6rem); min-width:96px}
+    .form-row{grid-template-columns:1fr}
+    .price .amount{font-size:1.6rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important; scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">স্পেশাল অফার · <b>৩টা ঘড়ি ৳১,০৯৯</b> · সারা বাংলাদেশে ক্যাশ অন ডেলিভারি</div>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">স্পেশাল অফার</p>
+      <h1>তিনটা ঘড়ি<br><em>একসাথে ৳১,০৯৯</em></h1>
+      <p class="lede">প্রিমিয়াম OLEVS, স্পাইডার-ডায়াল NICKIES কিংবা ক্রোনোগ্রাফ, আর অষ্টভুজ স্পোর্টস — একটাই কম্বোতে তিনটা ঘড়ি।</p>
+
+      <div class="price">
+        <span class="amount">৳১,০৯৯</span>
+        <span class="was">৳১,৮০০</span>
+      </div>
+      <p class="note">মোট ৩টা ঘড়ি · ডেলিভারি চার্জ আলাদা · ক্যাশ অন ডেলিভারি</p>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#order">এখনই অর্ডার করুন</a>
+        <a class="btn btn-ghost" href="#combo">কম্বো যেভাবে</a>
+        <a class="btn btn-ghost" href="#combos">৪টা কম্বো</a>
+      </div>
+    </div>
+    <div class="hero-media">
+      <img src="img/hero.jpg" width="1800" height="1200"
+           alt="তিনটা ঘড়ি একসাথে — OLEVS, NICKIES ও স্পোর্টস ঘড়ি" fetchpriority="high">
+    </div>
+  </div>
+
+  <div class="trust">
+    <div class="wrap">
+      <ul>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> ক্যাশ অন ডেলিভারি</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> সারা বাংলাদেশে ডেলিভারি</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> OLEVS · ওয়াটারপ্রুফ</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> কালার গ্যারান্টি</li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<section class="combo" id="combo">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">কম্বো যেভাবে</p>
+      <h2>৩টা স্লট — প্রতিটায় একটা বেছে নিন</h2>
+      <p>নিচের তিনটে সারি = কম্বোর তিনটে ঘড়ি। প্রথম দুই সারিতে দুইটা করে অপশন, যেটা ভালো লাগে সেটা বেছে নিন।</p>
+    </div>
+
+    <div class="slots">
+      <div class="slot">
+        <div>
+          <div class="label">১ · OLEVS <span style="color:var(--caramel)">— ২ ডিজাইন থেকে ১টি</span></div>
+          <div class="hint">প্রিমিয়াম ফিনিশ · ওয়াটারপ্রুফ · কালার গ্যারান্টি</div>
+        </div>
+        <div class="picks" data-slot="olevs">
+          <img src="img/pick-olevs-a.jpg" alt="OLEVS ডিজাইন A — সিলভার ডায়াল, গোল্ড বেজেল" width="360" height="520">
+            <span>A · সিলভার-গোল্ড</span>
+          </button>
+          <img src="img/pick-olevs-b.jpg" alt="OLEVS ডিজাইন B — অল-ব্ল্যাক" width="360" height="520">
+            <span>B · অল-ব্ল্যাক</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="slot">
+        <div>
+          <div class="label">২ · চামড়ার স্ট্র্যাপ <span style="color:var(--caramel)">— ২ থেকে ১টি</span></div>
+          <div class="hint">NICKIES স্পাইডার ডায়াল অথবা ক্রোনোগ্রাফ</div>
+        </div>
+        <div class="picks" data-slot="strap">
+          <img src="img/pick-nickies.jpg" alt="NICKIES — কালো ডায়াল, সাদা স্পাইডার" width="360" height="520">
+            <span>NICKIES</span>
+          </button>
+          <img src="img/pick-chrono.jpg" alt="ক্রোনোগ্রাফ — গানমেটাল কেস, কালো চামড়ার স্ট্র্যাপ" width="360" height="520">
+            <span>ক্রোনোগ্রাফ</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="slot">
+        <div>
+          <div class="label">৩ · স্পোর্টস ঘড়ি <span style="color:var(--caramel)">— ১টি</span></div>
+          <div class="hint">অষ্টভুজ কেস · রাবার স্ট্র্যাপ · টেকসই</div>
+        </div>
+        <div class="picks" data-slot="sport">
+          <img src="img/pick-sport.jpg" alt="স্পোর্টস ঘড়ি — অষ্টভুজ কেস, রাবার স্ট্র্যাপ" width="360" height="520">
+            <span>স্পোর্টস</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <figure class="combo-live" id="combo-live">
+      <img id="combo-live-img" src="img/plates/combo-1.jpg" alt="নির্বাচিত কম্বো: OLEVS A + NICKIES + স্পোর্টস" width="600" height="750">
+      <figcaption>
+        <div class="cap">আপনার বাছাই</div>
+        <div class="name" id="combo-live-name">OLEVS A + NICKIES + স্পোর্টস</div>
+        <div class="cap">তিনটা ঘড়ি একসাথে — একদামে। নিচে সব চারটা কম্বোর ছবি দেখে নিতে পারেন।</div>
+      </figcaption>
+    </figure>
+
+    <div class="slot-total">
+      <div>
+        <div class="big">মোট ৩টা · ৳১,০৯৯</div>
+        <div class="small" id="picked-summary">নির্বাচিত: OLEVS A · NICKIES · স্পোর্টস</div>
+      </div>
+      <a class="btn btn-primary" href="#order">এই কম্বো অর্ডার করুন</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">ঘড়িগুলো</p>
+      <h2>কম্বোতে কী কী থাকছে</h2>
+      <p>সব ঘড়িই নতুন, বক্সসহ। ছবিগুলো পণ্যের প্লেট — রঙ ও ফিনিশ বাস্তবের কাছাকাছি।</p>
+    </div>
+
+    <div class="cards">
+      <article class="card">
+        <figure><img src="img/card-olevs-a.jpg" alt="OLEVS A" width="360" height="520" loading="lazy"></figure>
+        <div class="body">
+          <h3 class="brand">OLEVS — A</h3>
+          <p class="desc">সিলভার ডায়াল, গোল্ড বেজেল, টু-টোন গোল্ড-স্টিল ব্রেসলেট। তিন সাব-ডায়াল।</p>
+          <div class="tags"><span class="tag">ওয়াটারপ্রুফ</span><span class="tag">কালার গ্যারান্টি</span></div>
+        </div>
+      </article>
+      <article class="card">
+        <figure><img src="img/card-olevs-b.jpg" alt="OLEVS B" width="360" height="520" loading="lazy"></figure>
+        <div class="body">
+          <h3 class="brand">OLEVS — B</h3>
+          <p class="desc">অল-ব্ল্যাক আয়ন-প্লেটেড কেস ও ব্রেসলেট, কালো ডায়াল, গোল্ড ইনডেক্স।</p>
+          <div class="tags"><span class="tag">ওয়াটারপ্রুফ</span><span class="tag">কালার গ্যারান্টি</span></div>
+        </div>
+      </article>
+      <article class="card">
+        <figure><img src="img/card-nickies.jpg" alt="NICKIES" width="360" height="520" loading="lazy"></figure>
+        <div class="body">
+          <h3 class="brand">NICKIES</h3>
+          <p class="desc">সিলভার কেস, কালো ডায়ালে সাদা স্পাইডার গ্রাফিক, কালো ক্রোکو-এমবসড চামড়ার স্ট্র্যাপ।</p>
+          <div class="tags"><span class="tag">চামড়ার স্ট্র্যাপ</span></div>
+        </div>
+      </article>
+      <article class="card">
+        <figure><img src="img/card-chrono.jpg" alt="ক্রোনোগ্রাফ" width="360" height="520" loading="lazy"></figure>
+        <div class="body">
+          <h3 class="brand">ক্রোনোগ্রাফ</h3>
+          <p class="desc">গানমেটাল কেস, তিন সাব-ডায়াল (২৪ ঘণ্টাসহ), রেড অ্যাকসেন্ট, কালো চামড়ার স্ট্র্যাপ।</p>
+          <div class="tags"><span class="tag">ক্রোনোগ্রাফ</span><span class="tag">চামড়ার স্ট্র্যাপ</span></div>
+        </div>
+      </article>
+      <article class="card">
+        <figure><img src="img/card-sport.jpg" alt="স্পোর্টস ঘড়ি" width="360" height="520" loading="lazy"></figure>
+        <div class="body">
+          <h3 class="brand">স্পোর্টস ঘড়ি</h3>
+          <p class="desc">ম্যাট ব্ল্যাক অষ্টভুজ বেজেল, আট স্ক্রু, গ্রিড ডায়াল, রাবার স্ট্র্যাপ — রোজকার জন্য।</p>
+          <div class="tags"><span class="tag">রাবার স্ট্র্যাপ</span><span class="tag">টেকসই</span></div>
+        </div>
+      </article>
+      <article class="card" style="justify-content:center; background:var(--sand); border:0">
+        <div class="body" style="gap:.8rem">
+          <h3 class="brand">৩টা = ৳১,০৯৯</h3>
+          <p class="desc">OLEVS-এর ২টা থেকে ১টা + (NICKIES বা ক্রোনোগ্রাফ)-এর ২টা থেকে ১টা + স্পোর্টস ১টা।</p>
+          <a class="btn btn-primary" href="#order" style="align-self:flex-start">অর্ডার করুন</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="combos" id="combos">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">চারটা কম্বো</p>
+      <h2>যে কম্বোটা পছন্দ, সেটাতেই ক্লিক করুন</h2>
+      <p>প্রতিটা স্লটে একটা করে — মোট চারটা কম্বো হয়। ছবিতে ক্লিক করলে উপরের স্লটে সেই বাছাই বসে যাবে।</p>
+    </div>
+
+    <div class="combo-grid">
+      <figure class="combo-card" data-olevs="A" data-strap="NICKIES" role="button" tabindex="0">
+        <img src="img/plates/combo-1.jpg" alt="কম্বো ১ — OLEVS A + NICKIES + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS A + NICKIES + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
+      <figure class="combo-card" data-olevs="A" data-strap="ক্রোনোগ্রাফ" role="button" tabindex="0">
+        <img src="img/plates/combo-2.jpg" alt="কম্বো ২ — OLEVS A + ক্রোনোগ্রাফ + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS A + ক্রোনোগ্রাফ + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
+      <figure class="combo-card" data-olevs="B" data-strap="NICKIES" role="button" tabindex="0">
+        <img src="img/plates/combo-3.jpg" alt="কম্বো ৩ — OLEVS B + NICKIES + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS B + NICKIES + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
+      <figure class="combo-card" data-olevs="B" data-strap="ক্রোনোগ্রাফ" role="button" tabindex="0">
+        <img src="img/plates/combo-4.jpg" alt="কম্বো ৪ — OLEVS B + ক্রোনোগ্রাফ + স্পোর্টস" width="600" height="750" loading="lazy">
+        <figcaption><b>OLEVS B + ক্রোনোগ্রাফ + স্পোর্টস</b><span class="tag">৳১,০৯৯</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="offer" id="price">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow" style="color:var(--caramel-lt)">কম্বো অফার</p>
+      <h2>তিনটা ঘড়ি, এক দামে</h2>
+      <p>প্রতিটা স্লটে একটা করে বেছে নিন — মোট তিনটা ঘড়ি। আলাদা আলাদা কিনলে যা লাগত, তার অনেক কমে।</p>
+      <div class="price"><span class="amount">৳১,০৯৯</span><span class="was">৳১,৮০০</span></div>
+      <ul class="checklist">
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> OLEVS থেকে ১টা (A বা B)</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> NICKIES বা ক্রোনোগ্রাফ থেকে ১টা</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> স্পোর্টস ঘড়ি ১টা</li>
+        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> সারা বাংলাদেশে ডেলিভারি, ক্যাশ অন ডেলিভারি</li>
+      </ul>
+    </div>
+    <div class="offer-visual">
+      <img src="img/hero.jpg" alt="কম্বোর তিনটা ঘড়ি" width="1800" height="1200" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">প্রশ্ন</p>
+      <h2>সাধারণ কিছু প্রশ্ন</h2>
+    </div>
+    <details><summary>কম্বোতে কি যেকোনো তিনটা ঘড়ি নেওয়া যাবে?</summary>
+      <p>কম্বোটা নির্দিষ্ট সেট — OLEVS-এর ২টা ডিজাইন থেকে ১টা, (NICKIES বা ক্রোনোগ্রাফ)-এর ২টা থেকে ১টা, আর স্পোর্টস ঘড়ি ১টা। মোট তিনটা, ৳১,০৯৯।</p></details>
+    <details><summary>ডেলিভারি চার্জ কত?</summary>
+      <p>ডেলিভারি চার্জ এলাকাভেদে আলাদা; অর্ডার কনফার্ম করার সময় মেসেজে জানিয়ে দেওয়া হয়।</p></details>
+    <details><summary>পেমেন্ট কীভাবে?</summary>
+      <p>ক্যাশ অন ডেলিভারি — ঘড়ি হাতে পেয়ে টাকা দেবেন।</p></details>
+    <details><summary>ছবির সঙ্গে ঘড়ি মিলবে তো?</summary>
+      <p>প্লেটগুলো আসল ঘড়ির ছবি দেখে বানানো — ডায়াল, কেসের রঙ ও স্ট্র্যাপ একই রকম। তবে আলো-কোণের কারণে সামান্য পার্থক্য হতে পারে।</p></details>
+  </div>
+</section>
+
+<section class="order" id="order">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">অর্ডার</p>
+      <h2>বেছে নিন আপনার কম্বো</h2>
+      <p>ফর্মটি পূরণ করুন — কম্বোর সিলেকশন উপরের অংশ থেকে স্বয়ংক্রিয়ভাবে আসবে।</p>
+    </div>
+
+    <form id="order-form" novalidate>
+      <div class="form-row">
+        <div>
+          <label for="name">নাম</label>
+          <input id="name" name="name" type="text" placeholder="আপনার নাম" required>
+        </div>
+        <div>
+          <label for="phone">মোবাইল নম্বর</label>
+          <input id="phone" name="phone" type="tel" placeholder="01XXXXXXXXX" required>
+        </div>
+      </div>
+      <div>
+        <label for="address">ঠিকানা</label>
+        <textarea id="address" name="address" rows="3" placeholder="বাসা/রাস্তা, থানা, জেলা" required></textarea>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="olevs">OLEVS</label>
+          <select id="olevs" name="olevs">
+            <option>A — সিলভার-গোল্ড</option>
+            <option>B — অল-ব্ল্যাক</option>
+          </select>
+        </div>
+        <div>
+          <label for="strap">২য় ঘড়ি</label>
+          <select id="strap" name="strap">
+            <option>NICKIES স্পাইডার ডায়াল</option>
+            <option>ক্রোনোগ্রাফ</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit" style="justify-self:start">কম্বো অর্ডার কনফার্ম করুন</button>
+      <p class="form-note">অর্ডার করলে আমরা ফোনে কনফার্ম করব। কম্বো দাম <b>৳১,০৯৯</b> (ডেলিভারি চার্জ আলাদা)।</p>
+      <p class="ok" id="ok">ধন্যবাদ! আপনার অর্ডার গ্রহণ করা হয়েছে — আমরা শীঘ্রই ফোন করব। (ডেমো ফর্ম: এখনো কোনো সার্ভারে পাঠানো হয়নি)</p>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>৩টা ঘড়ির কম্বো · ৳১,০৯৯</span>
+    <span>ক্যাশ অন ডেলিভারি · সারা বাংলাদেশে</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var picks = document.querySelectorAll('.pick');
+  var summary = document.getElementById('picked-summary');
+  var olevsSel = document.getElementById('olevs');
+  var strapSel = document.getElementById('strap');
+  var liveImg = document.getElementById('combo-live-img');
+  var liveName = document.getElementById('combo-live-name');
+  var comboCards = document.querySelectorAll('.combo-card');
+  var COMBOS = {
+    'A|NICKIES':    {img:'img/plates/combo-1.jpg', name:'OLEVS A + NICKIES + স্পোর্টস'},
+    'A|ক্রোনোগ্রাফ': {img:'img/plates/combo-2.jpg', name:'OLEVS A + ক্রোনোগ্রাফ + স্পোর্টস'},
+    'B|NICKIES':    {img:'img/plates/combo-3.jpg', name:'OLEVS B + NICKIES + স্পোর্টস'},
+    'B|ক্রোনোগ্রাফ': {img:'img/plates/combo-4.jpg', name:'OLEVS B + ক্রোনোগ্রাফ + স্পোর্টস'}
+  };
+
+  function sync(){
+    var chosen = {};
+    document.querySelectorAll('.picks').forEach(function(group){
+      var b = group.querySelector('.pick.is-picked');
+      chosen[group.dataset.slot] = b ? b.dataset.value : '';
+    });
+    summary.textContent = 'নির্বাচিত: ' + (chosen.olevs || '—') + ' · ' + (chosen.strap || '—') + ' · স্পোর্টস';
+    if (chosen.olevs) olevsSel.value = chosen.olevs.indexOf('B') > -1 ? 'B — অল-ব্ল্যাক' : 'A — সিলভার-গোল্ড';
+    if (chosen.strap) strapSel.value = chosen.strap.indexOf('NICKIES') > -1 ? 'NICKIES স্পাইডার ডায়াল' : 'ক্রোনোগ্রাফ';
+
+    var oKey = chosen.olevs && chosen.olevs.indexOf('B') > -1 ? 'B' : 'A';
+    var sKey = chosen.strap && chosen.strap.indexOf('NICKIES') > -1 ? 'NICKIES' : 'ক্রোনোগ্রাফ';
+    var hit = COMBOS[oKey + '|' + sKey];
+    if (hit){
+      liveImg.src = hit.img;
+      liveImg.alt = 'নির্বাচিত কম্বো: ' + hit.name;
+      liveName.textContent = hit.name;
+    }
+    comboCards.forEach(function(c){
+      c.classList.toggle('is-active', c.dataset.olevs === oKey && c.dataset.strap === sKey);
+    });
+  }
+
+  function applyCombo(olevs, strap){
+    document.querySelectorAll('.picks[data-slot="olevs"] .pick').forEach(function(b){
+      var isB = b.dataset.value.indexOf('B') > -1;
+      var wantB = olevs === 'B';
+      b.classList.toggle('is-picked', isB === wantB);
+    });
+    document.querySelectorAll('.picks[data-slot="strap"] .pick').forEach(function(b){
+      var isN = b.dataset.value.indexOf('NICKIES') > -1;
+      var wantN = strap === 'NICKIES';
+      b.classList.toggle('is-picked', isN === wantN);
+    });
+    sync();
+  }
+
+  comboCards.forEach(function(c){
+    var go = function(){ applyCombo(c.dataset.olevs, c.dataset.strap); };
+    c.addEventListener('click', go);
+    c.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); }
+    });
+  });
+
+  picks.forEach(function(p){
+    p.addEventListener('click', function(){
+      var group = p.closest('.picks');
+      group.querySelectorAll('.pick').forEach(function(x){ x.classList.remove('is-picked'); });
+      p.classList.add('is-picked');
+      sync();
+    });
+  });
+
+  document.getElementById('order-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = e.target;
+    var phone = f.phone.value.replace(/\D/g,'');
+    var bad = [];
+    if (!f.name.value.trim()) bad.push('name');
+    if (phone.length < 11) bad.push('phone');
+    if (!f.address.value.trim()) bad.push('address');
+    f.querySelectorAll('input,textarea').forEach(function(el){ el.style.borderColor = ''; });
+    if (bad.length){
+      bad.forEach(function(id){ var el = f.querySelector('#'+id); if (el) el.style.borderColor = '#c0392b'; });
+      return;
+    }
+    document.getElementById('ok').classList.add('show');
+  });
+
+  sync();
+})();
+</script>
+</body>
+</html>
