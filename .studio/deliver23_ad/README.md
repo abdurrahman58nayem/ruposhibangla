@@ -17,7 +17,12 @@
 | `10-voiceover-bengali.wav` | শুধু ভয়েসওভার | 48 kHz mono |
 
 **Drive লিঙ্ক**
-**v9 (সর্বশেষ — ইমোশনাল এন্ডিং, উজ্জ্বল থিম, ঠিক করা অডিও)**
+**v11 (সর্বশেষ — লেখার লেআউট ঠিক করা, পাবলিক)**
+- 4K: https://drive.google.com/file/d/1X41C8FFAmJAH-qNU3v4MD4v-HtwwREFO/view
+- 1080×1920: https://drive.google.com/file/d/11AdTqrByubL-XI1eXXeBfvcpwfHiLMa8/view
+- ১৫ সেকেন্ড: https://drive.google.com/file/d/1m9Q1coircqs8rBl06e_ZEm8eeSc-f0-n/view
+
+**v9 (পুরোনো — টেক্সট লেআউট সমস্যা আছে, পাঠাবেন না)**
 - 4K: https://drive.google.com/file/d/1DkkOkw3sR-mnezI-EMri55ZjfiT44Hyd/view
 - 1080×1920: https://drive.google.com/file/d/1-aAK8liv1rvIPhNWKD2wtCVDYnZGy-oh/view
 - ১৫ সেকেন্ড: https://drive.google.com/file/d/19OAbdBauMMR91Qg9yXh_5EOc5tMFoQ_k/view
