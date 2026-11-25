@@ -43,20 +43,47 @@ class Shaper:
         self.ft = freetype.Face(self.path)
         self.ft.set_char_size(px * 64)
 
-    # The merged font carries Latin + Bengali from one source. Its Bengali
-    # "init" feature fires on the FIRST glyph of a word, but in মো- the e-kar
-    # reorders to the front — so "মোট" came out as bnmE.init + ... and the
-    # vowel sign rendered as a dotted circle. Bengali initials are contextual
-    # and this ad copy does not need them, so they are switched off.
-    NO_CONTEXTUAL = {"init": False, "medi": False, "fina": False,
-                     "isol": False, "rclt": False, "calt": False}
+    # Mixed copy ("Hawkins ২ লিটার · মোট ৳১,৫৫০") in ONE buffer made HarfBuzz
+    # guess the segment from the first strong character — Latin — so Bengali's
+    # GSUB never ran and ো fell back to the precomposed bnmO glyph, which in
+    # this font is drawn as a DOTTED CIRCLE. Shaping must be done per script
+    # run, each with its own script/direction.
+    @staticmethod
+    def _runs(text: str):
+        def sc(ch):
+            o = ord(ch)
+            if 0x0980 <= o <= 0x09FF:
+                return "Beng"
+            if ch.isdigit() or ch.isalpha():
+                return "Latn"
+            return None
+        out, cur, key = [], "", None
+        for ch in text:
+            k = sc(ch)
+            if k is None:
+                k = key if key else "Latn"
+            if key is None or k == key:
+                cur += ch
+            else:
+                out.append((key, cur))
+                cur = ch
+            key = k
+        if cur:
+            out.append((key, cur))
+        return out
 
     def shape(self, text: str):
-        buf = hb.Buffer()
-        buf.add_str(text)
-        buf.guess_segment_properties()
-        hb.shape(self.hb_font, buf, self.NO_CONTEXTUAL)
-        return buf.glyph_infos, buf.glyph_positions
+        infos_all, pos_all = [], []
+        for script, chunk in self._runs(text):
+            buf = hb.Buffer()
+            buf.add_str(chunk)
+            buf.direction = "ltr"
+            buf.script = script or "Latn"
+            buf.language = "bn" if script == "Beng" else "en"
+            hb.shape(self.hb_font, buf)
+            infos_all.extend(buf.glyph_infos)
+            pos_all.extend(buf.glyph_positions)
+        return infos_all, pos_all
 
     def advance(self, text: str) -> float:
         infos, pos = self.shape(text)
