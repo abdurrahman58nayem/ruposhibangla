@@ -10,7 +10,7 @@ from collections import deque
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, "gen2")
-OUT = os.path.join(HERE, "cut2")
+OUT = os.path.join(HERE, "cut3")
 os.makedirs(OUT, exist_ok=True)
 
 
@@ -51,6 +51,8 @@ def key(path, dark_tol=30, sat_tol=16):
         img = img.crop(bb)
     return img
 
+
+EXTRA = {"w_spider_big": "w_spider_big.jpg"}
 
 if __name__ == "__main__":
     for p in sorted(glob.glob(os.path.join(SRC, "*.jpg"))):

@@ -18,11 +18,11 @@ import rbtext as T
 
 OUT = os.path.join(HERE, "stills2")
 os.makedirs(OUT, exist_ok=True)
-CUT = os.path.join(HERE, "cut2")
+CUT = os.path.join(HERE, "cut3")
 w, h = 1080, 1920
 
 SPR = {}
-for k in ("w_olevs_a", "w_olevs_b", "w_spider", "w_t4g", "w_sport", "w_lock"):
+for k in ("w_olevs_a", "w_olevs_b", "w_spider", "w_spider_big", "w_t4g", "w_sport", "w_lock"):
     SPR[k] = Image.open(os.path.join(CUT, k + ".png")).convert("RGBA")
 
 
@@ -106,7 +106,7 @@ def s03():
     bg = stage(w, h)
     txt(bg, "চামড়ার স্ট্র্যাপ", "serif-bold", 92, (w / 2, 140), NAVY, align="center")
     txt(bg, "স্পাইডার ডায়াল · সিলভার কেস", "sans-semi", 38, (w / 2, 278), NAVY_SOFT, align="center")
-    sprite(bg, "w_spider", w / 2, 940, 880)
+    sprite(bg, "w_spider_big", w / 2, 940, 880)
     txt(bg, "NICKIES", "sans-bold", 54, (w / 2, 1400), CARAMEL, align="center")
     txt(bg, "water-resistant চামড়ার স্ট্র্যাপ", "sans-semi", 32, (w / 2, 1478), NAVY, align="center")
     hairline(bg, 150, w - 150, 1570, CARAMEL, 2, 110)
