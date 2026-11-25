@@ -43,11 +43,19 @@ class Shaper:
         self.ft = freetype.Face(self.path)
         self.ft.set_char_size(px * 64)
 
+    # The merged font carries Latin + Bengali from one source. Its Bengali
+    # "init" feature fires on the FIRST glyph of a word, but in মো- the e-kar
+    # reorders to the front — so "মোট" came out as bnmE.init + ... and the
+    # vowel sign rendered as a dotted circle. Bengali initials are contextual
+    # and this ad copy does not need them, so they are switched off.
+    NO_CONTEXTUAL = {"init": False, "medi": False, "fina": False,
+                     "isol": False, "rclt": False, "calt": False}
+
     def shape(self, text: str):
         buf = hb.Buffer()
         buf.add_str(text)
         buf.guess_segment_properties()
-        hb.shape(self.hb_font, buf)
+        hb.shape(self.hb_font, buf, self.NO_CONTEXTUAL)
         return buf.glyph_infos, buf.glyph_positions
 
     def advance(self, text: str) -> float:
