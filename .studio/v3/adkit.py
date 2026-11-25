@@ -346,15 +346,17 @@ def pill(canvas, txt, cx, y, e, colour=GOLD_LT, ink=IVORY, pad_x=34, pad_y=16):
     return ph / H
 
 
-def count_price(canvas, value, y, e, colour=GOLD_LT, prefix="৳"):
+def count_price(canvas, value, y, e, colour=GOLD_LT, prefix="৳", px=None):
     """Ціна, що «набігає» — рахується вгору, як у рекламі, але без стрибків."""
     if e <= 0.004:
         return
     raw = f"{int(round(value)):,}"
     txt = prefix + "".join(K.bn(int(ch)) if ch.isdigit() else ch for ch in raw)
-    scale = 0.86 + 0.14 * K.back(min(1.0, e * 1.15))
+    # ease-out instead of back-ease: the spring made the number bounce, which
+    # reads as a glitch on a price
+    scale = 0.92 + 0.08 * K.eo(min(1.0, e * 1.15))
     k, p = TYPO["price"]
-    p = int(p * scale)
+    p = int((px or p) * scale)
     lay = T.flow(txt, k, p)
     x = int((W - lay.width) / 2)
     glow = lay.image.filter(ImageFilter.GaussianBlur(14 * SCALE))
