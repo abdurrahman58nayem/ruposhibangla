@@ -16,6 +16,9 @@ image-search/
 
 # রিল রেন্ডারের মাঝপথের ফ্রেম ও বড় মিডিয়া (গিটে রাখা হয় না)
 .studio/render*/
+.studio/watch_ad/build/frames/
+.studio/watch_ad/build/*.mp4
+.studio/watch_ad/build/*.wav
 .studio/deliver*/*.mp4
 .studio/deliver*/*.zip
 .studio/deliver*/*.wav
