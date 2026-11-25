@@ -50,35 +50,49 @@ SCENES = [
          cards=[("অল্প সময়েই ফুটে ওঠে", "কয়েক মিনিটেই তৈরি"),
                 ("স্টেইনলেস স্টিল বডি", "২ লিটার ধারণক্ষমতা"),
                 ("অটোমেটিক শাট-অফ", "পানি ফুটলেই বন্ধ")],
-         detail="kettle_detail.png", detail_at=3.30),
-    dict(id="s3", dur=10.10, stage="warm", vo=[("v3b", 0.30)],
+         detail="kettle_detail_light.png", detail_at=3.30),
+    dict(id="s3", dur=10.10, stage="warm", vo=[("v3c", 0.30)],
          chip="Elima ভ্যাকুয়াম ফ্লাস্ক",
          head=["২৪ ঘণ্টা", "পানি গরম থাকে"],
          cards=[("২৪ ঘণ্টা পানি গরম", "পুরো দিন উষ্ণ থাকে"),
                 ("প্রিমিয়াম ডিজাইন", "১ লিটার ধারণক্ষমতা"),
                 ("গন্ধহীন ভেতর", "স্বাদ অটুট থাকে")],
-         detail="flask_detail.png", detail_at=3.30),
-    dict(id="s4", dur=4.20, stage="cool", vo=[("v4", 0.70)],
+         detail="flask_detail_light.png", detail_at=3.30),
+    dict(id="s4", dur=3.70, stage="cool", vo=[("v4", 0.35)],
          chip="কম্বো অফার",
          head=["দুটোই একসঙ্গে"]),
-    dict(id="s5", dur=8.00, stage="cool", vo=[("v5", 0.85), ("v6", 5.30)],
+    # the emotional beat: the products are already in the family's hands
+    dict(id="s5", dur=9.60, stage="warm", vo=[("v8", 0.35, 1.0)], music=0.30,
+         chip="", head=["শীতে বাবা-মায়ের জন্য, বাচ্চার জন্য"],
+         price=1550),
+    # offer + price + CTA close: the last second is the ask
+    dict(id="s6", dur=7.50, stage="cool",
+         vo=[("v5b", 0.30), ("v6", 4.95)], music=-0.22,
          chip="কম্বো প্রাইস",
-         head=["মাত্র"],
+         head=["কম্বো অফার"],
          price=1550),
 ]
 
-STAGE, SPRITES, PLATES = {}, {}, {}
+STAGE, SPRITES, PLATES, PHOTO = {}, {}, {}, {}
+ART_PHOTO = os.path.join(HERE, "..", "ad")
 
 
 def init():
     if STAGE:
         return
-    STAGE["cool"] = A.Plate(os.path.join(ART, "stage_cool.png"), scale=1.10)
-    STAGE["warm"] = A.Plate(os.path.join(ART, "stage_warm.png"), scale=1.10)
+    # v9: bright stages. stage_cool / stage_warm (emerald) stay on disk for
+    # the older cuts, but nothing in this build reads them any more.
+    STAGE["cool"] = A.Plate(os.path.join(ART, "stage_light_cool.png"), scale=1.10)
+    STAGE["warm"] = A.Plate(os.path.join(ART, "stage_light_warm.png"), scale=1.10)
     SPRITES["kettle"] = A.Sprite(Image.open(os.path.join(SPR, "kettle.png")))
     SPRITES["flask"] = A.Sprite(Image.open(os.path.join(SPR, "flask.png")))
-    for n in ("kettle_detail.png", "flask_detail.png", "price_combo.png"):
+    # v9 light-graded macros: same shots, backdrop moved from emerald to the
+    # cool blue-grey of the new stage (see plates2/*_light.png)
+    for n in ("kettle_detail_light.png", "flask_detail_light.png", "price_combo.png"):
         PLATES[n] = A.Plate(os.path.join(PLATE, n), scale=1.06)
+    # the one photographic plate in the film: the family beat, 9:16, generated
+    # once and cached here (it is a Plate so it can drift like the stage can)
+    PHOTO["family"] = A.Plate(os.path.join(ART_PHOTO, "family_warm.png"), scale=1.04)
 
 
 # ------------------------------------------------------------------ product ---
@@ -164,8 +178,23 @@ def steam(canvas, cx, by, p, count=5, strength=1.0, spread=0.055, rise=0.20,
 
 
 # ---------------------------------------------------------------------- type ---
-def chip(canvas, txt, y, e, colour=GOLD_L):
+def soft_shadow(canvas, box, e, radius, spread=18 * SCALE, alpha=46):
+    """Very soft dark halo under a card — sells the lift without an outline."""
     if e <= 0.004:
+        return
+    x0, y0, x1, y1 = [int(v) for v in box]
+    lay = Image.new("L", (canvas.width, canvas.height), 0)
+    ImageDraw.Draw(lay).rounded_rectangle(
+        [x0 + spread * 0.4, y0 + spread, x1 + spread * 0.4, y1 + spread],
+        radius=radius, fill=int(alpha * e))
+    lay = lay.filter(ImageFilter.GaussianBlur(spread))
+    canvas.paste(Image.new("RGB", canvas.size, (30, 44, 58)), (0, 0), lay)
+
+
+def chip(canvas, txt, y, e, colour=A.SKY, ink=A.DEEP):
+    """Small label pill. On the bright stage it is white glass with navy ink and
+    a blue hairline — the gold-on-black pill of v8 vanished into the white."""
+    if e <= 0.004 or not txt:
         return
     lay = T.flow(txt, "sans-semi", int(36 * SCALE))
     pw = lay.width + 2 * 30 * SCALE
@@ -174,10 +203,10 @@ def chip(canvas, txt, y, e, colour=GOLD_L):
     yy = int(y * H)
     d = ImageDraw.Draw(canvas, "RGBA")
     d.rounded_rectangle([x, yy, x + pw, yy + ph], radius=ph // 2,
-                        fill=(8, 20, 18, int(120 * e)),
-                        outline=colour + (int(150 * e),), width=max(1, int(2 * SCALE)))
+                        fill=(255, 255, 255, int(196 * e)),
+                        outline=colour + (int(170 * e),), width=max(1, int(2 * SCALE)))
     T.paint(canvas, lay.image, (int(x + 30 * SCALE), int(yy + 14 * SCALE)),
-            IVORY, e, shadow=(2, 3, (0, 0, 0), 0.5))
+            ink, e, shadow=(0, 0, (0, 0, 0), 0.0))
 
 
 def feature_row(canvas, txt, sub, yy, e):
@@ -193,17 +222,18 @@ def feature_row(canvas, txt, sub, yy, e):
     x0 = int((W - max(tw, sw)) / 2 - 54 * SCALE)
     d = ImageDraw.Draw(canvas, "RGBA")
     ty = int(yy * H + lay.image.height * 0.40)
-    d.line([x0, ty, x0 - 14 * SCALE, ty + 14 * SCALE], fill=GOLD_L + (int(235 * e),),
+    tick = (196, 146, 58)
+    d.line([x0, ty, x0 - 14 * SCALE, ty + 14 * SCALE], fill=tick + (int(235 * e),),
            width=max(1, int(3 * SCALE)))
     d.line([x0 - 14 * SCALE, ty + 14 * SCALE, x0 - 34 * SCALE, ty - 8 * SCALE],
-           fill=GOLD_L + (int(235 * e),), width=max(1, int(3 * SCALE)))
+           fill=tick + (int(235 * e),), width=max(1, int(3 * SCALE)))
     top = yy * H + 24 * (1 - e) * SCALE
-    T.paint(canvas, lay.image, (int(x0 + 44 * SCALE), int(top)), IVORY,
-            min(1.0, e * 1.25), shadow=(3, 4, (0, 0, 0), 0.6))
+    T.paint(canvas, lay.image, (int(x0 + 44 * SCALE), int(top)), A.DEEP,
+            min(1.0, e * 1.25), shadow=(0, 0, (0, 0, 0), 0.0))
     if sub_lay is not None:
         T.paint(canvas, sub_lay.image, (int(x0 + 44 * SCALE),
                                         int(top + lay.image.height + 6 * SCALE)),
-                WINTER, min(1.0, e * 1.15), shadow=(2, 3, (0, 0, 0), 0.5))
+                A.WINTER, min(1.0, e * 1.15), shadow=(0, 0, (0, 0, 0), 0.0))
 
 
 def feature_cards(canvas, rows, y0, e_all, at=0.0, gap=0.049, t=0.0, stagger=0.30):
@@ -232,12 +262,28 @@ def scene_backdrop(s, p):
         img = st.frame(zoom=1.06 + 0.05 * p, pan=(0, -0.006))
     else:
         img = st.frame(zoom=1.03 + 0.07 * K.eio(p), pan=(0.012 - 0.024 * p, 0.008))
-    img = A.mist(img, strength=0.10, speed=p * 0.06, y0=0.66)
-    if s["id"] in ("s2", "s3"):
-        img = _deepen_lower(img, 0.64)
-    if s["id"] == "s5":
-        img = _deepen_lower(img, 0.60)
+    img = A.mist(img, strength=0.05, speed=p * 0.06, y0=0.66, colour=(226, 240, 250))
+    # v9: the stage is bright, so instead of pushing the floor to emerald we
+    # only settle it a shade toward cool grey — the dark ink type needs a calm
+    # band, not a dark one.
+    if s["id"] in ("s2", "s3", "s6"):
+        img = _settle_lower(img, 0.62)
     return img
+
+
+def _settle_lower(img, y=0.66):
+    """Take the very bottom of the plate a touch cooler and quieter.
+
+    On the emerald build this function darkened the floor so ivory type could
+    sit on it. Now the type is dark, so the floor only needs to be *calm* —
+    a soft blue-grey settle, never a shadow band.
+    """
+    arr = np.asarray(img, dtype=np.float32)
+    yy = np.linspace(0, 1, H, dtype=np.float32)[:, None, None]
+    k = np.clip((yy - y) / (1 - y), 0, 1) ** 1.6
+    floor_col = np.array([206, 220, 232], dtype=np.float32)[None, None, :]
+    arr = arr * (1 - k * 0.42) + floor_col * (k * 0.42)
+    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB")
 
 
 def _deepen_lower(img, y=0.66):
@@ -258,8 +304,9 @@ def draw_s1(img, s, p, t):
     frosted card under them, so the number is the second thing the eye finds —
     not the last thing in the film.
     """
-    e = K.ss(0.0, 0.70, t)
-    rise = 0.085 * (1 - K.back(min(1.0, t * 1.9)))
+    e = K.ss(0.0, 0.90, t)
+    # eased, not sprung: the v8 back-ease made the products hop on entry
+    rise = 0.075 * (1 - K.eio(min(1.0, t / 1.15)))
     # no mirrored floor reflection here: the price card sits right under the
     # products and the reflection bled through as a ghost of the flask
     product(img, "kettle", 0.320, 0.600 + rise, h=0.300,
@@ -268,23 +315,24 @@ def draw_s1(img, s, p, t):
             alpha=K.ss(0.10, 0.55, t), lift=-0.004 * np.sin(p * 5 + 1), reflect=0.0)
     steam(img, 0.320, 0.470, p, count=4, strength=0.22 * e)
 
-    chip(img, s["chip"], 0.068, K.ss(0.15, 0.55, t))
-    A.centred(img, s["head"][0], "big", 0.112, GOLD_L, K.ss(0.28, 0.72, t), dy=30)
-    A.centred(img, s["head"][1], "title", 0.184, IVORY, K.ss(0.45, 0.90, t), dy=26)
+    chip(img, s["chip"], 0.068, K.ss(0.15, 0.65, t))
+    A.centred(img, s["head"][0], "big", 0.112, A.DEEP, K.ss(0.28, 0.92, t), dy=34)
+    A.centred(img, s["head"][1], "title", 0.184, A.DEEP2, K.ss(0.42, 1.06, t), dy=26)
 
     ep = K.ss(0.75, 1.20, t)
     if ep > 0.004:
         A.glass_card(img, (W * 0.155, H * 0.668, W * 0.845, H * 0.766), ep,
-                     radius=34 * SCALE, alpha=124, border_a=124, tint=(15, 36, 32))
-        A.centred(img, "কম্বো প্রাইস", "label", 0.678, WINTER, K.ss(0.80, 1.12, t), maxw=0.6)
-        A.count_price(img, 1550, 0.696, K.ss(0.88, 1.45, t))
-    A.centred(img, "Hawkins ২ লিটার · Elima ১ লিটার", "list2", 0.784, GOLD_L,
-              K.ss(1.30, 1.75, t), dy=18)
+                     radius=34 * SCALE, alpha=150, border_a=150, tint=(255, 255, 255))
+        A.centred(img, "কম্বো প্রাইস", "label", 0.678, (44, 112, 164),
+                  K.ss(0.80, 1.16, t), maxw=0.6)
+        A.count_price(img, 1550, 0.696, K.ss(0.88, 1.50, t), colour=A.INK)
+    A.centred(img, "Hawkins ২ লিটার · Elima ১ লিটার", "list2", 0.784, A.DEEP2,
+              K.ss(1.30, 1.85, t), dy=18)
 
-    e_pre = K.ss(3.30, 3.80, t)
-    A.centred(img, "শীতে একসঙ্গেই দরকার —", "sub", 0.852, IVORY, e_pre, dy=20, maxw=0.84)
-    A.centred(img, "গরম পানি আর গরম চা", "sub", 0.902, WINTER,
-              K.ss(3.55, 4.05, t), dy=20, maxw=0.84)
+    e_pre = K.ss(3.30, 3.90, t)
+    A.centred(img, "শীতে একসঙ্গেই দরকার —", "sub", 0.852, A.DEEP, e_pre, dy=20, maxw=0.84)
+    A.centred(img, "গরম পানি আর গরম চা", "sub", 0.902, A.DEEP2,
+              K.ss(3.55, 4.15, t), dy=20, maxw=0.84)
 
 
 def draw_product_scene(img, s, p, t, key, cx, h, base=0.560):
@@ -294,85 +342,140 @@ def draw_product_scene(img, s, p, t, key, cx, h, base=0.560):
     product(img, key, cx, base, h=h, alpha=e_in, lift=lift)
     steam(img, cx + 0.105, base - h * 0.86, p, count=5,
           strength=(0.55 if key == "kettle" else 0.35) * e_in)
-    chip(img, s["chip"], 0.058, K.ss(0.25, 0.80, t))
-    A.centred(img, s["head"][0], "title", 0.100, GOLD_L, K.ss(0.22, 0.75, t), dy=26)
-    A.centred(img, s["head"][1], "sub", 0.156, IVORY, K.ss(0.38, 0.90, t), dy=22)
+    chip(img, s["chip"], 0.058, K.ss(0.25, 0.90, t))
+    A.centred(img, s["head"][0], "title", 0.100, A.DEEP, K.ss(0.22, 0.92, t), dy=30)
+    A.centred(img, s["head"][1], "sub", 0.156, A.DEEP2, K.ss(0.38, 1.06, t), dy=22)
 
     # ONE light glass card holds all three features. It starts BELOW the
     # product's contact point (base 0.560) so it never covers the base, and it
     # is a frost, not a slab — the floor still reads through it.
     ec = K.ss(1.05, 1.45, t)
     if ec > 0.004:
+        soft_shadow(img, (W * 0.082, H * 0.634, W * 0.918, H * 0.806), ec, 32 * SCALE)
         A.glass_card(img, (W * 0.082, H * 0.634, W * 0.918, H * 0.806), ec,
-                     radius=32 * SCALE, alpha=112, border_a=104, tint=(16, 38, 33))
+                     radius=32 * SCALE, alpha=118, border_a=170, tint=(255, 255, 255),
+                     border=A.SKY)
     feature_cards(img, s["cards"], 0.660, K.ss(1.10, 1.45, t), at=1.10, t=t,
                   gap=0.049)
 
 
 def draw_s4(img, s, p, t):
+    """Combo reveal: the two products slide in from opposite sides and settle."""
     dur = s["dur"]
-    e1 = K.ss(0.05, 0.75, p * dur)
-    e2 = K.ss(0.20, 0.90, p * dur)
-    dx1 = 0.16 * (1 - K.eo(min(1.0, p * 1.7)))
-    dx2 = -0.16 * (1 - K.eo(min(1.0, p * 1.7)))
+    e1 = K.ss(0.05, 0.85, p * dur)
+    e2 = K.ss(0.16, 0.96, p * dur)
+    dx1 = 0.15 * (1 - K.eio(min(1.0, p * 1.9)))
+    dx2 = -0.15 * (1 - K.eio(min(1.0, p * 1.9)))
     product(img, "kettle", 0.335 + dx1, 0.735, h=0.360, alpha=e1)
     product(img, "flask", 0.665 + dx2, 0.735, h=0.390, alpha=e2)
     img_ = A.light_sweep(img, K.ss(0.30, 0.95, p), y0=0.18, y1=0.80,
-                         width=0.16, strength=0.26)
-    chip(img, s["chip"], 0.082, K.ss(0.25, 0.80, p * dur))
-    A.centred(img, "HAWKINS KETTLE", "list", 0.140, IVORY, K.ss(0.55, 1.05, p * dur),
+                         width=0.16, strength=0.20)
+    img.paste(img_, (0, 0))
+    chip(img, s["chip"], 0.078, K.ss(0.20, 0.75, p * dur))
+    A.centred(img, "HAWKINS KETTLE", "list", 0.135, A.DEEP, K.ss(0.45, 0.98, p * dur),
               maxw=0.86)
-    A.centred(img, "+", "sub", 0.185, GOLD_L, K.ss(0.70, 1.10, p * dur))
-    A.centred(img, "ELIMA FLASK", "list", 0.215, IVORY, K.ss(0.80, 1.25, p * dur),
+    A.centred(img, "+", "sub", 0.178, A.GOLD, K.ss(0.60, 1.02, p * dur))
+    A.centred(img, "ELIMA FLASK", "list", 0.208, A.DEEP, K.ss(0.70, 1.16, p * dur),
               maxw=0.86)
-    A.centred(img, "দুটোই একসঙ্গে, এক কম্বো অফারে", "sub", 0.885, GOLD_L,
-              K.ss(1.35, 1.95, p * dur), dy=24)
+    A.centred(img, "দুটোই একসঙ্গে, এক কম্বো অফারে", "sub", 0.885, A.DEEP2,
+              K.ss(1.10, 1.70, p * dur), dy=22)
 
 
 def draw_s5(img, s, p, t):
-    """Offer frame: the two products hold still, the price does the talking.
+    """The emotional beat — the only scene built from a photograph.
+
+    Everything before this is product on a stage; here the products have left
+    the studio and are in a family's hands: the father's tea, the mother's cup,
+    the child's warm milk. The copy is written as a *wish*, not a spec, so it
+    does the persuading that the feature cards cannot.
+
+    Motion is deliberately slow (no sweeps, no pops): the cut from the previous
+    scene is a hard cut to a warmer, softer frame, and the camera drifts in.
+    """
+    dur = s["dur"]
+    # the photo drifts in from 1.06 → 1.00 and keeps pushing very slowly
+    zoom = 1.06 - 0.06 * K.eio(min(1.0, p * 0.45)) + 0.022 * p
+    ph = PHOTO["family"]
+    img.paste(ph.frame(zoom=zoom, pan=(0.006 - 0.012 * p, 0.0)), (0, 0))
+
+    # warm grade: lift the shadows a little so the room reads kind, not dim
+    arr = np.asarray(img, np.float32)
+    arr = arr * 0.94 + 12
+    img.paste(Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB"), (0, 0))
+
+    # top scrim so the headline has a clean bed without darkening the faces
+    scr = Image.new("L", (W // 8, H // 8), 0)
+    ds = ImageDraw.Draw(scr)
+    for i in range(int(H / 8 * 0.44)):
+        v = int(198 * (1 - i / (H / 8 * 0.44)) ** 1.5)
+        ds.line([0, i, W // 8, i], fill=v)
+    scr = scr.resize((W, H), Image.BICUBIC)
+    img.paste(Image.new("RGB", (W, H), (18, 12, 8)), (0, 0), scr)
+
+    e1 = K.ss(0.35, 1.35, t)
+    A.centred(img, "এই শীতে", "title", 0.062, (255, 246, 232), e1, dy=26,
+              shadow=0.7)
+    A.centred(img, "বাবা-মায়ের চা, মায়ের কাপ,", "sub", 0.126, (255, 228, 175),
+              K.ss(0.65, 1.65, t), dy=22, shadow=0.8)
+    A.centred(img, "বাচ্চার এক গ্লাস গরম দুধ —", "sub", 0.172, (255, 228, 175),
+              K.ss(0.95, 1.95, t), dy=22, shadow=0.8)
+    A.centred(img, "পরিবারটা থাকুক উষ্ণ।", "title", 0.232, (255, 246, 232),
+              K.ss(1.35, 2.35, t), dy=26, shadow=0.7)
+
+    # the ask lands on a gold line near the bottom, over the photo's floor
+    ea = K.ss(2.95, 3.75, t)
+    if ea > 0.004:
+        # frosted CREAM panel, navy ink — a dark bar here read as a black slab
+        # pressed onto a family photo, which is exactly the look to avoid
+        A.glass_card(img, (W * 0.085, H * 0.855, W * 0.915, H * 0.940), ea,
+                     radius=40 * SCALE, alpha=238, border_a=210,
+                     tint=(255, 252, 245), border=A.GOLD_LT)
+        A.centred(img, "আজই নিয়ে নিন — ৳১,৫৫০", "cta", 0.876, A.DEEP, ea,
+                  dy=18, shadow=0.0)
+
+
+def draw_s6(img, s, p, t):
+    """Offer close: products hold, price counts up, CTA, hold.
 
     Composed from the stage + the two sprites (not from a generated still) so
     the offer frame is guaranteed clean below the products — the price card
     needs a quiet, empty band or it reads as a smudge over the kettle.
     """
     dur = s["dur"]
-    # products stand a little higher and a touch smaller so the price card
-    # (0.686) never overlaps the base — that overlap was the "smudge"
     base = 0.648
-    e_in = K.ss(0.0, 0.55, p * dur)
+    e_in = K.ss(0.0, 0.60, p * dur)
     lift = -0.005 * np.sin(p * 4.0)
-    product(img, "kettle", 0.315, base, h=0.285, alpha=e_in, lift=lift)
-    product(img, "flask", 0.685, base, h=0.310, alpha=e_in, lift=lift)
-    steam(img, 0.400, base - 0.285 * 0.86, p, count=4, strength=0.22 * e_in)
-    img2 = A.light_sweep(img, K.ss(0.20, 0.70, p), y0=0.10, y1=0.66,
-                         width=0.15, strength=0.22)
+    product(img, "kettle", 0.315, base, h=0.285, alpha=e_in, lift=lift, reflect=0.0)
+    product(img, "flask", 0.685, base, h=0.310, alpha=e_in, lift=lift, reflect=0.0)
+    steam(img, 0.400, base - 0.285 * 0.86, p, count=4, strength=0.18 * e_in)
+    img2 = A.light_sweep(img, K.ss(0.20, 0.75, p), y0=0.10, y1=0.66,
+                         width=0.15, strength=0.18)
     img.paste(img2, (0, 0))
 
-    chip(img, s["chip"], 0.066, K.ss(0.15, 0.60, p * dur))
-    A.centred(img, "COMBO OFFER", "label", 0.113, GOLD_L, K.ss(0.35, 0.80, p * dur))
-    A.centred(img, "Hawkins কেটল + Elima ফ্লাস্ক", "list", 0.152, IVORY,
-              K.ss(0.55, 1.00, p * dur))
+    chip(img, s["chip"], 0.064, K.ss(0.12, 0.60, p * dur))
+    A.centred(img, s["head"][0], "big", 0.108, A.DEEP, K.ss(0.25, 0.85, p * dur))
+    A.centred(img, "Hawkins কেটল + Elima ফ্লাস্ক", "sub", 0.180, A.DEEP2,
+              K.ss(0.45, 1.00, p * dur))
 
-    ep = K.ss(0.75, 1.45, p * dur)
+    ep = K.ss(0.55, 1.30, p * dur)
     if ep > 0.004:
         A.glass_card(img, (W * 0.125, H * 0.686, W * 0.875, H * 0.806),
-                     min(1.0, ep * 1.4), radius=34 * SCALE, alpha=124, border_a=118,
-                     tint=(15, 36, 32))
-        A.centred(img, "কম্বো প্রাইস", "label", 0.696, WINTER, ep, maxw=0.5)
-        A.count_price(img, 1550, 0.712, ep)
-    ecta = K.ss(5.05, 5.60, p * dur)
+                     min(1.0, ep * 1.4), radius=34 * SCALE, alpha=170, border_a=160,
+                     tint=(255, 255, 255))
+        A.centred(img, "কম্বো প্রাইস", "label", 0.696, (44, 112, 164), ep, maxw=0.5)
+        A.count_price(img, 1550, 0.712, ep, colour=A.INK)
+    ecta = K.ss(4.95, 5.55, p * dur)
     if ecta > 0.004:
         A.glass_card(img, (W * 0.115, H * 0.836, W * 0.885, H * 0.916), ecta,
-                     radius=40 * SCALE, alpha=120, border_a=150)
-        A.centred(img, "অর্ডার করতে এখনই মেসেজ করুন", "cta", 0.856, IVORY, ecta, dy=20)
-        pulse = 0.5 + 0.5 * np.sin(t * 3.4)
+                     radius=40 * SCALE, alpha=176, border_a=190, tint=(255, 255, 255))
+        A.centred(img, "অর্ডার করতে এখনই মেসেজ করুন", "cta", 0.856, A.DEEP, ecta, dy=18)
+        pulse = 0.5 + 0.5 * np.sin(t * 3.0)
         A.glass_card(img, (W * 0.115, H * 0.836, W * 0.885, H * 0.916),
-                     ecta * (0.25 + 0.35 * pulse), radius=40 * SCALE, alpha=0,
-                     border_a=120)
-    efoot = K.ss(5.70, 6.30, p * dur)
+                     ecta * (0.22 + 0.30 * pulse), radius=40 * SCALE, alpha=0,
+                     border_a=120, tint=(255, 255, 255))
+    efoot = K.ss(5.60, 6.20, p * dur)
     A.centred(img, "Hawkins ২ লিটার · Elima ১ লিটার · মোট ৳১,৫৫০", "list2", 0.930,
-              WINTER, efoot, dy=16)
+              A.DEEP2, efoot, dy=14)
 
 
 def macro_cut(s, img, t):
@@ -401,8 +504,9 @@ def macro_cut(s, img, t):
     le = K.ss(0.12, 0.42, local) * (1 - K.ss(1.30, 1.55, local))
     if le > 0.004:
         A.glass_card(macro, (W * 0.13, H * 0.842, W * 0.87, H * 0.906), le,
-                     radius=30 * SCALE, alpha=104, border_a=110)
-        A.centred(macro, lab, "list", 0.858, A.GOLD_LT, le)
+                     radius=30 * SCALE, alpha=235, border_a=200,
+                     tint=(255, 252, 245), border=A.SKY)
+        A.centred(macro, lab, "list", 0.858, A.DEEP, le, shadow=0.0)
     # full cut, not a ghost: even 6% of the outgoing frame showed the titles
     # through the macro plate and read as a double exposure
     return macro if e >= 0.995 else Image.blend(img, macro, float(min(1.0, e)))
@@ -418,13 +522,17 @@ def draw_scene(s, p, t):
         draw_product_scene(img, s, p, t, "flask", 0.50, 0.360)
     elif s["id"] == "s4":
         draw_s4(img, s, p, t)
-    else:
+    elif s["id"] == "s5":
         draw_s5(img, s, p, t)
-    img = macro_cut(s, img, p * s["dur"])
-    img = A.light_sweep(img, K.ss(0.02, 0.55, p) if s["id"] in ("s1",) else -1,
-                        y0=0.10, y1=0.86, width=0.18, strength=0.22)
-    img = A.dust(img, p, count=34, strength=0.42)
-    img = A.grade(img, vignette=0.22, grain=0.009)
+    else:
+        draw_s6(img, s, p, t)
+    if s["id"] != "s5":          # the family beat is a photo: no cut, no dust
+        img = macro_cut(s, img, p * s["dur"])
+        img = A.light_sweep(img, K.ss(0.02, 0.55, p) if s["id"] in ("s1",) else -1,
+                            y0=0.10, y1=0.86, width=0.18, strength=0.18)
+        img = A.dust(img, p, count=28, strength=0.30)
+    # a lighter grade: the bright theme loses its air with a heavy vignette
+    img = A.grade(img, vignette=0.10 if s["id"] != "s5" else 0.16, grain=0.008)
     if s["id"] == SCENES[0]["id"]:
         img = _fade_in(img, p, 0.40 / s["dur"])
     if s["id"] == SCENES[-1]["id"]:
@@ -515,6 +623,22 @@ def build_audio(scenes):
     music = AU.lowpass_fast(music, 2800, 1)
     music = AU.fade(music, 0.9, 2.0)
 
+    # per-scene music automation: the emotional beat needs a hair more bed,
+    # the closing offer a hair less, so the narration never fights the chords
+    for s in scenes:
+        lift = s.get("music")
+        if lift is None:
+            continue
+        a0 = int(sum(q["dur"] for q in scenes[:scenes.index(s)]) * AU.SR)
+        a1 = min(len(music), a0 + int(s["dur"] * AU.SR))
+        if a1 <= a0:
+            continue
+        ramp = int(0.45 * AU.SR)
+        g = np.ones(a1 - a0, np.float32)
+        k = np.clip((np.arange(a1 - a0) - (a1 - a0 - ramp)) / ramp, 0, 1)
+        g *= 1.0 + lift * k
+        music[a0:a1] *= g
+
     pos = 0.0
     for s in scenes:
         d, sid = s["dur"], s["id"]
@@ -550,20 +674,44 @@ def build_audio(scenes):
             sfx = AU.place(sfx, AU.sub_boom(1.0), pos + 5.10, 0.26)
             sfx = AU.place(sfx, _click(), pos + 5.15, 0.18)
         # narration
-        for f, off in s["vo"]:
+        for item in s["vo"]:
+            f, off = item[0], item[1]
+            vg = item[2] if len(item) > 2 else 1.0
             v = _read(os.path.join(VO, f + ".wav"))
             a0 = int((pos + off) * AU.SR)
             seg = v[: max(0, min(len(v), len(voice) - a0))]
-            voice[a0:a0 + len(seg)] += seg
+            voice[a0:a0 + len(seg)] += seg * vg
         pos += d
 
-    env = np.convolve(np.abs(voice), np.ones(4800) / 4800, mode="same")
-    duck = 1.0 - 0.55 * np.clip(env / (np.max(env) + 1e-6) * 3.2, 0, 1)
-    mix = (music * 0.62 + sfx * 0.9) * duck * 0.82
-    final = np.clip(voice * 1.0 + mix, -1, 1)
+    # ---------------------------------------------------------------- mix --
+    # v8 balance was wrong: the music bed sat at 0.62 and the "duck" only
+    # pulled it 55% under speech, so the narration was buried under the pad.
+    # v9: bed at 0.24, a real side-chain duck (-14 dB under speech) with a
+    # smooth lookahead/release, and speech normalised up. The voice is the
+    # product here; the music is there to hold it up, not compete.
+    vnorm = np.max(np.abs(voice)) or 1.0
+    voice = voice / vnorm * 0.88
+    env = np.convolve(np.abs(voice), np.ones(2400) / 2400, mode="same")
+    env = env / (np.max(env) + 1e-6)
+    # fast attack, slow release: a one-pole smoother on the gain
+    gain = np.ones_like(env)
+    g = 1.0
+    alpha_a, alpha_r = 0.030, 0.0016
+    e_prev = 0.0
+    step = 8                       # compute the envelope every 8 samples
+    for i in range(0, len(env), step):
+        e = env[i]
+        a = alpha_a if e > e_prev else alpha_r
+        g += (e - g) * a
+        e_prev = e
+        gain[i:i + step] = 1.0 - 0.80 * np.clip(g * 2.6, 0, 1)
+    bed = (music * 0.24 + sfx * 0.55) * gain
+    final = np.clip(voice + bed, -1, 1)
+    # gentle peak control, then a touch of headroom
     peak = float(np.max(np.abs(final))) or 1.0
+    final = final / peak * 0.92
     os.makedirs(OUT, exist_ok=True)
-    AU.write_wav(os.path.join(OUT, "mix_raw.wav"), (final / peak * 0.94).astype(np.float32))
+    AU.write_wav(os.path.join(OUT, "mix_raw.wav"), final.astype(np.float32))
     return total
 
 

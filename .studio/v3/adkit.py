@@ -29,13 +29,20 @@ SCALE = 2                      # 2160x3840
 W, H = 1080 * SCALE, 1920 * SCALE
 
 # ------------------------------------------------------------------ palette ---
-EMERALD = (10, 55, 46)
+EMERALD = (10, 55, 46)          # kept for the older episode scripts
 EMERALD_DK = (5, 26, 22)
-GOLD = (188, 154, 85)
-GOLD_LT = (226, 196, 132)
+# v9 bright palette: daylight silk, brand blue, deep ink for type
+DEEP = (14, 48, 74)             # brand navy — headings on light glass
+DEEP2 = (22, 70, 104)           # slightly lighter navy — sub-lines
+INK = (26, 34, 42)              # near-black for the heaviest numeral
+GOLD = (176, 132, 52)           # champagne, darkened so it reads on white
+GOLD_LT = (200, 152, 66)
+SKY = (78, 150, 200)            # accent blue (winter, fresh)
+MINT = (32, 128, 118)           # secondary accent (steel / tea leaf)
+CREAM = (255, 250, 242)         # light stage base
 IVORY = (243, 235, 221)
 BLACK = (17, 19, 21)
-WINTER = (169, 200, 216)
+WINTER = (96, 138, 168)         # muted blue for small print on light glass
 WHITE = (255, 255, 255)
 
 # типорозміри — ті самі, що в епізодах (STYLE з build_falcon.py), помножені на SCALE
@@ -258,7 +265,7 @@ def lefted(canvas, txt, style, x, y, colour, e, dy=22, shadow=0.5, alpha=1.0,
 
 
 def glass_card(canvas, box, e, radius=30 * SCALE, tint=(12, 30, 26), alpha=96,
-               border=GOLD_LT, border_a=110):
+               border=GOLD_LT, border_a=110, lift=1.16, adaptive=True):
     """Матове скло: блюр того, що під ним + легкий тонувальний шар."""
     if e <= 0.004:
         return
@@ -269,7 +276,23 @@ def glass_card(canvas, box, e, radius=30 * SCALE, tint=(12, 30, 26), alpha=96,
         return
     under = canvas.crop((x0, y0, x1, y1)).filter(ImageFilter.GaussianBlur(18 * SCALE))
     # a touch of light so the glass lifts off the background instead of going black
-    under = Image.eval(under, lambda v: min(255, int(v * 1.16 + 10)))
+    under = Image.eval(under, lambda v: min(255, int(v * lift + 10)))
+    if adaptive:
+        # On a bright stage a light tint alone disappears; on a dark stage a dark
+        # tint alone goes to mud. So read the plate under the card and pick the
+        # effective card alpha + a subtle veil in the opposite direction. One
+        # value per card, not per frame — cheap and it never flickers.
+        try:
+            mean = np.asarray(under.resize((1, 1), Image.LANCZOS))[0, 0].mean()
+        except Exception:
+            mean = 128.0
+        k = float(np.clip((mean - 95.0) / 95.0, 0.0, 1.0))   # 0 dark .. 1 light
+        alpha = int(alpha * (0.42 + 0.30 * k))
+        if k > 0.5:
+            # bright plate: veil it toward white so dark ink has something to sit on
+            veil = int(150 * (k - 0.5) * 2 * e)
+            _v = Image.new("RGBA", (x1 - x0, y1 - y0), (255, 255, 255, veil))
+            under = Image.alpha_composite(under.convert("RGBA"), _v).convert("RGB")
     layer = Image.new("RGBA", (x1 - x0, y1 - y0), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
     d.rounded_rectangle([0, 0, layer.width - 1, layer.height - 1], radius=radius,
